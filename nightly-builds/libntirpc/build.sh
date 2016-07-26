@@ -3,23 +3,26 @@
 artifact()
 {
 	[ -e ~/rsync.passwd ] || return 0
-	rsync -av --password-file ~/rsync.passwd ${@} gluster@artifacts.ci.centos.org::gluster/nightly/
+	rsync -av --password-file ~/rsync.passwd ${@} nfs-ganesha@artifacts.ci.centos.org::nfs-ganesha/
 }
 
 # if anything fails, we'll abort
 set -e
 
-# install basic dependencies for building the tarball and srpm
-yum -y install git mock createrepo_c
+# environment variables we rely on
+[ -n "${TEMPLATES_URL}" ]
+[ -n "${CENTOS_VERSION}" ]
+[ -n "${CENTOS_ARCH}" ]
 
-# clone the repository, github is faster than our Gerrit
-#git clone https://review.gluster.org/glusterfs
-# git clone https://github.com/gluster/glusterfs
+# install basic dependencies for building the tarball and srpm
+yum -y install git rpm-build mock createrepo_c
+
+# clone the repository
 git clone https://github.com/nfs-ganesha/ntirpc.git
 pushd ntirpc
 
 # switch to the branch we want to build
-# git checkout ${GERRIT_BRANCH}
+# git checkout ${GIT_BRANCH}
 # repo is configured to checkout latest devel branch, e.g. duplex-13
 
 # generate a version based on branch.date.last-commit-hash
@@ -28,7 +31,7 @@ GIT_HASH="$(git log -1 --format=%h)"
 VERSION="${GIT_VERSION}.$(date +%Y%m%d).${GIT_HASH}"
 
 # generate the tar.gz archive
-sed s/XXVERSIONXX/${VERSION}/ < ../libntirpc.spec.in > libntirpc.spec
+curl ${TEMPLATES_URL}/libntirpc.spec.in | sed s/XXVERSIONXX/${VERSION}/ > libntirpc.spec
 tar czf ../ntirpc-${VERSION}.tar.gz --exclude-vcs ../ntirpc
 popd
 
@@ -41,7 +44,7 @@ SRPM=$(rpmbuild --define 'dist .autobuild' --define "_srcrpmdir ${PWD}" \
 
 # do the actual RPM build in mock
 # TODO: use a CentOS Storage SIG buildroot
-RESULTDIR=/srv/gluster/nightly/${GERRIT_BRANCH}/${CENTOS_VERSION}/${CENTOS_ARCH}
+RESULTDIR=/srv/nightly/libntirpc/${GIT_VERSION}/${CENTOS_VERSION}/${CENTOS_ARCH}
 /usr/bin/mock \
 	--root epel-${CENTOS_VERSION}-${CENTOS_ARCH} \
 	--resultdir ${RESULTDIR} \
@@ -49,11 +52,14 @@ RESULTDIR=/srv/gluster/nightly/${GERRIT_BRANCH}/${CENTOS_VERSION}/${CENTOS_ARCH}
 
 pushd ${RESULTDIR}
 createrepo_c .
+
+# create the .repo file pointing to the just built+latest version
+curl ${TEMPLATES_URL}/libntirpc.repo.in | sed s/XXVERSIONXX/${GIT_VERSION}/ > ../../../libntirpc-${GIT_VERSION}.repo
+ln -sf libntirpc-${GIT_VERSION}.repo ../../../libntirpc-latest.repo
 popd
 
-pushd /srv/gluster/nightly
-artifact ${GERRIT_BRANCH}
+pushd /srv
+artifact nightly
 popd
 
 exit ${RET}
-
