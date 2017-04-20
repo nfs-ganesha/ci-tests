@@ -51,23 +51,28 @@ cmd="""ssh -t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@%
 '""" % (b['hosts'][0], server_script)
 rtn_code=subprocess.call(cmd, shell=True)
 
-# TODO: check rtn_code and skip client part after failure
+# check rtn_code and skip client part after failure
+if rtn_code == 0:
+    # NFS-Client (parameters need double escape, passed on ssh commandline)
+    client_env="export SERVER='%s'" % b['hosts'][0]
+    client_env+=" EXPORT='/%s'" % os.getenv("EXPORT")
+    client_env+=" TEST_PARAMETERS='%s'" % os.getenv("TEST_PARAMETERS", "")
 
-# NFS-Client (parameters need double escape, passed on ssh commandline)
-client_env="export SERVER='%s'" % b['hosts'][0]
-client_env+=" EXPORT='/%s'" % os.getenv("EXPORT")
-client_env+=" TEST_PARAMETERS='%s'" % os.getenv("TEST_PARAMETERS", "")
+    # add the export with environment to ~/.bashrc
+    cmd="""ssh -t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@%s '
+        tee -a ~/.bashrc' <<< "%s"
+        """ % (b['hosts'][1], client_env)
+    subprocess.call(cmd, shell=True)
 
-# add the export with environment to ~/.bashrc
-cmd="""ssh -t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@%s '
-tee -a ~/.bashrc' <<< "%s"
-""" % (b['hosts'][1], client_env)
-subprocess.call(cmd, shell=True)
-
-cmd="""ssh -t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@%s '
-	curl %s | bash -
-'""" % (b['hosts'][1], client_script)
-rtn_code=subprocess.call(cmd, shell=True)
+    client_script = client_script.strip(" ")
+    if client_script.endswith(".py"):
+        interpreter_to_run = "python"
+    elif client_script.endswith(".sh"):
+        interpreter_to_run = "bash"
+    cmd="""ssh -t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@%s '
+	      curl %s | %s -
+        '""" % (b['hosts'][1], client_script, interpreter_to_run)
+    rtn_code=subprocess.call(cmd, shell=True)
 
 # return the system(s) to duffy
 done_nodes_url="%s/Node/done?key=%s&ssid=%s" % (url_base, api, b['ssid'])
