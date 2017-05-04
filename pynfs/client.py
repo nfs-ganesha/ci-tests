@@ -37,7 +37,7 @@ if rtn_code != 0:
 
 #Run pynfs test suite
 log_file = "/tmp/pynfs" + str(int(time.time())) + ".log"
-cmd = "cd /root/pynfs/nfs4.0 && ./testserver.py %s:%s --verbose --maketree --showomit --rundeps ACL5 ganesha %s > %s" %(server, export, test_parameters, log_file)
+cmd = "cd /root/pynfs/nfs4.0 && ./testserver.py %s:%s --verbose --maketree --showomit --rundeps all ganesha %s > %s" %(server, export, test_parameters, log_file)
 p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 pout, perr = p.communicate()
 rtn_code = p.returncode
