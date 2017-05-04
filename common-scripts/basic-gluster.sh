@@ -128,3 +128,11 @@ then
 	echo "Export ${GLUSTER_VOLUME} is not available"
 	exit 1
 fi
+
+if [ "${ENABLE_ACL}" == "True" ]
+then
+  conf_file="/etc/ganesha/exports/export."${GLUSTER_VOLUME}".conf"
+  sed -i s/'Disable_ACL = .*'/'Disable_ACL = \"true\";'/g ${conf_file}
+  dbus-send --type=method_call --print-reply --system  --dest=org.ganesha.nfsd /org/ganesha/nfsd/ExportMgr  org.ganesha.nfsd.exportmgr.UpdateExport string:${conf_file} string:"EXPORT(Export_Id = 2)"
+fi
+
