@@ -30,6 +30,7 @@ set -x
 
 # enable repositories
 yum -y install centos-release-gluster yum-utils
+yum --enablerepo=centos-gluster*-test install glusterfs-api-devel
 
 # make sure rpcbind is running
 yum -y install rpcbind
