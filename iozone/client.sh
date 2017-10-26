@@ -65,7 +65,7 @@ if [ $ret -eq 0 ]
 then
         echo "IOZone Test Is Completed And Successful On v4.0";
 else
-        echo "IOZone Test Failed On NFSv4...";
+        echo "IOZone Test Failed On NFSv4.0...";
         tail -3 ../ioZoneLog.txt;
         exit $ret;
 fi
