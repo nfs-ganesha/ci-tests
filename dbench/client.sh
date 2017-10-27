@@ -35,7 +35,9 @@ mkdir -p /mnt/nfsv3
 mount -t nfs -o vers=3 ${SERVER}:${EXPORT} /mnt/nfsv3
 
 # Running dbench suite on v3 mount
-echo "dbench Test Running for v3 Mount...";
+echo "---------------------------------------"
+echo "dbench Test Running for v3 Mount..."
+echo "---------------------------------------"
 /root/dbench/dbench 2 > ../dbenchTestLog.txt
 tail -1 ../dbenchTestLog.txt | grep "Throughput" 
 status=$?
@@ -56,7 +58,9 @@ mkdir -p /mnt/nfsv4
 mount -t nfs -o vers=4.0 ${SERVER}:${EXPORT} /mnt/nfsv4
 
 # Running dbench suite on v4.0 mount
-echo "dbench Test Running for v4.0 Mount...";
+echo "---------------------------------------"
+echo "dbench Test Running for v4.0 Mount..."
+echo "---------------------------------------"
 /root/dbench/dbench 2 > ../dbenchTestLog.txt
 tail -1 ../dbenchTestLog.txt | grep "Throughput" 
 status=$?
@@ -78,7 +82,9 @@ mount -t nfs -o vers=4.1 ${SERVER}:${EXPORT} /mnt/nfsv4_1
 
 
 # Running dbench suite on v4.1 mount
-echo "dbench Test Running for v4.1 Mount...";
+echo "---------------------------------------"
+echo "dbench Test Running for v4.1 Mount..."
+echo "---------------------------------------"
 /root/dbench/dbench 2 > ../dbenchTestLog.txt
 tail -1 ../dbenchTestLog.txt | grep "Throughput" 
 status=$?
