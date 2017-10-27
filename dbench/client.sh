@@ -48,14 +48,15 @@ else
       echo "dbench Test: FAILURE"
       exit $status
 fi
+umount -l /mnt/nfsv3
       
       
 # v4 mount
 mkdir -p /mnt/nfsv4
-mount -t nfs -o vers=4 ${SERVER}:${EXPORT} /mnt/nfsv4
+mount -t nfs -o vers=4.0 ${SERVER}:${EXPORT} /mnt/nfsv4
 
-# Running dbench suite on v4 mount
-echo "dbench Test Running for v4 Mount...";
+# Running dbench suite on v4.0 mount
+echo "dbench Test Running for v4.0 Mount...";
 /root/dbench/dbench 2 > ../dbenchTestLog.txt
 tail -1 ../dbenchTestLog.txt | grep "Throughput" 
 status=$?
@@ -68,6 +69,7 @@ else
       echo "dbench Test: FAILURE"
       exit $status
 fi
+umount -l /mnt/nfsv4
 
 
 # v4.1 mount
@@ -89,3 +91,4 @@ else
       echo "dbench Test: FAILURE"
       exit $status
 fi
+umount -l /mnt/nfsv4_1
