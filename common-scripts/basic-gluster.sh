@@ -30,7 +30,6 @@ set -x
 
 # enable repositories
 yum -y install centos-release-gluster yum-utils
-yum --enablerepo=centos-gluster*-test install glusterfs-api-devel
 
 # make sure rpcbind is running
 yum -y install rpcbind
@@ -68,9 +67,10 @@ else
 	GIT_URL="https://${GERRIT_HOST}/${GERRIT_PROJECT}"
 
 	# install NFS-Ganesha build dependencies
+	yum -y --enablerepo=centos-gluster*-test install glusterfs-api-devel
 	yum -y install git bison flex cmake gcc-c++ libacl-devel krb5-devel \
 		dbus-devel libnfsidmap-devel libwbclient-devel libcap-devel \
-		libblkid-devel rpm-build redhat-rpm-config glusterfs-api-devel
+		libblkid-devel rpm-build redhat-rpm-config
 
 	git init "${GIT_REPO}"
 	pushd "${GIT_REPO}"
