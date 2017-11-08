@@ -11,7 +11,7 @@ set -x
 [ -n "${EXPORT}" ]
 
 # install build and runtime dependencies
-yum -y install git gcc nfs-utils time
+yum -y install nfs-utils time centos-release-gluster
 
 mkdir -p /mnt/ganesha
 
