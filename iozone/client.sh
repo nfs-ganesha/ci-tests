@@ -15,14 +15,16 @@ yum -y install git gcc nfs-utils time
 
 mkdir -p /mnt/ganesha
 
-cd ~
-curl -o iozone3_394.tar http://www.iozone.org/src/current/iozone3_394.tar
+#cd ~
+#curl -o iozone3_394.tar http://www.iozone.org/src/current/iozone3_394.tar
 
-tar xvf iozone3_394.tar 
-cd iozone3_394/src/current
-make
-make linux
-ioZoneDir=$(pwd)/iozone
+#tar xvf iozone3_394.tar 
+#cd iozone3_394/src/current
+#make
+#make linux
+#ioZoneDir=$(pwd)/iozone
+
+yum --enablerepo=centos-gluster*test -y install iozone
 
 mount -t nfs -o vers=3 ${SERVER}:${EXPORT} /mnt/ganesha
 
@@ -31,7 +33,8 @@ cd /mnt/ganesha
 echo "Running Iozone Test On NFSv3 "
 echo "+++++++++++++++++++++++++++++"
 
-$ioZoneDir -a > ../ioZoneLog.txt
+#$ioZoneDir -a > ../ioZoneLog.txt
+iozone -a > ../ioZoneLog.txt
 
 grep "iozone test complete" ../ioZoneLog.txt;
 
@@ -52,10 +55,11 @@ mount -t nfs -o vers=4.0 ${SERVER}:${EXPORT} /mnt/ganesha
 
 cd /mnt/ganesha
 
-echo "Running Iozone Test On NFSv4 "
-echo "+++++++++++++++++++++++++++++"
+echo "Running Iozone Test On NFSv4.0 "
+echo "++++++++++++++++++++++++++++++++"
 
-$ioZoneDir -a > ../ioZoneLog.txt
+#$ioZoneDir -a > ../ioZoneLog.txt
+iozone -a > ../ioZoneLog.txt
 
 grep "iozone test complete" ../ioZoneLog.txt;
 
@@ -79,7 +83,8 @@ cd /mnt/ganesha
 echo "Running Iozone Test On NFSv4.1 "
 echo "+++++++++++++++++++++++++++++++"
 
-$ioZoneDir -a > ../ioZoneLog.txt
+#$ioZoneDir -a > ../ioZoneLog.txt
+iozone -a > ../ioZoneLog.txt
 
 grep "iozone test complete" ../ioZoneLog.txt;
 
