@@ -39,7 +39,7 @@ else
         exit $ret;
 fi
 
-umount /mnt/ganesha
+cd / && umount /mnt/ganesha
 
 mount -t nfs -o vers=4.0 ${SERVER}:${EXPORT} /mnt/ganesha
 
@@ -63,7 +63,7 @@ else
         exit $ret;
 fi
 
-umount /mnt/ganesha
+cd / && umount /mnt/ganesha
 
 mount -t nfs -o vers=4.1 ${SERVER}:${EXPORT} /mnt/ganesha
 
@@ -87,5 +87,5 @@ else
         exit $ret;
 fi
 
-umount /mnt/ganesha
+cd / && umount /mnt/ganesha
 
