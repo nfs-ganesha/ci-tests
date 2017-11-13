@@ -94,7 +94,6 @@ if rtn_code == 0:
         '""" % (b['hosts'][1], client_script_brbt, interpreter_to_run)
     rtn_code=subprocess.call(cmd, shell=True)
 
-    print "Sleeping For 100 Seconds"
     time.sleep(100)
 
     client_script_arbt = client_script_arbt.strip(" ")
@@ -106,8 +105,6 @@ if rtn_code == 0:
 	      curl %s | %s -
         '""" % (b['hosts'][1], client_script_arbt, interpreter_to_run)
     rtn_code=subprocess.call(cmd, shell=True)
-
-    print "New Return Code = "+str(rtn_code_new)
 
 # return the system(s) to duffy
 done_nodes_url="%s/Node/done?key=%s&ssid=%s" % (url_base, api, b['ssid'])

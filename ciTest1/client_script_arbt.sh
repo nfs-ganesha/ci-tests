@@ -1,8 +1,4 @@
 #!/bin/sh
-#
-# Environment variables used:
-#  - SERVER: hostname or IP-address of the NFS-server
-#  - EXPORT: NFS-export to test (should start with "/")
 
 # enable some more output
 # set -x

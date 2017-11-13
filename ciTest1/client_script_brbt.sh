@@ -28,7 +28,7 @@ fstabEntry=`echo -e $SERVER:$EXPORT "\t" /mnt/ganesha "\t" nfs "\t" defaults "\t
 echo "FSTAB ENTRY VARIABLE"
 echo "$fstabEntry"
 
-echo "$fstabEntry" >> /etc/fstab
+#echo "$fstabEntry" >> /etc/fstab
 
 echo "FSTAB FILE"
 cat /etc/fstab
