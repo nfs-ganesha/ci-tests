@@ -95,6 +95,12 @@ if rtn_code == 0:
 
     print "After Shutdown of client Script ret = "+str(rtn_code)
 
+    print "Sleeping For 100 Seconds"
+    time.sleep(100)
+
+    cmd="""ssh -t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@%s '
+	      curl %s | %s -
+        '""" % (b['hosts'][1], client_script, interpreter_to_run)
     rtn_code_new=subprocess.call(cmd, shell=True)
 
     print "New Return Code = "+str(rtn_code_new)
