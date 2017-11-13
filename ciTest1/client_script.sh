@@ -33,5 +33,5 @@ echo "$fstabEntry" >> /etc/fstab
 echo "FSTAB FILE"
 cat /etc/fstab
 
-echo "POWERING OFF ... "
-systemctl poweroff
+echo "REBOOTING ... "
+systemctl reboot
