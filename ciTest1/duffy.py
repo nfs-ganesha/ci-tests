@@ -18,7 +18,8 @@ ver=os.getenv("CENTOS_VERSION")
 arch=os.getenv("CENTOS_ARCH")
 count=2
 server_script=os.getenv("SERVER_TEST_SCRIPT")
-client_script=os.getenv("CLIENT_TEST_SCRIPT")
+client_script_brbt=os.getenv("CLIENT_TEST_SCRIPT_BRBT")
+client_script_arbt=os.getenv("CLIENT_TEST_SCRIPT_ARBT")
 # delay for 5 minutes (duffy timeout for rate limiting)
 retry_delay=300
 # retry maximum 3 hours, that is 3 x 60 x 60 seconds 
@@ -83,25 +84,23 @@ if rtn_code == 0:
         """ % (b['hosts'][1], client_env)
     subprocess.call(cmd, shell=True)
 
-    client_script = client_script.strip(" ")
-    if client_script.endswith(".py"):
+    client_script_brbt = client_script_brbt.strip(" ")
+    if client_script_brbt.endswith(".py"):
         interpreter_to_run = "python"
-    elif client_script.endswith(".sh"):
+    elif client_script_brbt.endswith(".sh"):
         interpreter_to_run = "bash"
     cmd="""ssh -t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@%s '
 	      curl %s | %s -
-        '""" % (b['hosts'][1], client_script, interpreter_to_run)
+        '""" % (b['hosts'][1], client_script_brbt, interpreter_to_run)
     rtn_code=subprocess.call(cmd, shell=True)
-
-    print "After Shutdown of client Script ret = "+str(rtn_code)
 
     print "Sleeping For 100 Seconds"
     time.sleep(100)
 
     cmd="""ssh -t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@%s '
 	      curl %s | %s -
-        '""" % (b['hosts'][1], client_script, interpreter_to_run)
-    rtn_code_new=subprocess.call(cmd, shell=True)
+        '""" % (b['hosts'][1], client_script_arbt, interpreter_to_run)
+    rtn_code=subprocess.call(cmd, shell=True)
 
     print "New Return Code = "+str(rtn_code_new)
 
