@@ -93,6 +93,12 @@ if rtn_code == 0:
         '""" % (b['hosts'][1], client_script, interpreter_to_run)
     rtn_code=subprocess.call(cmd, shell=True)
 
+    print "After Shutdown of client Script ret = "+str(rtn_code)
+
+    rtn_code_new=subprocess.call(cmd, shell=True)
+
+    print "New Return Code = "+str(rtn_code_new)
+
 # return the system(s) to duffy
 done_nodes_url="%s/Node/done?key=%s&ssid=%s" % (url_base, api, b['ssid'])
 das=urllib.urlopen(done_nodes_url).read()
