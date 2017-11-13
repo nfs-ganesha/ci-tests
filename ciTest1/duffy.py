@@ -95,6 +95,8 @@ if rtn_code == 0:
 
     print "After Shutdown of client Script ret = "+str(rtn_code)
 
+    time.sleep(30)
+
     rtn_code_new=subprocess.call(cmd, shell=True)
 
     print "New Return Code = "+str(rtn_code_new)
