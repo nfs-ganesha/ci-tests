@@ -97,6 +97,11 @@ if rtn_code == 0:
     print "Sleeping For 100 Seconds"
     time.sleep(100)
 
+    client_script_arbt = client_script_arbt.strip(" ")
+    if client_script_arbt.endswith(".py"):
+        interpreter_to_run = "python"
+    elif client_script_arbt.endswith(".sh"):
+        interpreter_to_run = "bash"
     cmd="""ssh -t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@%s '
 	      curl %s | %s -
         '""" % (b['hosts'][1], client_script_arbt, interpreter_to_run)
