@@ -6,6 +6,7 @@
 
 # enable some more output
 # set -x
+echo "+++++++++++++CLIENT SCRIPT++++++++++++++++++"
 
 [ -n "${SERVER}" ]
 [ -n "${EXPORT}" ]
