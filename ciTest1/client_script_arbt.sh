@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # enable some more output
-# set -x
+set -x
 echo "+++++++++++++CLIENT SCRIPT AFTER REBOOTING++++++++++++++++++"
 
 [ -n "${SERVER}" ]
@@ -18,6 +18,5 @@ else
 	echo "*******||  Auto Remount Failed ||*******"
 	exit $ret
 fi
-
 
 cd / && umount /mnt/ganesha
