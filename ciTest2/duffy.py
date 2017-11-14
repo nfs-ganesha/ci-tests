@@ -18,8 +18,7 @@ ver=os.getenv("CENTOS_VERSION")
 arch=os.getenv("CENTOS_ARCH")
 count=2
 server_script=os.getenv("SERVER_TEST_SCRIPT")
-client_script_brbt=os.getenv("CLIENT_TEST_SCRIPT_BRBT")
-client_script_arbt=os.getenv("CLIENT_TEST_SCRIPT_ARBT")
+client_script=os.getenv("CLIENT_TEST_SCRIPT")
 # delay for 5 minutes (duffy timeout for rate limiting)
 retry_delay=300
 # retry maximum 3 hours, that is 3 x 60 x 60 seconds 
@@ -58,6 +57,7 @@ server_env+=" GERRIT_REFSPEC='%s'" % os.getenv("GERRIT_REFSPEC")
 server_env+=" YUM_REPO='%s'" % os.getenv("YUM_REPO", "")
 server_env+=" GLUSTER_VOLUME='%s'" % os.getenv("EXPORT")
 server_env+=" ENABLE_ACL='%s'" % os.getenv("ENABLE_ACL", "")
+server_env+=" CLIENT='%s'" % b['hosts'][1]
 
 # add the export with environment to ~/.bashrc
 cmd="""ssh -t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@%s '
@@ -67,7 +67,8 @@ subprocess.call(cmd, shell=True)
 
 cmd="""ssh -t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@%s '
 	yum -y install curl &&
-	curl %s | bash -
+	curl -o server_script.sh %s &&
+        bash server_script.sh initialization
 '""" % (b['hosts'][0], server_script)
 rtn_code=subprocess.call(cmd, shell=True)
 
@@ -84,26 +85,21 @@ if rtn_code == 0:
         """ % (b['hosts'][1], client_env)
     subprocess.call(cmd, shell=True)
 
-    client_script_brbt = client_script_brbt.strip(" ")
-    if client_script_brbt.endswith(".py"):
+    client_script = client_script.strip(" ")
+    if client_script.endswith(".py"):
         interpreter_to_run = "python"
-    elif client_script_brbt.endswith(".sh"):
+    elif client_script.endswith(".sh"):
         interpreter_to_run = "bash"
+
     cmd="""ssh -t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@%s '
-	      curl %s | %s -
-        '""" % (b['hosts'][1], client_script_brbt, interpreter_to_run)
+	      curl -o client_script %s &&
+              %s client_script initialization
+        '""" % (b['hosts'][1], client_script, interpreter_to_run)
     rtn_code=subprocess.call(cmd, shell=True)
 
-    time.sleep(100)
-
-    client_script_arbt = client_script_arbt.strip(" ")
-    if client_script_arbt.endswith(".py"):
-        interpreter_to_run = "python"
-    elif client_script_arbt.endswith(".sh"):
-        interpreter_to_run = "bash"
     cmd="""ssh -t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@%s '
-	      curl %s | %s -
-        '""" % (b['hosts'][1], client_script_arbt, interpreter_to_run)
+              %s client_script stage1
+        '""" % (b['hosts'][1], interpreter_to_run)
     rtn_code=subprocess.call(cmd, shell=True)
 
 # return the system(s) to duffy

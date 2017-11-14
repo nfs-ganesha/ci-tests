@@ -10,28 +10,24 @@ set -x
 [ -n "${SERVER}" ]
 [ -n "${EXPORT}" ]
 
-# install build and runtime dependencies
-yum -y install nfs-utils time
+if [ "$1" == "initialization" ]
+then
+	echo "In Client Initialization Stage"
+	# install build and runtime dependencies
+	yum -y install nfs-utils time
 
-mkdir -p /mnt/ganesha
+	mkdir -p /mnt/ganesha
 
-mount -t nfs -o vers=3 ${SERVER}:${EXPORT} /mnt/ganesha
+	mount -t nfs -o vers=3 ${SERVER}:${EXPORT} /mnt/ganesha
 
-cd /mnt/ganesha
+elif [ "$1" == "stage1" ]
+	
+	echo "In Client Stage 1 --- With All Rights To All Clients ( RO & RW ) "
 
-echo "Hello World" > testFile.txt
+	cd /mnt/ganesha
 
-cd / && umount /mnt/ganesha
+	echo "Hello World" > testFile.txt
 
-fstabEntry=`echo -e $SERVER:$EXPORT "\t" /mnt/ganesha "\t" nfs "\t" defaults "\t" 1 "\t" 1`
+	cat testFile.txt	
 
-echo "FSTAB ENTRY VARIABLE"
-echo "$fstabEntry"
-
-echo "$fstabEntry" >> /etc/fstab
-
-echo "FSTAB FILE"
-cat /etc/fstab
-
-echo "REBOOTING ... "
-systemctl reboot
+fi
