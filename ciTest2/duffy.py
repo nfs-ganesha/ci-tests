@@ -19,6 +19,13 @@ arch=os.getenv("CENTOS_ARCH")
 count=2
 server_script=os.getenv("SERVER_TEST_SCRIPT")
 client_script=os.getenv("CLIENT_TEST_SCRIPT")
+
+print "SERVER_SCRIPT"
+print server_script
+
+print "CLIENT_SCRIPT"
+print client_script
+
 # delay for 5 minutes (duffy timeout for rate limiting)
 retry_delay=300
 # retry maximum 3 hours, that is 3 x 60 x 60 seconds 

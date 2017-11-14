@@ -10,7 +10,7 @@ set -x
 [ -n "${SERVER}" ]
 [ -n "${EXPORT}" ]
 
-if [ "$1" == "initialization" ]
+if [ "$1" = "initialization" ]
 then
 	echo "In Client Initialization Stage"
 	# install build and runtime dependencies
@@ -20,7 +20,7 @@ then
 
 	mount -t nfs -o vers=3 ${SERVER}:${EXPORT} /mnt/ganesha
 
-elif [ "$1" == "stage1" ]
+elif [ "$1" = "stage1" ]
 	
 	echo "In Client Stage 1 --- With All Rights To All Clients ( RO & RW ) "
 

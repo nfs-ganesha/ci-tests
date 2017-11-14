@@ -28,7 +28,7 @@ set -e
 # be a little bit more verbose
 # set -x
 
-if [ "$1" == "initialization"]
+if [ "$1" = "initialization" ]
 then
 	echo "======= In Server Initialization =========="
 
