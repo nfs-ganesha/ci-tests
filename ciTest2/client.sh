@@ -21,6 +21,7 @@ then
 	mount -t nfs -o vers=3 ${SERVER}:${EXPORT} /mnt/ganesha
 
 elif [ "$1" = "stage1" ]
+then
 	
 	echo "In Client Stage 1 --- With All Rights To All Clients ( RO & RW ) "
 
