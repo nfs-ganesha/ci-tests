@@ -143,7 +143,7 @@ chmod 755 create-export-ganesha.sh dbus-send.sh
 /usr/libexec/ganesha/dbus-send.sh /etc/ganesha on ${GLUSTER_VOLUME}
 
 # wait till server comes out of grace period
-sleep 15
+sleep 90
 
 # basic check if the export is available, some debugging if not
 if ! showmount -e | grep -q -w -e "${GLUSTER_VOLUME}"
