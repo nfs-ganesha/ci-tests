@@ -19,10 +19,10 @@ then
 	mkdir -p /mnt/ganesha
 
 	mount -t nfs -o vers=3 ${SERVER}:${EXPORT} /mnt/ganesha
+fi
 
-elif [ "$1" = "stage1" ]
+if [ "$1" = "stage1" ]
 then
-	
 	echo "In Client Stage 1 --- With All Rights To All Clients ( RO & RW ) "
 
 	cd /mnt/ganesha
@@ -30,5 +30,4 @@ then
 	echo "Hello World" > testFile.txt
 
 	cat testFile.txt	
-
 fi
