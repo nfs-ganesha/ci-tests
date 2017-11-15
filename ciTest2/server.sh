@@ -194,14 +194,17 @@ then
         \tAccess_type = \"RO\";
         \tProtocols = \"3\",\"4\";
 	}" > clientBlock.txt
-	sed '16e cat clientBlock.txt' ${conf_file}
+	
+	echo "=======CLIENTBLOCK.TXT========="
+	cat clientBlock.txt
+	sed '16e cat clientBlock.txt' /etc/ganesha/exports/export.azhar_Export.conf
 
-	echo "CONF FILE AFTER ADDING CLIENT BLOCK"
+	echo "CONF FILE AFTER ADDING CLIENT BLOCK conf_file=${conf_file}"
 	cat ${conf_file}
 
 	dbus-send --type=method_call --print-reply --system  --dest=org.ganesha.nfsd /org/ganesha/nfsd/ExportMgr  org.ganesha.nfsd.exportmgr.UpdateExport string:${conf_file} string:"EXPORT(Export_Id = ${export_id})"
 
-	sleep 5
+	sleep 20
 	echo "++++++++Updated Export Data+++++++++"
 fi
 
