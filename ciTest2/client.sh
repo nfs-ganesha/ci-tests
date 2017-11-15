@@ -46,8 +46,7 @@ then
 		#exit ret
 	fi
 
-	cd /
-	umount /mnt/ganesha
+	cd / && umount /mnt/ganesha
 fi
 
 if [ "$1" = "client_stage1" ]
@@ -58,9 +57,6 @@ then
 
 	cd /mnt/ganesha
 
-	echo "LS"
-	echo $(ls)
-
 	echo "Trying To Write A File"
 	sed -i '1s/$/ From RedHat/' testFile.txt
 	ret=$?
@@ -69,7 +65,7 @@ then
 		echo "FAILURE Since Write Permissions Were Not Blocked To The CLient"
 		#exit ret
 	else
-		echo "SUCCESS ON FAILURE"
+		echo "SUCCESS ON WRITE PERMISSIONS FAILURE"
 	fi
 
 	echo "Trying To Read A File"
@@ -83,6 +79,105 @@ then
 		#exit ret
 	fi
 	
-	cd / 
-	umount /mnt/ganesha
+	cd / && umount /mnt/ganesha
 fi
+
+
+if [ "$1" = "client_stage2" ]
+then
+	echo "In Client Stage 2 --- With Only Rights For v3 Mount To This Client "
+
+	echo "Trying To Mount By vers=3"
+	mount -t nfs -o vers=3 ${SERVER}:${EXPORT} /mnt/ganesha
+	cat /mnt/ganesha/testFile.txt
+	ret=$?
+	if [ $ret -eq 0 ]
+	then
+		echo "SUCCESS ON v3 MOUNT BY CLIENT"
+	else
+		echo "FAILURE ON v3 MOUNT BY CLIENT"
+		#exit ret
+	fi
+
+	cd / && umount /mnt/ganesha
+
+	echo "Trying To Mount By vers=4.0"
+	mount -t nfs -o vers=4.0 ${SERVER}:${EXPORT} /mnt/ganesha
+	cat /mnt/ganesha/testFile.txt
+	ret=$?
+	if [ $ret -eq 0 ]
+	then
+		echo "FAILURE Since v4.0 Permissions Were Not Given To The CLient"
+		#exit ret
+	else
+		echo "SUCCESS ON v4.0 MOUNT FAILURE"
+	fi
+
+	cd / && umount /mnt/ganesha
+
+	echo "Trying To Mount By vers=4.1"
+	mount -t nfs -o vers=4.1 ${SERVER}:${EXPORT} /mnt/ganesha
+	cat /mnt/ganesha/testFile.txt
+	ret=$?
+	if [ $ret -eq 0 ]
+	then
+		echo "FAILURE Since v4.1 Permissions Were Not Given To The CLient"
+		#exit ret
+	else
+		echo "SUCCESS ON v4.1 MOUNT FAILURE"
+	fi
+
+	cd / && umount /mnt/ganesha
+
+fi
+
+if [ "$1" = "client_stage3" ]
+then
+	echo "In Client Stage 3 --- With Only Rights For v4.0 & v4.1 Mount To This Client "
+
+	echo "Trying To Mount By vers=3"
+	mount -t nfs -o vers=3 ${SERVER}:${EXPORT} /mnt/ganesha
+	cat /mnt/ganesha/testFile.txt
+	ret=$?
+	if [ $ret -eq 0 ]
+	then
+		echo "FAILURE Since v3 Permissions Were Not Given To The CLient"
+		#exit ret
+	else
+		echo "SUCCESS ON v3 MOUNT FAILURE"
+	fi
+
+	cd / && umount /mnt/ganesha
+
+	echo "Trying To Mount By vers=4.0"
+	mount -t nfs -o vers=4.0 ${SERVER}:${EXPORT} /mnt/ganesha
+	cat /mnt/ganesha/testFile.txt
+	ret=$?
+	if [ $ret -eq 0 ]
+	then
+		echo "SUCCESS ON v4.0 MOUNT BY CLIENT"
+	else
+		echo "FAILURE ON v4.0 MOUNT BY CLIENT"
+		#exit ret
+	fi
+
+	cd / && umount /mnt/ganesha
+
+	echo "Trying To Mount By vers=4.1"
+	mount -t nfs -o vers=4.1 ${SERVER}:${EXPORT} /mnt/ganesha
+	cat /mnt/ganesha/testFile.txt
+	ret=$?
+	if [ $ret -eq 0 ]
+	then
+		echo "SUCCESS ON v4.1 MOUNT BY CLIENT"
+	else
+		echo "FAILURE ON v4.1 MOUNT BY CLIENT"
+		#exit ret
+	fi
+
+	cd / && umount /mnt/ganesha
+
+fi
+
+
+

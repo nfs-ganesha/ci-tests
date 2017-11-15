@@ -110,6 +110,26 @@ if rtn_code == 0:
         '""" % (b['hosts'][1], interpreter_to_run)
     rtn_code=subprocess.call(cmd, shell=True)
 
+    cmd="""ssh -t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@%s '
+	      bash server_script.sh server_stage2
+	'""" % (b['hosts'][0])
+    rtn_code=subprocess.call(cmd, shell=True)
+
+    cmd="""ssh -t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@%s '
+              %s client_script client_stage2
+        '""" % (b['hosts'][1], interpreter_to_run)
+    rtn_code=subprocess.call(cmd, shell=True)
+
+    cmd="""ssh -t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@%s '
+	      bash server_script.sh server_stage3
+	'""" % (b['hosts'][0])
+    rtn_code=subprocess.call(cmd, shell=True)
+
+    cmd="""ssh -t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@%s '
+              %s client_script client_stage3
+        '""" % (b['hosts'][1], interpreter_to_run)
+    rtn_code=subprocess.call(cmd, shell=True)
+
 # return the system(s) to duffy
 done_nodes_url="%s/Node/done?key=%s&ssid=%s" % (url_base, api, b['ssid'])
 das=urllib.urlopen(done_nodes_url).read()
