@@ -195,9 +195,14 @@ then
         \tProtocols = \"3\",\"4\";
 	}" > clientBlock.txt
 	
+	conf_file="/etc/ganesha/exports/export."${GLUSTER_VOLUME}".conf"
+
+	#Parsing export id from volume export conf file
+	export_id=$(grep 'Export_Id' ${conf_file} | sed 's/^[[:space:]]*Export_Id.*=[[:space:]]*\([0-9]*\).*/\1/')
+
 	echo "=======CLIENTBLOCK.TXT========="
 	cat clientBlock.txt
-	sed -i '16e cat clientBlock.txt' /etc/ganesha/exports/export.azhar_Export.conf
+	sed -i '16e cat clientBlock.txt' ${conf_file}
 
 	echo "CONF FILE AFTER ADDING CLIENT BLOCK conf_file=${conf_file}"
 	cat ${conf_file}
