@@ -62,7 +62,7 @@ then
 	echo $(ls)
 
 	echo "Trying To Write A File"
-	echo " From RedHat" >> testFile.txt
+	sed -i '1s/$/ From RedHat/' testFile.txt
 	ret=$?
 	if [ $ret -eq 0 ]
 	then
