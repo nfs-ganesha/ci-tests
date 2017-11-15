@@ -27,7 +27,7 @@ then
 	echo "Trying To Write A File"
 	echo "Hello World" > testFile.txt
 	ret=$?
-	if [ $? -eq 0 ]
+	if [ $ret -eq 0 ]
 	then
 		echo "SUCCESS"
 	else
@@ -38,7 +38,7 @@ then
 	echo "Trying To Read A File"
 	cat testFile.txt
 	ret=$?
-	if [ $? -eq 0 ]
+	if [ $ret -eq 0 ]
 	then
 		echo "SUCCESS"
 	else
@@ -56,7 +56,7 @@ then
 	echo "Trying To Write A File"
 	echo " From RedHat" >> testFile.txt
 	ret=$?
-	if [ $? -eq 0 ]
+	if [ $ret -eq 0 ]
 	then
 		echo "FAILURE Since Write Permissions Were Not Blocked To The CLient"
 		#exit ret
@@ -67,7 +67,7 @@ then
 	echo "Trying To Read A File"
 	cat testFile.txt
 	ret=$?
-	if [ $? -eq 0 ]
+	if [ $ret -eq 0 ]
 	then
 		echo "SUCCESS"
 	else
