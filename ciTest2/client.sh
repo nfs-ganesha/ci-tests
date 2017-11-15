@@ -51,6 +51,8 @@ if [ "$1" = "client_stage1" ]
 then
 	echo "In Client Stage 1 --- With Only RO Rights To This Client "
 
+	cd /mnt/ganesha
+
 	echo "Trying To Write A File"
 	echo " From RedHat" >> testFile.txt
 	ret=$?
