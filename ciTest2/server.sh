@@ -202,7 +202,7 @@ then
 
 	echo "=======CLIENTBLOCK.TXT========="
 	cat clientBlock.txt
-	sed -i '16e cat clientBlock.txt' ${conf_file}
+	sed -i '19e cat clientBlock.txt' ${conf_file}
 
 	echo "CONF FILE AFTER ADDING CLIENT BLOCK conf_file=${conf_file}"
 	cat ${conf_file}

@@ -45,13 +45,21 @@ then
 		echo "FAILED ON READING RIGHTS"
 		#exit ret
 	fi
+
+	cd /
+	umount /mnt/ganesha
 fi
 
 if [ "$1" = "client_stage1" ]
 then
 	echo "In Client Stage 1 --- With Only RO Rights To This Client "
 
+	mount -t nfs -o vers=3 ${SERVER}:${EXPORT} /mnt/ganesha
+
 	cd /mnt/ganesha
+
+	echo "LS"
+	echo $(ls)
 
 	echo "Trying To Write A File"
 	echo " From RedHat" >> testFile.txt
@@ -74,5 +82,7 @@ then
 		echo "FAILED ON READING RIGHTS"
 		#exit ret
 	fi
-
+	
+	cd / 
+	umount /mnt/ganesha
 fi
