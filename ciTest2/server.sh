@@ -28,7 +28,7 @@ set -e
 # be a little bit more verbose
 # set -x
 
-if [ "$1" = "initialization" ]
+if [ "$1" = "server_initialization" ]
 then
 	echo "======= In Server Initialization =========="
 
@@ -183,3 +183,25 @@ then
 	fi
 
 fi
+
+if [ "$1" = "server_stage1" ]
+then
+	echo "======= IN SERVER STAGE 1 =========="
+	touch clientBlock.txt
+	echo -e "CLIENT{
+	\tClients = ${CLIENT};
+        \t#allow_root_access = true;
+        \tAccess_type = \"RO\";
+        \tProtocols = \"3\",\"4\";
+	}" > clientBlock.txt
+	sed '16e cat clientBlock.txt' ${conf_file}
+
+	echo "CONF FILE AFTER ADDING CLIENT BLOCK"
+	cat ${conf_file}
+
+	dbus-send --type=method_call --print-reply --system  --dest=org.ganesha.nfsd /org/ganesha/nfsd/ExportMgr  org.ganesha.nfsd.exportmgr.UpdateExport string:${conf_file} string:"EXPORT(Export_Id = ${export_id})"
+
+	sleep 5
+	echo "++++++++Updated Export Data+++++++++"
+fi
+

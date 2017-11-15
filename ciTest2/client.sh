@@ -10,7 +10,7 @@ set -x
 [ -n "${SERVER}" ]
 [ -n "${EXPORT}" ]
 
-if [ "$1" = "initialization" ]
+if [ "$1" = "client_initialization" ]
 then
 	echo "In Client Initialization Stage"
 	# install build and runtime dependencies
@@ -19,15 +19,58 @@ then
 	mkdir -p /mnt/ganesha
 
 	mount -t nfs -o vers=3 ${SERVER}:${EXPORT} /mnt/ganesha
-fi
 
-if [ "$1" = "stage1" ]
-then
-	echo "In Client Stage 1 --- With All Rights To All Clients ( RO & RW ) "
+	echo "In Client Initial Stage --- With All Rights To All Clients ( RO & RW ) "
 
 	cd /mnt/ganesha
-
+	
+	echo "Trying To Write A File"
 	echo "Hello World" > testFile.txt
+	ret=$?
+	if [ $? -eq 0 ]
+	then
+		echo "SUCCESS"
+	else
+		echo "FAILED ON WRITING RIGHTS"
+		#exit ret
+	fi
 
-	cat testFile.txt	
+	echo "Trying To Read A File"
+	cat testFile.txt
+	ret=$?
+	if [ $? -eq 0 ]
+	then
+		echo "SUCCESS"
+	else
+		echo "FAILED ON READING RIGHTS"
+		#exit ret
+	fi
+fi
+
+if [ "$1" = "client_stage1" ]
+then
+	echo "In Client Stage 1 --- With Only RO Rights To This Client "
+
+	echo "Trying To Write A File"
+	echo " From RedHat" >> testFile.txt
+	ret=$?
+	if [ $? -eq 0 ]
+	then
+		echo "FAILURE Since Write Permissions Were Not Blocked To The CLient"
+		#exit ret
+	else
+		echo "SUCCESS ON FAILURE"
+	fi
+
+	echo "Trying To Read A File"
+	cat testFile.txt
+	ret=$?
+	if [ $? -eq 0 ]
+	then
+		echo "SUCCESS"
+	else
+		echo "FAILED ON READING RIGHTS"
+		#exit ret
+	fi
+
 fi

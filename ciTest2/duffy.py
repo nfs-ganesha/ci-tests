@@ -20,12 +20,6 @@ count=2
 server_script=os.getenv("SERVER_TEST_SCRIPT")
 client_script=os.getenv("CLIENT_TEST_SCRIPT")
 
-print "SERVER_SCRIPT"
-print server_script
-
-print "CLIENT_SCRIPT"
-print client_script
-
 # delay for 5 minutes (duffy timeout for rate limiting)
 retry_delay=300
 # retry maximum 3 hours, that is 3 x 60 x 60 seconds 
@@ -75,7 +69,7 @@ subprocess.call(cmd, shell=True)
 cmd="""ssh -t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@%s '
 	yum -y install curl &&
 	curl -o server_script.sh %s &&
-        bash server_script.sh initialization
+        bash server_script.sh server_initialization
 '""" % (b['hosts'][0], server_script)
 rtn_code=subprocess.call(cmd, shell=True)
 
@@ -100,12 +94,19 @@ if rtn_code == 0:
 
     cmd="""ssh -t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@%s '
 	      curl -o client_script %s &&
-              %s client_script initialization
+              %s client_script client_initialization
         '""" % (b['hosts'][1], client_script, interpreter_to_run)
     rtn_code=subprocess.call(cmd, shell=True)
 
+
     cmd="""ssh -t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@%s '
-              %s client_script stage1
+	      bash server_script.sh server_stage1
+	'""" % (b['hosts'][0])
+    rtn_code=subprocess.call(cmd, shell=True)
+
+
+    cmd="""ssh -t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@%s '
+              %s client_script client_stage1
         '""" % (b['hosts'][1], interpreter_to_run)
     rtn_code=subprocess.call(cmd, shell=True)
 
