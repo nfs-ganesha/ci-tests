@@ -179,7 +179,7 @@ then
 	  sed -i s/'Disable_ACL = .*'/'Disable_ACL = false;'/g ${conf_file}
 	  cat ${conf_file}
 
-	  dbus-send --type=method_call --print-reply --system  --dest=org.ganesha.nfsd /org/ganesha/nfsd/ExportMgr  org.ganesha.nfsd.exportmgr.UpdateExport string:${conf_file} string:"EXPORT(Export_Id = ${export_id})"
+	  dbus-send --type=method_call --print-reply --system  --dest=org.ganesha.nfsd /org/ganesha/nfsd/ExportMgr  org.ganesha.nfsd.exportmgr.UpdateExport string:/etc/ganesha/exports/export.azhar_Export.conf string:"EXPORT(Export_Id = 2)"
 	fi
 
 fi
@@ -197,7 +197,7 @@ then
 	
 	echo "=======CLIENTBLOCK.TXT========="
 	cat clientBlock.txt
-	sed '16e cat clientBlock.txt' /etc/ganesha/exports/export.azhar_Export.conf
+	sed -i '16e cat clientBlock.txt' /etc/ganesha/exports/export.azhar_Export.conf
 
 	echo "CONF FILE AFTER ADDING CLIENT BLOCK conf_file=${conf_file}"
 	cat ${conf_file}
