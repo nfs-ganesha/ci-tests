@@ -222,6 +222,7 @@ then
 	#Parsing export id from volume export conf file
 	export_id=$(grep 'Export_Id' ${conf_file} | sed 's/^[[:space:]]*Export_Id.*=[[:space:]]*\([0-9]*\).*/\1/')
 
+	sed -i '22s/.*/\t\tAccess_type = "RW";/' ${conf_file}
 	sed -i '23s/.*/\t\tProtocols = "3";/' ${conf_file}
 
 	echo "CONF FILE AFTER CHANGING CLIENT BLOCK conf_file=${conf_file}"
