@@ -190,7 +190,7 @@ then
 	touch clientBlock.txt
 	echo -e "CLIENT{
 	\tClients = ${CLIENT};
-        \t#allow_root_access = true;
+        \tSquash = \"no_root_squash\";
         \tAccess_type = \"RO\";
         \tProtocols = \"3\",\"4\";
 	}" > clientBlock.txt
@@ -244,6 +244,26 @@ then
 	export_id=$(grep 'Export_Id' ${conf_file} | sed 's/^[[:space:]]*Export_Id.*=[[:space:]]*\([0-9]*\).*/\1/')
 
 	sed -i '23s/.*/\t\tProtocols = "4";/' ${conf_file}
+
+	echo "CONF FILE AFTER CHANGING CLIENT BLOCK conf_file=${conf_file}"
+	cat ${conf_file}
+
+	dbus-send --type=method_call --print-reply --system  --dest=org.ganesha.nfsd /org/ganesha/nfsd/ExportMgr  org.ganesha.nfsd.exportmgr.UpdateExport string:${conf_file} string:"EXPORT(Export_Id = ${export_id})"
+
+	sleep 20
+	echo "++++++++Updated Export Data+++++++++"
+fi
+
+if [ "$1" = "server_stage4" ]
+then
+	echo "======= IN SERVER STAGE 4 =========="
+
+	conf_file="/etc/ganesha/exports/export."${GLUSTER_VOLUME}".conf"
+
+	#Parsing export id from volume export conf file
+	export_id=$(grep 'Export_Id' ${conf_file} | sed 's/^[[:space:]]*Export_Id.*=[[:space:]]*\([0-9]*\).*/\1/')
+
+	sed -i '21s/.*/\tSquash = "root_squash";/' ${conf_file}
 
 	echo "CONF FILE AFTER CHANGING CLIENT BLOCK conf_file=${conf_file}"
 	cat ${conf_file}

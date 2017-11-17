@@ -62,7 +62,7 @@ then
 	ret=$?
 	if [ $ret -eq 0 ]
 	then
-		echo "FAILURE Since Write Permissions Were Not Blocked To The CLient"
+		echo "FAILURE Since Write Permissions Were Not Blocked To The Client"
 		#exit ret
 	else
 		echo "SUCCESS ON WRITE PERMISSIONS FAILURE"
@@ -109,7 +109,7 @@ then
 	ret=$?
 	if [ $ret -eq 0 ]
 	then
-		echo "FAILURE Since v4.0 Permissions Were Not Given To The CLient"
+		echo "FAILURE Since v4.0 Permissions Were Not Given To The Client"
 		#exit ret
 	else
 		echo "SUCCESS ON v4.0 MOUNT FAILURE"
@@ -124,7 +124,7 @@ then
 	ret=$?
 	if [ $ret -eq 0 ]
 	then
-		echo "FAILURE Since v4.1 Permissions Were Not Given To The CLient"
+		echo "FAILURE Since v4.1 Permissions Were Not Given To The Client"
 		#exit ret
 	else
 		echo "SUCCESS ON v4.1 MOUNT FAILURE"
@@ -145,7 +145,7 @@ then
 	ret=$?
 	if [ $ret -eq 0 ]
 	then
-		echo "FAILURE Since v3 Permissions Were Not Given To The CLient"
+		echo "FAILURE Since v3 Permissions Were Not Given To The Client"
 		#exit ret
 	else
 		echo "SUCCESS ON v3 MOUNT FAILURE"
@@ -184,6 +184,38 @@ then
 	cd / && umount /mnt/ganesha
 
 fi
+
+
+if [ "$1" = "client_stage4" ]
+then
+	echo "In Client Stage 4 --- With Squashed Root Mount To This Client "
+
+	mount -t nfs ${SERVER}:${EXPORT} /mnt/ganesha
+
+	echo "Creating New User : test-user"
+	adduser test-user
+	echo asd123 | passwd test-user --stdin
+
+	echo "Adding test-user to sudoers file"
+	echo -e 'test-user \t ALL=(ALL) \t NOPASSWD:ALL' >> /etc/sudoers
+
+	echo "Trying To Change Ownership Of The File testFile.txt in the mount"
+	sudo chown test-user testFile.txt
+
+	ret=$?
+	if [ $ret -eq 0 ]
+	then
+		echo "FAILURE Since v3 Permissions Were Not Given To The Client"
+		#exit ret
+	else
+		echo "SUCCESS ON chown Permission Denied"
+	fi
+
+	cd / && umount /mnt/ganesha
+
+fi
+
+
 
 
 
