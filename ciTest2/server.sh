@@ -209,7 +209,7 @@ then
 
 	dbus-send --type=method_call --print-reply --system  --dest=org.ganesha.nfsd /org/ganesha/nfsd/ExportMgr  org.ganesha.nfsd.exportmgr.UpdateExport string:${conf_file} string:"EXPORT(Export_Id = ${export_id})"
 
-	sleep 20
+	sleep 10
 	echo "++++++++Updated Export Data+++++++++"
 fi
 
@@ -230,7 +230,7 @@ then
 
 	dbus-send --type=method_call --print-reply --system  --dest=org.ganesha.nfsd /org/ganesha/nfsd/ExportMgr  org.ganesha.nfsd.exportmgr.UpdateExport string:${conf_file} string:"EXPORT(Export_Id = ${export_id})"
 
-	sleep 20
+	sleep 10
 	echo "++++++++Updated Export Data+++++++++"
 fi
 
@@ -250,7 +250,7 @@ then
 
 	dbus-send --type=method_call --print-reply --system  --dest=org.ganesha.nfsd /org/ganesha/nfsd/ExportMgr  org.ganesha.nfsd.exportmgr.UpdateExport string:${conf_file} string:"EXPORT(Export_Id = ${export_id})"
 
-	sleep 20
+	sleep 10
 	echo "++++++++Updated Export Data+++++++++"
 fi
 
@@ -263,14 +263,15 @@ then
 	#Parsing export id from volume export conf file
 	export_id=$(grep 'Export_Id' ${conf_file} | sed 's/^[[:space:]]*Export_Id.*=[[:space:]]*\([0-9]*\).*/\1/')
 
-	sed -i '21s/.*/\tSquash = "root_squash";/' ${conf_file}
+	sed -i '21s/.*/\t\tSquash = "root_squash";/' ${conf_file}
+	sed -i '23s/.*/\t\tProtocols = "3","4";/' ${conf_file}
 
 	echo "CONF FILE AFTER CHANGING CLIENT BLOCK conf_file=${conf_file}"
 	cat ${conf_file}
 
 	dbus-send --type=method_call --print-reply --system  --dest=org.ganesha.nfsd /org/ganesha/nfsd/ExportMgr  org.ganesha.nfsd.exportmgr.UpdateExport string:${conf_file} string:"EXPORT(Export_Id = ${export_id})"
 
-	sleep 20
+	sleep 10
 	echo "++++++++Updated Export Data+++++++++"
 fi
 

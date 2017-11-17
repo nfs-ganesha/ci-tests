@@ -89,8 +89,6 @@ then
 
 	echo "Trying To Mount By vers=3"
 	mount -t nfs -o vers=3 ${SERVER}:${EXPORT} /mnt/ganesha
-	echo "Hello From v3_Mount" > /mnt/ganesha/testFile.txt
-	cat /mnt/ganesha/testFile.txt
 	ret=$?
 	if [ $ret -eq 0 ]
 	then
@@ -104,8 +102,6 @@ then
 
 	echo "Trying To Mount By vers=4.0"
 	mount -t nfs -o vers=4.0 ${SERVER}:${EXPORT} /mnt/ganesha
-	echo "Hello From v4.0_Mount" > /mnt/ganesha/testFile.txt
-	cat /mnt/ganesha/testFile.txt
 	ret=$?
 	if [ $ret -eq 0 ]
 	then
@@ -119,8 +115,6 @@ then
 
 	echo "Trying To Mount By vers=4.1"
 	mount -t nfs -o vers=4.1 ${SERVER}:${EXPORT} /mnt/ganesha
-	echo "Hello From v4.1_Mount" > /mnt/ganesha/testFile.txt
-	cat /mnt/ganesha/testFile.txt
 	ret=$?
 	if [ $ret -eq 0 ]
 	then
@@ -140,8 +134,6 @@ then
 
 	echo "Trying To Mount By vers=3"
 	mount -t nfs -o vers=3 ${SERVER}:${EXPORT} /mnt/ganesha
-	echo "Hello From v3_Mount" > /mnt/ganesha/testFile.txt
-	cat /mnt/ganesha/testFile.txt
 	ret=$?
 	if [ $ret -eq 0 ]
 	then
@@ -155,8 +147,6 @@ then
 
 	echo "Trying To Mount By vers=4.0"
 	mount -t nfs -o vers=4.0 ${SERVER}:${EXPORT} /mnt/ganesha
-	echo "Hello From v4.0_Mount" > /mnt/ganesha/testFile.txt
-	cat /mnt/ganesha/testFile.txt
 	ret=$?
 	if [ $ret -eq 0 ]
 	then
@@ -170,8 +160,6 @@ then
 
 	echo "Trying To Mount By vers=4.1"
 	mount -t nfs -o vers=4.1 ${SERVER}:${EXPORT} /mnt/ganesha
-	echo "Hello From v4.1_Mount" > /mnt/ganesha/testFile.txt
-	cat /mnt/ganesha/testFile.txt
 	ret=$?
 	if [ $ret -eq 0 ]
 	then
@@ -200,7 +188,7 @@ then
 	echo -e 'test-user \t ALL=(ALL) \t NOPASSWD:ALL' >> /etc/sudoers
 
 	echo "Trying To Change Ownership Of The File testFile.txt in the mount"
-	sudo chown test-user testFile.txt
+	sudo chown test-user /mnt/ganesha/testFile.txt
 
 	ret=$?
 	if [ $ret -eq 0 ]
