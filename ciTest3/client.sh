@@ -161,9 +161,9 @@ then
 	if [ $ret -eq 0 ]
 	then
 		echo "FAILURE Since v4 Mounts Are To Use Pseudo Paths"
+		#exit ret
 	else
 		echo "SUCCESS ON v4.0 MOUNT FAILURE DUE TO NOT USING PSEUDO PATH"
-		#exit ret
 	fi
 
 	echo "Trying To Mount By vers=4.0"
