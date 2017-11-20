@@ -234,7 +234,7 @@ then
 	#Parsing export id from volume export conf file
 	export_id=$(grep 'Export_Id' ${conf_file} | sed 's/^[[:space:]]*Export_Id.*=[[:space:]]*\([0-9]*\).*/\1/')
 
-	sed -i '15s/.*/\t\tPseudo = "/pseudo_path";/' ${conf_file}
+	sed -i '15s/.*/\t\tPseudo = "\/pseudo_path";/' ${conf_file}
 	sed -i '16s/.*/\t\tProtocols = "4";/' ${conf_file}
 
 	echo "UPDATED EXPORT FILE"
@@ -256,7 +256,6 @@ then
 	export_id=$(grep 'Export_Id' ${conf_file} | sed 's/^[[:space:]]*Export_Id.*=[[:space:]]*\([0-9]*\).*/\1/')
 
 	sed -i '14s/.*/\t\tSquash = "root_squash";/' ${conf_file}
-	sed -i '15s/.*/\t\tPseudo = "/${GLUSTER_VOLUME}";/' ${conf_file}
 	sed -i '16s/.*/\t\tProtocols = "3","4";/' ${conf_file}
 
 	echo "UPDATED EXPORT FILE"
