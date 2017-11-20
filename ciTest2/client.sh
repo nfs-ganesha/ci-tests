@@ -12,7 +12,6 @@ set -x
 
 if [ "$1" = "client_initialization" ]
 then
-	echo "In Client Initialization Stage"
 	# install build and runtime dependencies
 	yum -y install nfs-utils time
 
@@ -20,7 +19,7 @@ then
 
 	mount -t nfs -o vers=3 ${SERVER}:${EXPORT} /mnt/ganesha
 
-	echo "In Client Initial Stage --- With All Rights To All Clients ( RO & RW ) "
+	echo "Client Initial Stage --- With All Rights To All Clients ( RO & RW ) "
 
 	cd /mnt/ganesha
 	
@@ -51,7 +50,7 @@ fi
 
 if [ "$1" = "client_stage1" ]
 then
-	echo "In Client Stage 1 --- With Only RO Rights To This Client "
+	echo "Client Stage 1 --- With Only RO Rights To This Client "
 
 	mount -t nfs -o vers=3 ${SERVER}:${EXPORT} /mnt/ganesha
 
@@ -85,7 +84,7 @@ fi
 
 if [ "$1" = "client_stage2" ]
 then
-	echo "In Client Stage 2 --- With Only Rights For v3 Mount To This Client "
+	echo "Client Stage 2 --- With Only Rights For v3 Mount To This Client "
 
 	echo "Trying To Mount By vers=3"
 	mount -t nfs -o vers=3 ${SERVER}:${EXPORT} /mnt/ganesha
@@ -130,7 +129,7 @@ fi
 
 if [ "$1" = "client_stage3" ]
 then
-	echo "In Client Stage 3 --- With Only Rights For v4.0 & v4.1 Mount To This Client "
+	echo "Client Stage 3 --- With Only Rights For v4.0 & v4.1 Mount To This Client "
 
 	echo "Trying To Mount By vers=3"
 	mount -t nfs -o vers=3 ${SERVER}:${EXPORT} /mnt/ganesha
@@ -176,7 +175,7 @@ fi
 
 if [ "$1" = "client_stage4" ]
 then
-	echo "In Client Stage 4 --- With Squashed Root Mount To This Client "
+	echo "Client Stage 4 --- With Squashed Root Mount To This Client "
 
 	mount -t nfs ${SERVER}:${EXPORT} /mnt/ganesha
 

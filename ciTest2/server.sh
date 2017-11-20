@@ -26,7 +26,7 @@ set -e
 [ -n "${GLUSTER_VOLUME}" ]
 
 # be a little bit more verbose
-# set -x
+set -x
 
 if [ "$1" = "server_initialization" ]
 then
@@ -147,7 +147,7 @@ then
 	/usr/libexec/ganesha/dbus-send.sh /etc/ganesha on ${GLUSTER_VOLUME}
 
 	# wait till server comes out of grace period
-	sleep 15
+	sleep 90
 
 	conf_file="/etc/ganesha/exports/export."${GLUSTER_VOLUME}".conf"
 
@@ -170,8 +170,8 @@ then
 		exit 1
 	fi
 
-	echo "============Displaying Another File============================="
-	cat /etc/ganesha/exports/export.azhar_Export.conf
+	echo "============Displaying Initial Configuration File============================="
+	cat /etc/ganesha/exports/export.${GLUSTER_VOLUME}.conf
 
 	#Enabling ACL for the volume if ENABLE_ACL param is set to True
 	if [ "${ENABLE_ACL}" == "True" ]
@@ -179,14 +179,14 @@ then
 	  sed -i s/'Disable_ACL = .*'/'Disable_ACL = false;'/g ${conf_file}
 	  cat ${conf_file}
 
-	  dbus-send --type=method_call --print-reply --system  --dest=org.ganesha.nfsd /org/ganesha/nfsd/ExportMgr  org.ganesha.nfsd.exportmgr.UpdateExport string:/etc/ganesha/exports/export.azhar_Export.conf string:"EXPORT(Export_Id = 2)"
+	  dbus-send --type=method_call --print-reply --system  --dest=org.ganesha.nfsd /org/ganesha/nfsd/ExportMgr  org.ganesha.nfsd.exportmgr.UpdateExport string:/etc/ganesha/exports/export.${GLUSTER_VOLUME}.conf string:"EXPORT(Export_Id = 2)"
 	fi
 
 fi
 
 if [ "$1" = "server_stage1" ]
 then
-	echo "======= IN SERVER STAGE 1 =========="
+	echo "======= SERVER STAGE 1 =========="
 	touch clientBlock.txt
 	echo -e "CLIENT{
 	\tClients = ${CLIENT};
@@ -200,22 +200,22 @@ then
 	#Parsing export id from volume export conf file
 	export_id=$(grep 'Export_Id' ${conf_file} | sed 's/^[[:space:]]*Export_Id.*=[[:space:]]*\([0-9]*\).*/\1/')
 
-	echo "=======CLIENTBLOCK.TXT========="
+	echo "=======CLIENTBLOCK========="
 	cat clientBlock.txt
 	sed -i '19e cat clientBlock.txt' ${conf_file}
 
-	echo "CONF FILE AFTER ADDING CLIENT BLOCK conf_file=${conf_file}"
+	echo "UPDATED EXPORT FILE"
 	cat ${conf_file}
 
 	dbus-send --type=method_call --print-reply --system  --dest=org.ganesha.nfsd /org/ganesha/nfsd/ExportMgr  org.ganesha.nfsd.exportmgr.UpdateExport string:${conf_file} string:"EXPORT(Export_Id = ${export_id})"
 
-	sleep 10
-	echo "++++++++Updated Export Data+++++++++"
+	sleep 15
+	echo "++++++++Export Data Updated+++++++++"
 fi
 
 if [ "$1" = "server_stage2" ]
 then
-	echo "======= IN SERVER STAGE 2 =========="
+	echo "======= SERVER STAGE 2 =========="
 
 	conf_file="/etc/ganesha/exports/export."${GLUSTER_VOLUME}".conf"
 
@@ -225,13 +225,13 @@ then
 	sed -i '22s/.*/\t\tAccess_type = "RW";/' ${conf_file}
 	sed -i '23s/.*/\t\tProtocols = "3";/' ${conf_file}
 
-	echo "CONF FILE AFTER CHANGING CLIENT BLOCK conf_file=${conf_file}"
+	echo "UPDATED EXPORT FILE"
 	cat ${conf_file}
 
 	dbus-send --type=method_call --print-reply --system  --dest=org.ganesha.nfsd /org/ganesha/nfsd/ExportMgr  org.ganesha.nfsd.exportmgr.UpdateExport string:${conf_file} string:"EXPORT(Export_Id = ${export_id})"
 
-	sleep 10
-	echo "++++++++Updated Export Data+++++++++"
+	sleep 15
+	echo "++++++++Export Data Updated+++++++++"
 fi
 
 if [ "$1" = "server_stage3" ]
@@ -245,18 +245,18 @@ then
 
 	sed -i '23s/.*/\t\tProtocols = "4";/' ${conf_file}
 
-	echo "CONF FILE AFTER CHANGING CLIENT BLOCK conf_file=${conf_file}"
+	echo "UPDATED EXPORT FILE"
 	cat ${conf_file}
 
 	dbus-send --type=method_call --print-reply --system  --dest=org.ganesha.nfsd /org/ganesha/nfsd/ExportMgr  org.ganesha.nfsd.exportmgr.UpdateExport string:${conf_file} string:"EXPORT(Export_Id = ${export_id})"
 
-	sleep 10
-	echo "++++++++Updated Export Data+++++++++"
+	sleep 15
+	echo "++++++++Export Data Updated+++++++++"
 fi
 
 if [ "$1" = "server_stage4" ]
 then
-	echo "======= IN SERVER STAGE 4 =========="
+	echo "======= SERVER STAGE 4 =========="
 
 	conf_file="/etc/ganesha/exports/export."${GLUSTER_VOLUME}".conf"
 
@@ -266,13 +266,13 @@ then
 	sed -i '21s/.*/\t\tSquash = "root_squash";/' ${conf_file}
 	sed -i '23s/.*/\t\tProtocols = "3","4";/' ${conf_file}
 
-	echo "CONF FILE AFTER CHANGING CLIENT BLOCK conf_file=${conf_file}"
+	echo "UPDATED EXPORT FILE"
 	cat ${conf_file}
 
 	dbus-send --type=method_call --print-reply --system  --dest=org.ganesha.nfsd /org/ganesha/nfsd/ExportMgr  org.ganesha.nfsd.exportmgr.UpdateExport string:${conf_file} string:"EXPORT(Export_Id = ${export_id})"
 
-	sleep 10
-	echo "++++++++Updated Export Data+++++++++"
+	sleep 15
+	echo "++++++++Export Data Updated+++++++++"
 fi
 
 
