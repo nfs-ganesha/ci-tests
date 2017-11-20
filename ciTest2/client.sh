@@ -192,7 +192,7 @@ then
 	ret=$?
 	if [ $ret -eq 0 ]
 	then
-		echo "FAILURE Since v3 Permissions Were Not Given To The Client"
+		echo "FAILURE Since ROOT PERMISSIONS Were Not Given To This Client"
 		#exit ret
 	else
 		echo "SUCCESS ON chown Permission Denied"

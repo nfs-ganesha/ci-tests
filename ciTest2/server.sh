@@ -236,7 +236,7 @@ fi
 
 if [ "$1" = "server_stage3" ]
 then
-	echo "======= IN SERVER STAGE 3 =========="
+	echo "======= SERVER STAGE 3 =========="
 
 	conf_file="/etc/ganesha/exports/export."${GLUSTER_VOLUME}".conf"
 
