@@ -13,9 +13,9 @@ ret=$?
 
 if [ $ret -eq 0 ]
 then
-	echo "=======||  Auto Remount Works Succesfully ||======="
+	echo "=======||  Auto Remount Works Succesfully On v3 Mount ||======="
 else
-	echo "*******||  Auto Remount Failed ||*******"
+	echo "*******||  Auto Remount Failed on v3 Mount ||*******"
 	exit $ret
 fi
 
@@ -28,9 +28,9 @@ ret=$?
 
 if [ $ret -eq 0 ]
 then
-	echo "=======||  Auto Remount Works Succesfully ||======="
+	echo "=======||  Auto Remount Works Succesfully On v4.0 Mount ||======="
 else
-	echo "*******||  Auto Remount Failed ||*******"
+	echo "*******||  Auto Remount Failed on v4.0 Mount ||*******"
 	exit $ret
 fi
 
