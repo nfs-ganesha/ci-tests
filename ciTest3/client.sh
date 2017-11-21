@@ -28,10 +28,10 @@ then
 	ret=$?
 	if [ $ret -eq 0 ]
 	then
-		echo "SUCCESS"
+		echo "SUCCESS ON WRITING RIGHTS"
 	else
 		echo "FAILED ON WRITING RIGHTS"
-		#exit ret
+		exit ret
 	fi
 
 	echo "Trying To Read A File"
@@ -42,7 +42,7 @@ then
 		echo "SUCCESS"
 	else
 		echo "FAILED ON READING RIGHTS"
-		#exit ret
+		exit ret
 	fi
 
 	echo "Trying To Change File Ownership For Checking ROOT Rights"
@@ -53,7 +53,7 @@ then
 		echo "SUCCESS"
 	else
 		echo "FAILED ON ROOT RIGHTS"
-		#exit ret
+		exit ret
 	fi
 
 	cd / && umount /mnt/ganesha
@@ -73,7 +73,7 @@ then
 	if [ $ret -eq 0 ]
 	then
 		echo "FAILURE Since Write Permissions Were Not Blocked To The Client"
-		#exit ret
+		exit ret
 	else
 		echo "SUCCESS ON WRITE PERMISSIONS FAILURE"
 	fi
@@ -86,7 +86,7 @@ then
 		echo "SUCCESS"
 	else
 		echo "FAILED ON READING RIGHTS"
-		#exit ret
+		exit ret
 	fi
 	
 	cd / && umount /mnt/ganesha
@@ -105,7 +105,7 @@ then
 		echo "SUCCESS ON v3 MOUNT BY CLIENT"
 	else
 		echo "FAILURE ON v3 MOUNT BY CLIENT"
-		#exit ret
+		exit ret
 	fi
 
 	cd / && umount /mnt/ganesha
@@ -116,7 +116,7 @@ then
 	if [ $ret -eq 0 ]
 	then
 		echo "FAILURE Since v4.0 Permissions Were Not Given To The Client"
-		#exit ret
+		exit ret
 	else
 		echo "SUCCESS ON v4.0 MOUNT FAILURE"
 	fi
@@ -129,7 +129,7 @@ then
 	if [ $ret -eq 0 ]
 	then
 		echo "FAILURE Since v4.1 Permissions Were Not Given To The Client"
-		#exit ret
+		exit ret
 	else
 		echo "SUCCESS ON v4.1 MOUNT FAILURE"
 	fi
@@ -148,7 +148,7 @@ then
 	if [ $ret -eq 0 ]
 	then
 		echo "FAILURE Since v3 Permissions Were Not Given To The Client"
-		#exit ret
+		exit ret
 	else
 		echo "SUCCESS ON v3 MOUNT FAILURE"
 	fi
@@ -161,7 +161,7 @@ then
 	if [ $ret -eq 0 ]
 	then
 		echo "FAILURE Since v4 Mounts Are To Use Pseudo Paths"
-		#exit ret
+		exit ret
 	else
 		echo "SUCCESS ON v4.0 MOUNT FAILURE DUE TO NOT USING PSEUDO PATH"
 	fi
@@ -174,7 +174,7 @@ then
 		echo "SUCCESS ON v4.0 MOUNT BY CLIENT"
 	else
 		echo "FAILURE ON v4.0 MOUNT BY CLIENT"
-		#exit ret
+		exit ret
 	fi
 
 	cd / && umount /mnt/ganesha
@@ -187,7 +187,7 @@ then
 		echo "SUCCESS ON v4.1 MOUNT BY CLIENT"
 	else
 		echo "FAILURE ON v4.1 MOUNT BY CLIENT"
-		#exit ret
+		exit ret
 	fi
 
 	cd / && umount /mnt/ganesha
@@ -208,7 +208,7 @@ then
 	if [ $ret -eq 0 ]
 	then
 		echo "FAILURE Since Root Permissions Were Not Given To The Client"
-		#exit ret
+		exit ret
 	else
 		echo "SUCCESS ON chown Permission Denied"
 	fi
