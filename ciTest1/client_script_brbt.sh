@@ -15,22 +15,23 @@ yum -y install nfs-utils time
 
 mkdir -p /mnt/ganesha
 
-mount -t nfs -o vers=3 ${SERVER}:${EXPORT} /mnt/ganesha
+mount -t nfs -o vers=3 ${SERVER}:${EXPORT} /mnt/nfs3
+mount -t nfs -o vers=4.0 ${SERVER}:${EXPORT} /mnt/nfs4
 
-cd /mnt/ganesha
+echo "Hello World NFS3" > /mnt/nfs3/testFile.txt
+echo "Hello World NFS4.0" > /mnt/nfs4/testFile.txt
 
-echo "Hello World" > testFile.txt
+cd / && umount /mnt/nfs3
+cd / && umount /mnt/nfs4
 
-cd / && umount /mnt/ganesha
-
-fstabEntry=`echo -e $SERVER:$EXPORT "\t" /mnt/ganesha "\t" nfs3 "\t" defaults "\t" 1 "\t" 1`
+fstabEntry=`echo -e $SERVER:$EXPORT "\t" /mnt/nfs3 "\t" nfs3 "\t" defaults "\t" 1 "\t" 1`
 
 echo "FSTAB ENTRY VARIABLE"
 echo "$fstabEntry"
 
 echo "$fstabEntry" >> /etc/fstab
 
-fstabEntry=`echo -e $SERVER:$EXPORT "\t" /mnt/ganesha "\t" nfs4 "\t" defaults "\t" 1 "\t" 1`
+fstabEntry=`echo -e $SERVER:$EXPORT "\t" /mnt/nfs4 "\t" nfs4 "\t" defaults "\t" 1 "\t" 1`
 
 echo "FSTAB ENTRY VARIABLE"
 echo "$fstabEntry"
