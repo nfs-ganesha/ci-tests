@@ -234,11 +234,15 @@ then
 	#Parsing export id from volume export conf file
 	export_id=$(grep 'Export_Id' ${conf_file} | sed 's/^[[:space:]]*Export_Id.*=[[:space:]]*\([0-9]*\).*/\1/')
 
-	sed -i '15s/.*/\tPseudo="\/axport";/' ${conf_file}
+	sed -i '15s/.*/\tPseudo="\/ppath";/' ${conf_file}
 	sed -i '16s/.*/\t\tProtocols = "4";/' ${conf_file}
 
 	echo "UPDATED EXPORT FILE"
 	cat ${conf_file}
+
+	dbus-send --system --print-reply --dest=org.ganesha.nfsd /org/ganesha/nfsd/ExportMgr org.ganesha.nfsd.exportmgr.RemoveExport uint16:${export_id}
+
+	sleep 10
 
 	dbus-send --type=method_call --print-reply --system  --dest=org.ganesha.nfsd /org/ganesha/nfsd/ExportMgr  org.ganesha.nfsd.exportmgr.UpdateExport string:${conf_file} string:"EXPORT(Export_Id = ${export_id})"
 

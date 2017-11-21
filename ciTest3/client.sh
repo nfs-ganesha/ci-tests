@@ -167,7 +167,7 @@ then
 	fi
 
 	echo "Trying To Mount By vers=4.0"
-	mount -t nfs -o vers=4.0 ${SERVER}:/azhar_Export_pPath /mnt/ganesha
+	mount -t nfs -o vers=4.0 ${SERVER}:/ppath /mnt/ganesha
 	ret=$?
 	if [ $ret -eq 0 ]
 	then
@@ -180,7 +180,7 @@ then
 	cd / && umount /mnt/ganesha
 
 	echo "Trying To Mount By vers=4.1"
-	mount -t nfs -o vers=4.1 ${SERVER}:/azhar_Export_pPath /mnt/ganesha
+	mount -t nfs -o vers=4.1 ${SERVER}:/ppath /mnt/ganesha
 	ret=$?
 	if [ $ret -eq 0 ]
 	then
