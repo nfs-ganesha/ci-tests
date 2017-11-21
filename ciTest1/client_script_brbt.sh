@@ -13,7 +13,8 @@ set -x
 # install build and runtime dependencies
 yum -y install nfs-utils time
 
-mkdir -p /mnt/ganesha
+mkdir -p /mnt/nfs3
+mkdir -p /mnt/nfs4
 
 mount -t nfs -o vers=3 ${SERVER}:${EXPORT} /mnt/nfs3
 mount -t nfs -o vers=4.0 ${SERVER}:${EXPORT} /mnt/nfs4
