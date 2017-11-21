@@ -7,6 +7,8 @@ echo "+++++++++++++CLIENT SCRIPT AFTER REBOOTING++++++++++++++++++"
 [ -n "${SERVER}" ]
 [ -n "${EXPORT}" ]
 
+cat /mnt/nfs3/testFile.txt
+
 cat /mnt/nfs3/testFile.txt | grep "Hello World NFS3"
 
 ret=$?
@@ -21,6 +23,7 @@ fi
 
 cd / && umount /mnt/nfs3
 
+cat /mnt/nfs4/testFile.txt
 
 cat /mnt/nfs4/testFile.txt | grep "Hello World NFS4.0"
 
