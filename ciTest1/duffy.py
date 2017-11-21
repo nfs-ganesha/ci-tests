@@ -94,7 +94,7 @@ if rtn_code == 0:
         '""" % (b['hosts'][1], client_script_brbt, interpreter_to_run)
     rtn_code=subprocess.call(cmd, shell=True)
 
-    time.sleep(50)
+    time.sleep(100)
 
     client_script_arbt = client_script_arbt.strip(" ")
     if client_script_arbt.endswith(".py"):

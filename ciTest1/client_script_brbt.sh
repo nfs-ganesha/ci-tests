@@ -24,7 +24,7 @@ echo "Hello World NFS4.0" > /mnt/nfs4/testFile.txt
 cd / && umount /mnt/nfs3
 cd / && umount /mnt/nfs4
 
-fstabEntry=`echo -e $SERVER:$EXPORT "\t" /mnt/nfs3 "\t" nfs3 "\t" defaults "\t" 1 "\t" 1`
+fstabEntry=`echo -e $SERVER:$EXPORT "\t" /mnt/nfs3 "\t" nfs "\t" defaults "\t" 1 "\t" 1`
 
 echo "FSTAB ENTRY VARIABLE"
 echo "$fstabEntry"
