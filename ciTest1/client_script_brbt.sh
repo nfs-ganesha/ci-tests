@@ -23,7 +23,14 @@ echo "Hello World" > testFile.txt
 
 cd / && umount /mnt/ganesha
 
-fstabEntry=`echo -e $SERVER:$EXPORT "\t" /mnt/ganesha "\t" nfs "\t" defaults "\t" 1 "\t" 1`
+fstabEntry=`echo -e $SERVER:$EXPORT "\t" /mnt/ganesha "\t" nfs3 "\t" defaults "\t" 1 "\t" 1`
+
+echo "FSTAB ENTRY VARIABLE"
+echo "$fstabEntry"
+
+echo "$fstabEntry" >> /etc/fstab
+
+fstabEntry=`echo -e $SERVER:$EXPORT "\t" /mnt/ganesha "\t" nfs4 "\t" defaults "\t" 1 "\t" 1`
 
 echo "FSTAB ENTRY VARIABLE"
 echo "$fstabEntry"
