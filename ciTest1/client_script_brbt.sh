@@ -10,30 +10,63 @@ set -x
 [ -n "${SERVER}" ]
 [ -n "${EXPORT}" ]
 
-# install build and runtime dependencies
-yum -y install nfs-utils time
+if [ "$1" = "initial_stage" ]
+then
 
-mkdir -p /mnt/nfs3
-mkdir -p /mnt/nfs4
+	# install build and runtime dependencies
+	yum -y install nfs-utils time
 
-mount -t nfs -o vers=3 ${SERVER}:${EXPORT} /mnt/nfs3
-mount -t nfs -o vers=4.0 ${SERVER}:${EXPORT} /mnt/nfs4
+	mkdir -p /mnt/nfs3
+	mkdir -p /mnt/nfs4
 
-echo "Hello World" > /mnt/nfs3/testFile.txt
+	mount -t nfs ${SERVER}:${EXPORT} /mnt/nfs3
 
-cd / && umount /mnt/nfs3
-cd / && umount /mnt/nfs4
+	echo "Hello World" > /mnt/nfs3/testFile.txt
 
-fstabEntry=`echo -e $SERVER:$EXPORT "\t" /mnt/nfs3 "\t" nfs "\t" defaults "\t" 1 "\t" 1`
+	cd / && umount /mnt/nfs3
 
-echo "$fstabEntry" >> /etc/fstab
+	fstabEntry=`echo -e $SERVER:$EXPORT "\t" /mnt/nfs3 "\t" nfs "\t" defaults "\t" 1 "\t" 1`
 
-fstabEntry=`echo -e $SERVER:$EXPORT "\t" /mnt/nfs4 "\t" nfs4 "\t" defaults "\t" 1 "\t" 1`
+	echo "$fstabEntry" >> /etc/fstab
 
-echo "$fstabEntry" >> /etc/fstab
+	fstabEntry=`echo -e $SERVER:$EXPORT "\t" /mnt/nfs4 "\t" nfs4 "\t" defaults "\t" 1 "\t" 1`
 
-echo "FSTAB FILE"
-cat /etc/fstab
+	echo "$fstabEntry" >> /etc/fstab	
 
-echo "REBOOTING ... "
-systemctl reboot
+	echo "FSTAB FILE"
+	cat /etc/fstab
+
+	echo "REBOOTING ... "
+	systemctl reboot
+
+elif [ "$1" = "after_reboot" ]
+then
+	cat /mnt/nfs3/testFile.txt | grep "Hello World"
+
+	ret=$?
+
+	if [ $ret -eq 0 ]
+	then
+		echo "=======||  Auto Remount Works Succesfully On v3 Mount ||======="
+	else
+		echo "*******||  Auto Remount Failed on v3 Mount ||*******"
+		exit $ret
+	fi
+
+	cat /mnt/nfs4/testFile.txt | grep "Hello World"
+
+	ret=$?
+
+	if [ $ret -eq 0 ]
+	then
+		echo "=======||  Auto Remount Works Succesfully On v4.0 Mount ||======="
+	else
+		echo "*******||  Auto Remount Failed on v4.0 Mount ||*******"
+		exit $ret
+	fi
+
+	cd / && umount /mnt/nfs4
+	cd / && umount /mnt/nfs3
+	
+fi
+
