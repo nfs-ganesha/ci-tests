@@ -1,4 +1,3 @@
-#
 # from: https://raw.githubusercontent.com/kbsingh/centos-ci-scripts/master/build_python_script.py
 #
 # This script uses the Duffy node management api to get fresh machines to run
