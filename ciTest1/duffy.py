@@ -97,7 +97,7 @@ if rtn_code == 0:
 
     cmd="""ssh -t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@%s '
 	      %s client_script after_reboot
-        '""" % (b['hosts'][1], client_script_arbt, interpreter_to_run)
+        '""" % (b['hosts'][1], interpreter_to_run)
     rtn_code=subprocess.call(cmd, shell=True)
 
 # return the system(s) to duffy
