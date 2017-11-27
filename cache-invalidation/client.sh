@@ -29,7 +29,7 @@ then
     status=$?
     if [ $status -ne 0 ]
     then
-        echo "Failed Mounting for version 3 on client-2"
+        echo "Failed Mounting for version $2 on client-2"
         echo "Cache Invalidation Test: FAILURE"
         exit $status
     fi
