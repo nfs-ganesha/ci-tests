@@ -1,0 +1,5 @@
+[nfs-ganesha-nightly-XXVERSIONXX]
+name=NFS-Ganesha nightly builds (XXVERSIONXX)
+baseurl=http://artifacts.ci.centos.org/nfs-ganesha/nightly/XXVERSIONXX/$releasever/$basearch
+enabled=1
+gpgcheck=0
