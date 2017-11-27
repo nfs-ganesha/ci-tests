@@ -112,9 +112,6 @@ then
     # disable the firewall, otherwise the client can not connect
     systemctl stop firewalld || service iptables stop
 
-    # TODO: SELinux prevents creating special files on Gluster bricks (bz#1331561)
-    setenforce 0
-
     # install and start gluster
     yum -y install glusterfs-server
     systemctl start glusterd
