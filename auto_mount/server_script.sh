@@ -35,11 +35,17 @@ yum -y install centos-release-gluster yum-utils
 yum -y install rpcbind
 systemctl start rpcbind
 
+# TODO: open only the ports needed?
+# disable the firewall, otherwise the client can not connect
+systemctl stop firewalld || service iptables stop
+
 # CentOS 7.4.1708 has an SELinux issue that prevents NFS-Ganesha from creating
 # the /var/log/ganesha/ganesha.log file. Starting ganesha.nfsd fails due to
 # this.
+# TODO: SELinux prevents creating special files on Gluster bricks (bz#1331561)
 echo 'TODO: this is BAD, needs a fix in the selinux-policy'
 setenforce 0
+
 
 if [ -n "${YUM_REPO}" ]
 then
@@ -124,12 +130,6 @@ gluster volume start ${GLUSTER_VOLUME} force
 #enable cache invalidation
 #gluster v set vol1 cache-invalidation on
 
-# TODO: open only the ports needed?
-# disable the firewall, otherwise the client can not connect
-systemctl stop firewalld || service iptables stop
-
-# TODO: SELinux prevents creating special files on Gluster bricks (bz#1331561)
-setenforce 0
 
 # Export the volume
 mkdir -p /usr/libexec/ganesha
