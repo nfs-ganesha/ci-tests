@@ -36,6 +36,8 @@ cd ganeshaBuild
 cmake -DDEBUG_SYMS=ON -DUSE_FSAL_GLUSTER=ON -DCURSES_LIBRARY=/usr/lib64 -DCURSES_INCLUDE_PATH=/usr/include/ncurses -DCMAKE_BUILD_TYPE=Maintainer -DUSE_DBUS=ON /mnt/nfs/nfs-ganesha/src
 make -j4
 make install
+cd ..
+rm -rf ganeshaBuild
 
 #unmount
 umount -l /mnt/nfs
@@ -49,15 +51,17 @@ echo "--------------------------------------------------"
 mkdir -p /mnt/nfs
 mount -t nfs -o vers=4.0 ${SERVER}:${EXPORT} /mnt/nfs
 cd /mnt/nfs
-yum -y install bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel libnfsidmap-devel libwbclient-devel libcap-devel libblkid-devel rpm-build redhat-rpm-config
 cd nfs-ganesha
 git checkout next
 git submodule update --init || git submodule sync
 cd ..
+mkdir ganeshaBuild
 cd ganeshaBuild
 cmake -DDEBUG_SYMS=ON -DUSE_FSAL_GLUSTER=ON -DCURSES_LIBRARY=/usr/lib64 -DCURSES_INCLUDE_PATH=/usr/include/ncurses -DCMAKE_BUILD_TYPE=Maintainer -DUSE_DBUS=ON /mnt/nfs/nfs-ganesha/src
 make -j4
 make install
+cd ..
+rm -rf ganeshaBuild
 
 #unmount
 umount -l /mnt/nfs
@@ -71,11 +75,11 @@ echo "--------------------------------------------------"
 mkdir -p /mnt/nfs
 mount -t nfs -o vers=4.1 ${SERVER}:${EXPORT} /mnt/nfs
 cd /mnt/nfs
-yum -y install bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel libnfsidmap-devel libwbclient-devel libcap-devel libblkid-devel rpm-build redhat-rpm-config
 cd nfs-ganesha
 git checkout next
 git submodule update --init || git submodule sync
 cd ..
+mkdir ganeshaBuild
 cd ganeshaBuild
 cmake -DDEBUG_SYMS=ON -DUSE_FSAL_GLUSTER=ON -DCURSES_LIBRARY=/usr/lib64 -DCURSES_INCLUDE_PATH=/usr/include/ncurses -DCMAKE_BUILD_TYPE=Maintainer -DUSE_DBUS=ON /mnt/nfs/nfs-ganesha/src
 make -j4
