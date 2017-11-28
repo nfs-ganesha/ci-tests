@@ -53,7 +53,6 @@ mount -t nfs -o vers=4.0 ${SERVER}:${EXPORT} /mnt/nfs
 cd /mnt/nfs
 cd nfs-ganesha
 git checkout next
-git submodule update --init || git submodule sync
 cd ..
 mkdir ganeshaBuild
 cd ganeshaBuild
@@ -77,7 +76,6 @@ mount -t nfs -o vers=4.1 ${SERVER}:${EXPORT} /mnt/nfs
 cd /mnt/nfs
 cd nfs-ganesha
 git checkout next
-git submodule update --init || git submodule sync
 cd ..
 mkdir ganeshaBuild
 cd ganeshaBuild
