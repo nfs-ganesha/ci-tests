@@ -128,9 +128,6 @@ gluster volume start ${GLUSTER_VOLUME} force
 # disable the firewall, otherwise the client can not connect
 systemctl stop firewalld || service iptables stop
 
-# TODO: SELinux prevents creating special files on Gluster bricks (bz#1331561)
-setenforce 0
-
 # Export the volume
 mkdir -p /usr/libexec/ganesha
 cd /usr/libexec/ganesha
