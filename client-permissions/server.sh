@@ -209,7 +209,7 @@ then
 	dbus-send --type=method_call --print-reply --system  --dest=org.ganesha.nfsd /org/ganesha/nfsd/ExportMgr  org.ganesha.nfsd.exportmgr.UpdateExport string:${conf_file} string:"EXPORT(Export_Id = ${export_id})"
 
 	sleep 15
-	echo "++++++++Export Data Updated+++++++++"
+	echo "-------------Export Data Updated-------------"
 fi
 
 if [ "$1" = "server_stage2" ]
@@ -232,7 +232,7 @@ then
 	dbus-send --type=method_call --print-reply --system  --dest=org.ganesha.nfsd /org/ganesha/nfsd/ExportMgr  org.ganesha.nfsd.exportmgr.UpdateExport string:${conf_file} string:"EXPORT(Export_Id = ${export_id})"
 
 	sleep 15
-	echo "++++++++Export Data Updated+++++++++"
+	echo "-------------Export Data Updated-------------"
 fi
 
 if [ "$1" = "server_stage3" ]
@@ -254,7 +254,7 @@ then
 	dbus-send --type=method_call --print-reply --system  --dest=org.ganesha.nfsd /org/ganesha/nfsd/ExportMgr  org.ganesha.nfsd.exportmgr.UpdateExport string:${conf_file} string:"EXPORT(Export_Id = ${export_id})"
 
 	sleep 15
-	echo "++++++++Export Data Updated+++++++++"
+	echo "-------------Export Data Updated-------------"
 fi
 
 if [ "$1" = "server_stage4" ]
@@ -277,5 +277,5 @@ then
 	dbus-send --type=method_call --print-reply --system  --dest=org.ganesha.nfsd /org/ganesha/nfsd/ExportMgr  org.ganesha.nfsd.exportmgr.UpdateExport string:${conf_file} string:"EXPORT(Export_Id = ${export_id})"
 
 	sleep 15
-	echo "++++++++Export Data Updated+++++++++"
+	echo "-------------Export Data Updated-------------"
 fi
