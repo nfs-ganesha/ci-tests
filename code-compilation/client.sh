@@ -50,6 +50,7 @@ do
     if [ $status -ne 0 ]
     then
         echo "FAILURE: cmake failed"
+        exit $status
     fi
     make -j4
     make install
