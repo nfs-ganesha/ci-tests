@@ -33,6 +33,7 @@ curl -o /usr/local/share/client.txt https://raw.githubusercontent.com/sahlberg/d
 # v3 mount
 mkdir -p /mnt/nfsv3
 mount -t nfs -o vers=3 ${SERVER}:${EXPORT} /mnt/nfsv3
+cd /mnt/nfsv3
 
 # Running dbench suite on v3 mount
 echo "---------------------------------------"
@@ -56,6 +57,7 @@ umount -l /mnt/nfsv3
 # v4 mount
 mkdir -p /mnt/nfsv4
 mount -t nfs -o vers=4.0 ${SERVER}:${EXPORT} /mnt/nfsv4
+cd /mnt/nfsv4
 
 # Running dbench suite on v4.0 mount
 echo "---------------------------------------"
@@ -79,7 +81,7 @@ umount -l /mnt/nfsv4
 # v4.1 mount
 mkdir -p /mnt/nfsv4_1
 mount -t nfs -o vers=4.1 ${SERVER}:${EXPORT} /mnt/nfsv4_1
-
+cd /mnt/nfsv4_1
 
 # Running dbench suite on v4.1 mount
 echo "---------------------------------------"
