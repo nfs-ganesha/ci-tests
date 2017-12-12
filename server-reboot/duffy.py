@@ -5,7 +5,6 @@ ver=os.getenv("CENTOS_VERSION")
 arch=os.getenv("CENTOS_ARCH")
 count=2
 server_script=os.getenv("SERVER_TEST_SCRIPT")
-server_setup_script=os.getenv("SERVER_SETUP_SCRIPT")
 client_script=os.getenv("CLIENT_TEST_SCRIPT")
 # delay for 5 minutes (duffy timeout for rate limiting)
 retry_delay=300
@@ -54,7 +53,7 @@ subprocess.call(cmd, shell=True)
 
 cmd="""ssh -t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@%s '
 	yum -y install curl &&
-	curl %s | bash -
+	curl -o server_script %s && bash server_script 1
 '""" % (b['hosts'][0], server_script)
 rtn_code=subprocess.call(cmd, shell=True)
 
@@ -99,16 +98,9 @@ if rtn_code == 0:
 
 	# disable the firewall on server, otherwise the client can not connect
 	cmd="""ssh -t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@%s '
-    	    curl %s | bash -
-	'""" % (b['hosts'][0], server_setup_script)
+    	    curl -o server_script %s && bash server_script 2
+	'""" % (b['hosts'][0], server_script)
 	rtn_code=subprocess.call(cmd, shell=True)
-	
-	# disable the firewall on server, otherwise the client can not connect
-	#cmd="""ssh -t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@%s '
-    	 #   (systemctl stop firewalld || service iptables stop) &&
-    	  #  setenforce 0 | bash -
-	#'""" % (b['hosts'][0])
-	#rtn_code=subprocess.call(cmd, shell=True)
 	
 	
 # return the system(s) to duffy
