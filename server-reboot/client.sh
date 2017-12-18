@@ -36,7 +36,7 @@ then
     done
     cat test_file.txt
     #unmount
-    umount /mnt/nfs
+    umount -l /mnt/nfs
 else
    echo "Failed Mounting for version $1"
    echo "Server Reboot Test: FAILURE"
