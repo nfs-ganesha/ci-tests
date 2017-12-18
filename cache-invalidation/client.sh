@@ -51,7 +51,7 @@ then
         exit -1
     fi
     #unmount on client-2
-    umount /mnt/nfs
+    umount -l /mnt/nfs
 
 elif [ $1 -eq 4 ]
 then
@@ -63,5 +63,5 @@ REDHAT" ]
         exit -1
     fi
     #unmount on client-1
-    umount /mnt/nfs
+    umount -l /mnt/nfs
 fi
