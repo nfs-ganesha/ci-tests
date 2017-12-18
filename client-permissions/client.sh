@@ -40,7 +40,7 @@ then
 	fi
 	echo "SUCCESS: With all rights to all Clients ( RO & RW )"
 	#unmount
-	cd / && umount /mnt/ganesha
+	cd / && umount -l /mnt/ganesha
 fi
 
 if [ "$1" = "client_stage1" ]
@@ -69,7 +69,7 @@ then
 	fi
 	echo "SUCCESS: With Only RO Rights To This Client"
 	# unmount
-	cd / && umount /mnt/ganesha
+	cd / && umount -l /mnt/ganesha
 fi
 
 
@@ -88,7 +88,7 @@ then
 		exit ret
 	else
 		#unmount version 3 
-		cd / && umount /mnt/ganesha
+		cd / && umount -l /mnt/ganesha
 	fi
 	
 	echo "Trying To Mount By vers=4.0"
@@ -134,7 +134,7 @@ then
 		exit ret
 	else
 		#unmount version 4.0
-		cd / && umount /mnt/ganesha
+		cd / && umount -l /mnt/ganesha
 	fi
 
 	echo "Trying To Mount By vers=4.1"
@@ -146,7 +146,7 @@ then
 		exit ret
 	else
 		#unmount version 4.1
-		cd / && umount /mnt/ganesha
+		cd / && umount -l /mnt/ganesha
 	fi
 fi
 
