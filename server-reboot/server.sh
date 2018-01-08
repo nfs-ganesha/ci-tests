@@ -1,3 +1,7 @@
+#!/bin/sh
+#
+# Start gluster and NFS-Ganesh and export a volume through NFS-Ganesha
+
 # abort if anything fails
 set -e
  
