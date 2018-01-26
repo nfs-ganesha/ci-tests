@@ -10,8 +10,27 @@ set -e
 # only use https for now
 GIT_REPO="https://${GERRIT_HOST}/${GERRIT_PROJECT}"
 
-# enable the Storage SIG Gluster repository
-yum -y install centos-release-gluster
+SHAMAN_REPO_URL="https://shaman.ceph.com/api/repos/ceph/master/latest/centos/7/flavors/default/repo"
+TIME_LIMIT=1200
+INTERVAL=30
+REPO_FOUND=0
+
+# poll shaman for up to 10 minutes
+while [ "$SECONDS" -le "$TIME_LIMIT" ]
+do
+  if `curl --fail -L $SHAMAN_REPO_URL > /etc/yum.repos.d/shaman.repo`; then
+    echo "Ceph repo file has been added from shaman"
+    REPO_FOUND=1
+    break
+  else
+    sleep $INTERVAL
+  fi
+done
+
+if [[ "$REPO_FOUND" -eq 0 ]]; then
+  echo "Ceph lib repo does NOT exist in shaman"
+  exit 1
+fi
 
 # basic packages to install
 xargs yum -y install <<< "
@@ -31,6 +50,8 @@ libwbclient-devel
 redhat-rpm-config
 rpm-build
 glusterfs-api-devel
+libcephfs-devel
+librgw-devel
 "
 
 git clone ${GIT_REPO}
