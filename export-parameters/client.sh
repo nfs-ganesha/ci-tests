@@ -4,6 +4,9 @@
 #  - SERVER: hostname or IP-address of the NFS-server
 #  - EXPORT: NFS-export to test (should start with "/")
 
+# if any command fails, the script should exit
+set -e
+ 
 # enable some more output
 set -x
 
@@ -29,7 +32,7 @@ then
 	if [ $ret -ne 0 ]
 	then
 		echo "FAILURE: Write permissions denied"
-		exit ret
+		exit $ret
 	fi
 	
 	echo "Trying To Read A File"
@@ -38,7 +41,7 @@ then
 	if [ $ret -ne 0 ]
 	then
 		echo "FAILURE: Read permissions denied"
-		exit ret
+		exit $ret
 	fi
 	
 	echo "Trying To Change File Ownership For Checking ROOT Rights"
@@ -47,7 +50,7 @@ then
 	if [ $ret -ne 0 ]
 	then
 		echo "FAILURE: Failed on Root Rights"
-		exit ret
+		exit $ret
 	fi
 	echo "SUCCESS: With all rights to all Clients ( RO & RW )"
 	#unmount
@@ -70,7 +73,7 @@ then
 	if [ $ret -eq 0 ]
 	then
 		echo "FAILURE: Write permissions were not blocked to the Client"
-		exit ret
+		exit 1
 	fi
 
 	echo "Trying To Read A File"
@@ -79,7 +82,7 @@ then
 	if [ $ret -ne 0 ]
 	then
 		echo "FAILURE: Read permissions denied"
-		exit ret
+		exit $ret
 	fi
 	echo "SUCCESS: With Only RO Rights To This Client"
 	# unmount
@@ -100,7 +103,7 @@ then
 	if [ $ret -ne 0 ]
 	then
 		echo "FAILURE: Mount v3 failed"
-		exit ret
+		exit $ret
 	else
 		#unmount version 3 
 		cd / && umount -l /mnt/ganesha
@@ -113,7 +116,7 @@ then
 	if [ $ret -eq 0 ]
 	then
 		echo "FAILURE: Mount v4.0 Permissions were not blocked to the Client"
-		exit ret
+		exit 1
 	fi
 
 	echo "Trying To Mount By vers=4.1"
@@ -123,7 +126,7 @@ then
 	if [ $ret -eq 0 ]
 	then
 		echo "FAILURE: Mount v4.1 permissions were not blocked to the Client"
-		exit ret
+		exit 1
 	fi
 fi
 
@@ -141,7 +144,7 @@ then
 	if [ $ret -eq 0 ]
 	then
 		echo "FAILURE: Mount v3 permissions were not blocked to the Client"
-		exit ret
+		exit 1
 	fi
 
 	echo "Trying To Mount By vers=4.0 using normal path and not the pseudo path"
@@ -151,7 +154,7 @@ then
 	if [ $ret -eq 0 ]
 	then
 		echo "FAILURE: v4 Mount not using Pseudo Path"
-		exit ret
+		exit 1
 	fi
 
 	echo "Trying To Mount By vers=4.0"
@@ -161,7 +164,7 @@ then
 	if [ $ret -ne 0 ]
 	then
 		echo "FAILURE: Mount v4.0 failed"
-		exit ret
+		exit $ret
 	else
 		#unmount version 4.0
 		cd / && umount -l /mnt/ganesha
@@ -174,7 +177,7 @@ then
 	if [ $ret -ne 0 ]
 	then
 		echo "FAILURE: Mount v4.1 failed"
-		exit ret
+		exit $ret
 	else
 		#unmount version 4.1
 		cd / && umount -l /mnt/ganesha
@@ -197,7 +200,7 @@ then
 	if [ $ret -eq 0 ]
 	then
 		echo "FAILURE: Root Permissions Were Not Given To The Client"
-		exit ret
+		exit 1
 	else
 		cd / && umount -l /mnt/ganesha
 	fi
