@@ -43,7 +43,7 @@ while retries < max_retries:
         break
     except ValueError, ve:
         print("Failed to parse Duffy response: %s" % (dat))
-    except Error, e:
+    except Exception, e:
         print("An unexpected error occured: %s" % (e))
 
     retries+=1
