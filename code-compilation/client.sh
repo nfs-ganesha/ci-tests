@@ -45,7 +45,7 @@ do
     cd ..
     mkdir ganeshaBuild
     cd ganeshaBuild
-    cmake -DDEBUG_SYMS=ON -DUSE_FSAL_GLUSTER=OFF -DCURSES_LIBRARY=/usr/lib64 -DCURSES_INCLUDE_PATH=/usr/include/ncurses -DCMAKE_BUILD_TYPE=Maintainer -DUSE_DBUS=ON /mnt/nfs/nfs-ganesha/src
+    cmake -DDEBUG_SYMS=ON -DCURSES_LIBRARY=/usr/lib64 -DCURSES_INCLUDE_PATH=/usr/include/ncurses -DCMAKE_BUILD_TYPE=Maintainer -DUSE_DBUS=ON /mnt/nfs/nfs-ganesha/src
     status=$?
     if [ $status -ne 0 ]
     then
