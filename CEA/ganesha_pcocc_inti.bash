@@ -1,19 +1,20 @@
 set -o pipefail
 
-GERRIT_REF=${JENKINS_REFSPEC:-next}
-REVISION=${JENKINS_PATCHSET_REVISION:-next}
+GERRIT_REF=${GERRIT_REFSPEC:-next}
+REVISION=${GERRIT_PATCHSET_REVISION:-next}
 PUBLISH=${JENKINS_GERRIT_PUBLISH:-false}
 TEST_9P_VFS=${JENKINS_TEST_9P_VFS:-false}
 TEST_PROXY=${JENKINS_TEST_PROXY:-true}
 CMAKE_OPTS_9P_VFS=${JENKINS_CMAKE_OPTS_9P_VFS:--DBUILD_CONFIG=everything -DCMAKE_CXX_COMPILER=clang -DCMAKE_C_COMPILER=clang -DCMAKE_LINKER=clang -DSANITIZE_ADDRESS=ON -DUSE_9P_RDMA=ON}
+SIGMUND_BEHAVIOUR_9P_VFS=${JENKINS_SIGMUND_BEHAVIOUR_9P_VFS:-9p_plus_pynfs}
 SIGMUND_SPEED=${JENKINS_SIGMUND_SPEED:-fast}
-PCOCC_TEMPLATE_GANESHA_CI_PROXY=${JENKINS_PCOCC_TEMPLATE_GANESHA_CI_OCEAN:-ocean2.4_ganesha-ci}
-PCOCC_TEMPLATE_GANESHA_CI_9P=${JENKINS_PCOCC_TEMPLATE_GANESHA_CI_FEDORA:-ganesha}
+PCOCC_TEMPLATE_GANESHA_CI_PROXY=${JENKINS_PCOCC_TEMPLATE_GANESHA_CI_OCEAN:-ocean2.5_ganesha-ci}
+PCOCC_TEMPLATE_GANESHA_CI_9P=${JENKINS_PCOCC_TEMPLATE_GANESHA_CI_FEDORA:-fedora28_ganesha-ci}
 export PCOCC_USER_CONF_DIR=${JENKINS_PCOCC_USER_CONF_DIR:-/ccc/home/cont001/s8open/s8open/pcocc_images}
-PCOCC_PARTITION=${JENKINS_PCOCC_PARTITION:-sandy}
+PCOCC_PARTITION=${JENKINS_PCOCC_PARTITION:-haswell}
 
 
-SSH_GERRIT="ssh -p 29418 cea-gerrithub-hpc@review.gerrithub.io"
+SSH_GERRIT="socksify ssh -vvv -p 29418 cea-gerrithub-hpc@review.gerrithub.io"
 
 gerrit_publish() {
   local   NOTIFY="ALL"
@@ -115,9 +116,16 @@ fi
 #update working directory with current tested patch
 ( cd nfs-ganesha && git checkout $REVISION && socksify git submodule update --init )
 
-# skip commits with WIP/RFC
+#skip commits with WIP/RFC
 if GIT_DIR=nfs-ganesha/.git git show --format=oneline --quiet | grep -qE "^WIP|^RFC|^FYI"; then
   exit 0
+fi
+
+#check empty build directory
+if [[ ! -d nfs-ganesha/build ]]; then
+  mkdir nfs-ganesha/build
+else
+  rm -rf nfs-ganesha/build/*
 fi
 
 #######################
@@ -148,39 +156,45 @@ if [[ $TEST_9P_VFS == "true" ]] ; then
 
 
   #####################
-  # Copy ganesha source through a 9P mount from jenkins workspace to /export device
+  # Copy ganesha source
   #####################
-  pcocc ssh -j $PCOCC_ID vm0 -- "sudo mount -t 9p -o trans=virtio workspace /mnt && cp -a /mnt/nfs-ganesha /export/nfs-ganesha && mkdir /export/nfs-ganesha/build"
+  pcocc scp -j $PCOCC_ID -r nfs-ganesha root@vm0:/opt/nfs-ganesha
+  pcocc scp -j $PCOCC_ID -r nfs-ganesha root@vm1:/opt/nfs-ganesha
 
   #####################
   # CONFIG GANESHA ON vm0
   #####################
 
-  if ! pcocc ssh -j $PCOCC_ID vm0 -- "cd /export/nfs-ganesha/build && cmake /export/nfs-ganesha/src/ $CMAKE_OPTS_9P_VFS"; then
+  if ! pcocc ssh -j $PCOCC_ID root@vm0 -- "cd /opt/nfs-ganesha/build && cmake /opt/nfs-ganesha/src/ $CMAKE_OPTS_9P_VFS"; then
       VERF="-1"
-      MESSAGE="Cmake failed:"$'\n'$(pcocc ssh -j $PCOCC_ID vm0 -- "cd /export/nfs-ganesha/build && cmake /export/nfs-ganesha/src/ $CMAKE_OPTS_9P_VFS 2>&1" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' || true)
+      MESSAGE="Cmake failed:"$'\n'$(pcocc ssh -j $PCOCC_ID root@vm0 -- "cd /opt/nfs-ganesha/build && cmake /opt/nfs-ganesha/src/ $CMAKE_OPTS_9P_VFS 2>&1" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' || true)
       gerrit_publish_clean_exit cleanup_9P_VFS
   fi
 
   #####################
   # BUILD GANESHA ON vm0
   #####################
-  if ! pcocc ssh -j $PCOCC_ID vm0 "cd /export/nfs-ganesha/build && make -j8 -k"; then
+  if ! pcocc ssh -j $PCOCC_ID root@vm0 "cd /opt/nfs-ganesha/build && make -j8 -k"; then
       VERF="-1"
-      MESSAGE="Build failed:"$'\n'$(pcocc ssh -j $PCOCC_ID vm0 -- "cd /export/nfs-ganesha/build && make -k 2>&1 >/dev/null" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' || true)
+      MESSAGE="Build failed:"$'\n'$(pcocc ssh -j $PCOCC_ID root@vm0 -- "cd /opt/nfs-ganesha/build && make -k 2>&1 >/dev/null" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' || true)
       gerrit_publish_clean_exit cleanup_9P_VFS
   fi
 
   #####################
   # LAUNCH GANESHA SERVER ON vm0
   #####################
-  timeout 30m pcocc ssh -j $PCOCC_ID vm0 -- "sudo ASAN_OPTIONS='detect_leaks=0:detect_stack_use_after_return=1' gdb --batch --ex 'b __sanitizer::Die' --ex r --ex bt --args /export/nfs-ganesha/build/MainNFSD/ganesha.nfsd -L STDOUT -F -f /opt/ganesha.vfs.conf" 2>&1 | tee server_logs&
+  timeout 30m pcocc ssh -j $PCOCC_ID vm0 -- "sudo ASAN_OPTIONS='detect_leaks=0:detect_stack_use_after_return=1' gdb --batch --ex 'b __sanitizer::Die' --ex r --ex bt --args /opt/nfs-ganesha/build/MainNFSD/ganesha.nfsd -L STDOUT -F -f /opt/ganesha.conf.9p_vfs" 2>&1 | tee server_logs&
   SERVER=$!
+
+  #####################
+  # WAIT server is started on vm0
+  #####################
+  sleep 10
 
   #####################
   # 9P mount on /mnt on vm1
   #####################
-  if ! pcocc ssh -j $PCOCC_ID vm1 "sudo modprobe 9pnet_rdma; sleep 8; sudo mount -t 9p -o aname=export,cache=mmap,privport=1,posixacl,msize=1048576,trans=rdma,port=5640 10.251.0.1 /mnt" | tee mount_logs; then
+  if ! pcocc ssh -j $PCOCC_ID vm1 "sudo modprobe 9pnet_rdma; sleep 8; sudo mount -vvv -t 9p -o aname=tmp,cache=mmap,privport=1,posixacl,msize=1048576,trans=rdma,port=5640 10.251.0.1 /mnt" | tee mount_logs; then
       VERF="0"
       MESSAGE="Build OK - 9p mount failed\n\nmount:\n$(sed -e 's/\\/\\\\/g' -e 's/\"/\\\"/g' mount_logs)\nserver:\n$(sed -e 's/\\/\\\\/g' -e 's/\"/\\\"/g' server_logs)"
       gerrit_publish_clean_exit cleanup_9P_VFS
@@ -247,7 +261,7 @@ nfs_proxy_test() {
   #####################
   # SIGMUND TEST on vm0
   #####################
-  timeout 30m pcocc ssh -j $PCOCC_ID_PROXY -l root vm0 -- /usr/lib64/sigmund/sigmund.sh allfs -j -q -s $SIGMUND_SPEED 2>&1 | tee test_logs_proxy_$NFS_VERS || true
+  timeout 30m pcocc ssh -j $PCOCC_ID_PROXY -l root vm0 -- /opt/sigmund/sigmund.sh allfs -j -q -s $SIGMUND_SPEED 2>&1 | tee test_logs_proxy_$NFS_VERS || true
 
 
   #####################
@@ -332,7 +346,8 @@ if [[ "$TEST_PROXY" == "true" ]]; then
   SERVER_PROXY=$!
 
   TEST_TOTAL_PROXY_41=$(nfs_proxy_test "4.1")
-  TEST_TOTAL_PROXY_40=$(nfs_proxy_test "4.0")
+  #We focus on NFSv4.1 and comment NFSv4.0
+  #TEST_TOTAL_PROXY_40=$(nfs_proxy_test "4.0")
   #NFSv3 tests are not yet stables.
   #TEST_TOTAL_PROXY_3=$(nfs_proxy_test "3")
   TEST_TOTAL_PROXY_3="0"
@@ -357,11 +372,11 @@ fi
 
 #PUBLISH FINAL SUCCESS AND EXIT
 VERF="1"
-if [["$TEST_9P_VFS"=="true" && "$TEST_NFS_PROXY"!="true"]]; then
+if [[ "$TEST_9P_VFS" == "true" && "$TEST_PROXY" != "true" ]]; then
   MESSAGE="Build OK - tests OK ($TEST_TOTAL_9P 9P tests)"
-elif [["$TEST_9P_VFS"=="true" && "$TEST_NFS_PROXY"=="true"]]; then
+elif [[ "$TEST_9P_VFS" == "true" && "$TEST_PROXY" == "true" ]]; then
   MESSAGE="Build OK - tests OK ($TEST_TOTAL_9P 9P tests and $TEST_TOTAL_PROXY_41 NFSv4.1 / $TEST_TOTAL_PROXY_40 NFSv4.0 / $TEST_TOTAL_PROXY_3 NFSv3 proxy tests)"
-elif [["$TEST_9P_VFS"!="true" && "$TEST_NFS_PROXY"=="true"]]; then
+elif [[ "$TEST_9P_VFS" != "true" && "$TEST_PROXY" == "true" ]]; then
   MESSAGE="Build OK - tests OK ($TEST_TOTAL_PROXY_41 NFSv4.1 / $TEST_TOTAL_PROXY_40 NFSv4.0 / $TEST_TOTAL_PROXY_3 NFSv3 proxy tests)"
 fi
 
