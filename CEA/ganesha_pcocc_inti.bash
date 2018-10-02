@@ -32,10 +32,11 @@ gerrit_publish() {
 }
 
 exit_test_status() {
-  if [[ "$VERF" != "-1" ]]; then
-    exit 0
-  else
+  if [[ "$VERF" != "1" ]]; then
+    echo "VERF : $VERF"
     exit 1
+  else
+    exit 0
   fi
 }
 
@@ -243,42 +244,6 @@ cleanup_proxy() {
   rm -rf $HOME/.pcocc/job_$PCOCC_ID_PROXY
 }
 
-nfs_proxy_test() {
-  local NFS_VERS=$1
-
-  #cleaning file
-  rm -f mount_logs_proxy_$NFS_VERS test_logs_proxy_$NFS_VERS
-
-  #####################
-  # nfs mount on /mnt on vm0
-  #####################
-  if ! pcocc ssh -j $PCOCC_ID_PROXY -l root vm0 "mount -t nfs -o vers=$NFS_VERS vm1:/tmp_proxy /mnt" | tee mount_logs_proxy_$NFS_VERS; then
-      VERF="-1"
-      MESSAGE="Build OK - NFSv$NFS_VERS proxy mount failed\n\nmount proxy:\n$(sed -e 's/\\/\\\\/g' -e 's/\"/\\\"/g' mount_logs_proxy_$NFS_VERS)\nserver proxy:\n$(sed -e 's/\\/\\\\/g' -e 's/\"/\\\"/g' server_logs_proxy)"
-      gerrit_publish_clean_exit cleanup_proxy
-  fi
-
-  #####################
-  # SIGMUND TEST on vm0
-  #####################
-  timeout 30m pcocc ssh -j $PCOCC_ID_PROXY -l root vm0 -- /opt/sigmund/sigmund.sh allfs -j -q -s $SIGMUND_SPEED 2>&1 | tee test_logs_proxy_$NFS_VERS || true
-
-
-  #####################
-  # umount on vm0
-  #####################
-  timeout 1m pcocc ssh -j $PCOCC_ID_PROXY -l root vm0 -- umount /mnt || true
-
-  #####################
-  # Get back test_report.xml from vm0
-  #####################
-  get_back_test_report $PCOCC_ID_PROXY "PROXY NFSv$NFS_VERS" server_logs_proxy test_logs_proxy_$NFS_VERS cleanup_proxy vm0
-
-  #####################
-  # Analyze and report result
-  #####################
-  echo $(analyse_report_result "client NFSv$NFS_VERS on FSAL_Proxy" server_logs_proxy cleanup_proxy)
-}
 
 if [[ "$TEST_PROXY" == "true" ]]; then
   rm -f server_logs_proxy
@@ -345,11 +310,44 @@ if [[ "$TEST_PROXY" == "true" ]]; then
   timeout 30m pcocc ssh -j $PCOCC_ID_PROXY -l root vm1 -- "gdb --batch --ex r --ex bt --args /usr/bin/ganesha.nfsd -L STDOUT -F -f /opt/ganesha.conf.fsal_proxy" 2>&1 | tee server_logs_proxy&
   SERVER_PROXY=$!
 
-  TEST_TOTAL_PROXY_41=$(nfs_proxy_test "4.1")
+  NFS_VERS="4.1"
+
+  #cleaning file
+  rm -f mount_logs_proxy_$NFS_VERS test_logs_proxy_$NFS_VERS
+
+  #####################
+  # nfs mount on /mnt on vm0
+  #####################
+  if ! pcocc ssh -j $PCOCC_ID_PROXY -l root vm0 "mount -t nfs -o vers=$NFS_VERS vm1:/tmp_proxy /mnt" | tee mount_logs_proxy_$NFS_VERS; then
+      VERF="-1"
+      MESSAGE="Build OK - NFSv$NFS_VERS proxy mount failed\n\nmount proxy:\n$(sed -e 's/\\/\\\\/g' -e 's/\"/\\\"/g' mount_logs_proxy_$NFS_VERS)\nserver proxy:\n$(sed -e 's/\\/\\\\/g' -e 's/\"/\\\"/g' server_logs_proxy)"
+      gerrit_publish_clean_exit cleanup_proxy
+  fi
+
+  #####################
+  # SIGMUND TEST on vm0
+  #####################
+  timeout 30m pcocc ssh -j $PCOCC_ID_PROXY -l root vm0 -- /opt/sigmund/sigmund.sh allfs -j -q -s $SIGMUND_SPEED 2>&1 | tee test_logs_proxy_$NFS_VERS || true
+
+
+  #####################
+  # umount on vm0
+  #####################
+  timeout 1m pcocc ssh -j $PCOCC_ID_PROXY -l root vm0 -- umount /mnt || true
+
+  #####################
+  # Get back test_report.xml from vm0
+  #####################
+  get_back_test_report $PCOCC_ID_PROXY "PROXY NFSv$NFS_VERS" server_logs_proxy test_logs_proxy_$NFS_VERS cleanup_proxy vm0
+
+  #####################
+  # Analyze and report result
+  #####################
+  TEST_TOTAL_PROXY_41=$(analyse_report_result "client NFSv$NFS_VERS on FSAL_Proxy" server_logs_proxy cleanup_proxy)
+
   #We focus on NFSv4.1 and comment NFSv4.0
-  #TEST_TOTAL_PROXY_40=$(nfs_proxy_test "4.0")
+  TEST_TOTAL_PROXY_40="0"
   #NFSv3 tests are not yet stables.
-  #TEST_TOTAL_PROXY_3=$(nfs_proxy_test "3")
   TEST_TOTAL_PROXY_3="0"
 
   #####################
