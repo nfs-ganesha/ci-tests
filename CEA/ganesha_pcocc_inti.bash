@@ -16,6 +16,10 @@ PCOCC_PARTITION=${JENKINS_PCOCC_PARTITION:-haswell}
 
 SSH_GERRIT="socksify ssh -vvv -p 29418 cea-gerrithub-hpc@review.gerrithub.io"
 
+#VERF corresponds to gerrit status, +1, 0 or -1.
+#All status are published on gerrit but only -1 is notified to patch submitter.
+#Only VERF=+1 returns a jenkins success script value of 0, else 1 is returned.
+
 gerrit_publish() {
   local   NOTIFY="ALL"
 
@@ -195,10 +199,24 @@ if [[ $TEST_9P_VFS == "true" ]] ; then
   #####################
   # 9P mount on /mnt on vm1
   #####################
-  if ! pcocc ssh -j $PCOCC_ID vm1 "sudo modprobe 9pnet_rdma; sleep 8; sudo mount -vvv -t 9p -o aname=tmp,cache=mmap,privport=1,posixacl,msize=1048576,trans=rdma,port=5640 10.251.0.1 /mnt" | tee mount_logs; then
-      VERF="0"
-      MESSAGE="Build OK - 9p mount failed\n\nmount:\n$(sed -e 's/\\/\\\\/g' -e 's/\"/\\\"/g' mount_logs)\nserver:\n$(sed -e 's/\\/\\\\/g' -e 's/\"/\\\"/g' server_logs)"
-      gerrit_publish_clean_exit cleanup_9P_VFS
+
+  #TESTING IB between vm0 and vm1
+  if ! pcocc ssh -j $PCOCC_ID vm1 -- "sudo ping -c 4 -W 1 10.251.0.1 -q >/dev/null" ; then
+    #MOUNT ON TCP
+    echo "WITH TCP"
+    if ! pcocc ssh -j $PCOCC_ID vm1 "sudo mount -vvv -t 9p -o aname=tmp,cache=mmap,privport=1,posixacl,msize=1048576,trans=tcp 10.200.0.1 /mnt" | tee mount_logs; then
+        VERF="-1"
+        MESSAGE="Build OK - 9p mount failed on TCP\n\nmount:\n$(sed -e 's/\\/\\\\/g' -e 's/\"/\\\"/g' mount_logs)\nserver:\n$(sed -e 's/\\/\\\\/g' -e 's/\"/\\\"/g' server_logs)"
+        gerrit_publish_clean_exit cleanup_9P_VFS
+    fi
+    else
+    #MOUNT ON IB
+    echo "WITH IB"
+    if ! pcocc ssh -j $PCOCC_ID vm1 "sudo modprobe 9pnet_rdma; sleep 8; sudo mount -vvv -t 9p -o aname=tmp,cache=mmap,privport=1,posixacl,msize=1048576,trans=rdma,port=5640 10.251.0.1 /mnt" | tee mount_logs; then
+        VERF="-1"
+        MESSAGE="Build OK - 9p mount failed on IB RDMA\n\nmount:\n$(sed -e 's/\\/\\\\/g' -e 's/\"/\\\"/g' mount_logs)\nserver:\n$(sed -e 's/\\/\\\\/g' -e 's/\"/\\\"/g' server_logs)"
+        gerrit_publish_clean_exit cleanup_9P_VFS
+    fi
   fi
 
   #####################
