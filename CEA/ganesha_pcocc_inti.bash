@@ -149,7 +149,7 @@ if [[ $TEST_9P_VFS == "true" ]] ; then
   #####################
   # LAUNCH PCOCC VM
   #####################
-  PCOCC_ID=$(pcocc batch -p $PCOCC_PARTITION -c 4 -N 1 ${PCOCC_TEMPLATE_GANESHA_CI_9P}:2 | awk '{print $NF}')
+  PCOCC_ID=$(pcocc batch --exclusive -p $PCOCC_PARTITION -c 4 -N 1 ${PCOCC_TEMPLATE_GANESHA_CI_9P}:2 | awk '{print $NF}')
 
   PCOCC_FILE='~/.pcocc/pcocc_${PCOCC_ID}_vm_0'
 
@@ -269,7 +269,7 @@ if [[ "$TEST_PROXY" == "true" ]]; then
   #####################
   # LAUNCH PCOCC VM
   #####################
-  PCOCC_ID_PROXY=$(pcocc batch -p $PCOCC_PARTITION -c 2 -N 1 ${PCOCC_TEMPLATE_GANESHA_CI_PROXY}:3 | awk '{print $NF}')
+  PCOCC_ID_PROXY=$(pcocc batch --exclusive -p $PCOCC_PARTITION -c 2 -N 1 ${PCOCC_TEMPLATE_GANESHA_CI_PROXY}:3 | awk '{print $NF}')
 
   #####################
   # Test with ssh if the pcocc vm is successfully started
