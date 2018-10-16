@@ -156,8 +156,8 @@ if [[ $TEST_9P_VFS == "true" ]] ; then
   #####################
   # Test with ssh if the pcocc vm is successfully started
   #####################
-  # VM sometimes refuse first ssh, try twice:
-  pcocc ssh -j $PCOCC_ID -o ConnectTimeout=600 vm0 -- "echo VM started" || { sleep 10; pcocc ssh -j $PCOCC_ID -o ConnectTimeout=600 vm0 -- "echo VM started"; }
+  # VM sometimes refuse first ssh, try third :
+  pcocc ssh -j $PCOCC_ID -o ConnectTimeout=600 vm0 -- "echo VM started" || { sleep 10; pcocc ssh -j $PCOCC_ID -o ConnectTimeout=600 vm0 -- "echo VM started"; } || { sleep 10; pcocc ssh -j $PCOCC_ID -o ConnectTimeout=600 vm0 -- "echo VM started"; }
 
 
   #####################
@@ -274,10 +274,10 @@ if [[ "$TEST_PROXY" == "true" ]]; then
   #####################
   # Test with ssh if the pcocc vm is successfully started
   #####################
-  ## VM sometimes refuse first ssh, try twice:
-  pcocc ssh -j $PCOCC_ID_PROXY -l root -o ConnectTimeout=600 vm0 -- "echo VM0 started" || { sleep 30; pcocc ssh -j $PCOCC_ID_PROXY -l root -o ConnectTimeout=600 vm0 -- "echo VM0 started"; }
-  pcocc ssh -j $PCOCC_ID_PROXY -l root -o ConnectTimeout=600 vm1 -- "echo VM1 started" || { sleep 30; pcocc ssh -j $PCOCC_ID_PROXY -l root -o ConnectTimeout=600 vm1 -- "echo VM1 started"; }
-  pcocc ssh -j $PCOCC_ID_PROXY -l root -o ConnectTimeout=600 vm2 -- "echo VM2 started" || { sleep 30; pcocc ssh -j $PCOCC_ID_PROXY -l root -o ConnectTimeout=600 vm2 -- "echo VM2 started"; }
+  ## VM sometimes refuse first ssh, try third:
+  pcocc ssh -j $PCOCC_ID_PROXY -l root -o ConnectTimeout=600 vm0 -- "echo VM0 started" || { sleep 30; pcocc ssh -j $PCOCC_ID_PROXY -l root -o ConnectTimeout=600 vm0 -- "echo VM0 started"; } || { sleep 30; pcocc ssh -j $PCOCC_ID_PROXY -l root -o ConnectTimeout=600 vm0 -- "echo VM0 started"; }
+  pcocc ssh -j $PCOCC_ID_PROXY -l root -o ConnectTimeout=600 vm1 -- "echo VM1 started" || { sleep 30; pcocc ssh -j $PCOCC_ID_PROXY -l root -o ConnectTimeout=600 vm1 -- "echo VM1 started"; } || { sleep 30; pcocc ssh -j $PCOCC_ID_PROXY -l root -o ConnectTimeout=600 vm1 -- "echo VM1 started"; }
+  pcocc ssh -j $PCOCC_ID_PROXY -l root -o ConnectTimeout=600 vm2 -- "echo VM2 started" || { sleep 30; pcocc ssh -j $PCOCC_ID_PROXY -l root -o ConnectTimeout=600 vm2 -- "echo VM2 started"; } || { sleep 30; pcocc ssh -j $PCOCC_ID_PROXY -l root -o ConnectTimeout=600 vm2 -- "echo VM2 started"; }
 
 
   #####################
