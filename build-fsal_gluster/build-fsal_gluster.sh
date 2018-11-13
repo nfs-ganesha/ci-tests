@@ -10,11 +10,8 @@ set -e
 # only use https for now
 GIT_REPO="https://${GERRIT_HOST}/${GERRIT_PROJECT}"
 
-# enable the Storage SIG Gluster repository
-yum -y install centos-release-gluster
-yum -y install centos-release-ceph
-
-
+# enable the Storage SIG Gluster and Ceph repositories
+yum -y install centos-release-gluster centos-release-ceph
 
 # basic packages to install
 xargs yum -y install <<< "
@@ -38,6 +35,7 @@ libcephfs-devel
 librgw-devel
 xfsprogs-devel
 python2-devel
+userspace-rcu-devel
 "
 
 git clone ${GIT_REPO}
