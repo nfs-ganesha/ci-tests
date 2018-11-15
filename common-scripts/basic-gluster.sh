@@ -70,7 +70,7 @@ else
 	yum -y --enablerepo=centos-gluster*-test install glusterfs-api-devel
 	yum -y install git bison flex cmake gcc-c++ libacl-devel krb5-devel \
 		dbus-devel libnfsidmap-devel libwbclient-devel libcap-devel \
-		libblkid-devel rpm-build redhat-rpm-config
+		libblkid-devel rpm-build redhat-rpm-config userspace-rcu-devel
 
 	git init "${GIT_REPO}"
 	pushd "${GIT_REPO}"
