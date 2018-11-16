@@ -3,14 +3,11 @@ logs: `tail -f /opt/buildbot/naster/twistd.log`
 
 ## master setup
 
+`local.py` should contain all relevant secrets, see `master.cfg`
+
 ```
 git clone -b gandi-ci https://github.com/nfs-ganesha/ci-tests.git /opt/buildbot/master
 buildbot upgrade-master /opt/buildbot/master
-mkdir -p /opt/buildbot/secrets
-# provide secrets/worker.pass
-# provide secrets/id_rsa (should match gerrithub key)
-# provide secrets/.htpasswd (plaintext because buildbot is broken)
-chmod -R 0600 secrets
 ```
 
 ## master startup
