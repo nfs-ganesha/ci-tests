@@ -1,8 +1,9 @@
 ## setup
 ```
+git clone -b gandi-ci https://github.com/nfs-ganesha/ci-tests.git /opt/buildbot/master
 mkdir -p /opt/buildbot/secrets
 # provide secrets/worker.pass
-# provide secrets/id_rsa
+# provide secrets/id_rsa (should match gerrithub key)
 # provide secrets/.htpasswd (plaintext because buildbot is broken)
 chmod -R 0600 secrets
 ```
