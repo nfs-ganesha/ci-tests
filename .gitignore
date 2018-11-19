@@ -1,0 +1,7 @@
+*.log
+*.pid
+*.sqlite
+__pycache__
+local.py
+workers
+*.swp
