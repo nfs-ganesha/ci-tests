@@ -11,7 +11,8 @@ buildbot upgrade-master /opt/ci-tests/buildbot
 # 	client_id for github oauath api
 # 	client_secret for github oauath api
 #start the buildbot webpage
-buildbot start /opt/ci-tests/builtbot
+# _NEVER_ `buildbot reconfig` because the gerrit streams events never restarts after that...
+./opt/ci-tests/buildbot-start.sh
 ```
 
 ## worker setup
