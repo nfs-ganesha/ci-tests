@@ -20,8 +20,8 @@ buildbot upgrade-master /opt/ci-tests/buildbot
 ```
 # 10.100.42.1/24 pvlan
 # add master's public key to authorized_keys for rsync updates
-# start dbus, rpcbind
-git clone -b gandi-ci https://github.com/nfs-ganesha/ci-tests /opt/ci-tests
 buildbot-worker create-worker /opt/bb-worker1 <master ip (pvlan)> <name> <passwd>
-# restart the master with /opt/ci-tests/buildbot/buidbot-start.sh
+# add worker info to master.cfg, restart the master with /opt/ci-tests/buildbot/buidbot-start.sh
+. /opt/server/ganesha-env.sh
+# rpcbind
 ```
