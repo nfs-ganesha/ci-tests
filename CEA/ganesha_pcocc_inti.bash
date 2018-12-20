@@ -223,6 +223,9 @@ if [[ $TEST_9P_VFS == "true" ]] ; then
   #####################
   # SIGMUND TEST on vm1
   #####################
+  #enable ganesha repo cloning from other user than root
+  pcocc ssh -j $PCOCC_ID vm1 "sudo chmod og+rx -R /opt/nfs-ganesha"
+  #####
   timeout 30m pcocc ssh -j $PCOCC_ID vm1 -- sudo /opt/sigmund/sigmund.sh $SIGMUND_BEHAVIOUR_9P_VFS -j -q -s $SIGMUND_SPEED_9P_VFS 2>&1 | tee test_logs || true
 
 
@@ -346,6 +349,9 @@ if [[ "$TEST_PROXY" == "true" ]]; then
   #####################
   # SIGMUND TEST on vm0
   #####################
+  #enable ganesha repo cloning from other user than root
+  pcocc ssh -j $PCOCC_ID_PROXY -l root vm0 "chmod og+rx -R /opt/nfs-ganesha"
+  #####
   timeout 30m pcocc ssh -j $PCOCC_ID_PROXY -l root vm0 -- /opt/sigmund/sigmund.sh allfs -j -q -s $SIGMUND_SPEED_PROXY 2>&1 | tee test_logs_proxy_$NFS_VERS || true
 
 
