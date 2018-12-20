@@ -7,7 +7,8 @@ TEST_9P_VFS=${JENKINS_TEST_9P_VFS:-false}
 TEST_PROXY=${JENKINS_TEST_PROXY:-true}
 CMAKE_OPTS_9P_VFS=${JENKINS_CMAKE_OPTS_9P_VFS:--DBUILD_CONFIG=everything -DCMAKE_CXX_COMPILER=clang -DCMAKE_C_COMPILER=clang -DCMAKE_LINKER=clang -DSANITIZE_ADDRESS=ON -DUSE_9P_RDMA=ON}
 SIGMUND_BEHAVIOUR_9P_VFS=${JENKINS_SIGMUND_BEHAVIOUR_9P_VFS:-9p_plus_pynfs}
-SIGMUND_SPEED=${JENKINS_SIGMUND_SPEED:-fast}
+SIGMUND_SPEED_9P_VFS=${JENKINS_SIGMUND_SPEED_9P_VFS:-fast}
+SIGMUND_SPEED_PROXY=${JENKINS_SIGMUND_SPEED_PROXY:-fast}
 PCOCC_TEMPLATE_GANESHA_CI_PROXY=${JENKINS_PCOCC_TEMPLATE_GANESHA_CI_OCEAN:-ocean2.5_ganesha-ci}
 PCOCC_TEMPLATE_GANESHA_CI_9P=${JENKINS_PCOCC_TEMPLATE_GANESHA_CI_FEDORA:-fedora28_ganesha-ci}
 export PCOCC_USER_CONF_DIR=${JENKINS_PCOCC_USER_CONF_DIR:-/ccc/home/cont001/s8open/s8open/ganesha/pcocc_ganesha-ci/pcocc_ganesha-ci_conf}
@@ -222,7 +223,7 @@ if [[ $TEST_9P_VFS == "true" ]] ; then
   #####################
   # SIGMUND TEST on vm1
   #####################
-  timeout 30m pcocc ssh -j $PCOCC_ID vm1 -- sudo /opt/sigmund/sigmund.sh $SIGMUND_BEHAVIOUR_9P_VFS -j -q -s $SIGMUND_SPEED 2>&1 | tee test_logs || true
+  timeout 30m pcocc ssh -j $PCOCC_ID vm1 -- sudo /opt/sigmund/sigmund.sh $SIGMUND_BEHAVIOUR_9P_VFS -j -q -s $SIGMUND_SPEED_9P_VFS 2>&1 | tee test_logs || true
 
 
   #####################
@@ -345,7 +346,7 @@ if [[ "$TEST_PROXY" == "true" ]]; then
   #####################
   # SIGMUND TEST on vm0
   #####################
-  timeout 30m pcocc ssh -j $PCOCC_ID_PROXY -l root vm0 -- /opt/sigmund/sigmund.sh allfs -j -q -s $SIGMUND_SPEED 2>&1 | tee test_logs_proxy_$NFS_VERS || true
+  timeout 30m pcocc ssh -j $PCOCC_ID_PROXY -l root vm0 -- /opt/sigmund/sigmund.sh allfs -j -q -s $SIGMUND_SPEED_PROXY 2>&1 | tee test_logs_proxy_$NFS_VERS || true
 
 
   #####################
