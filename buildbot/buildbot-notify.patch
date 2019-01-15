@@ -1,0 +1,7 @@
+417,418c417,419
+<         if self._gerrit_notify is not None:
+<             command.append('--notify %s' % str(self._gerrit_notify))
+---
+>         notify = result.get('notify', self._gerrit_notify)
+>         if notify is not None:
+>             command.append('--notify %s' % str(notify))
