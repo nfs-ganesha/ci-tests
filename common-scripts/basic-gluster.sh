@@ -108,7 +108,7 @@ else
 fi
 
 # create and start gluster volume
-yum -y install glusterfs-server
+yum -y --enablerepo=centos-gluster*-test install glusterfs-server
 systemctl start glusterd
 mkdir -p /bricks/${GLUSTER_VOLUME}
 gluster volume create ${GLUSTER_VOLUME} \
