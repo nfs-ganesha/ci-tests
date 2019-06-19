@@ -67,7 +67,7 @@ else
 	GIT_URL="https://${GERRIT_HOST}/${GERRIT_PROJECT}"
 
 	# install NFS-Ganesha build dependencies
-	yum -y --enablerepo=centos-gluster*-test install glusterfs-api-devel
+	yum -y install glusterfs-api-devel
 	yum -y install git bison flex cmake gcc-c++ libacl-devel krb5-devel \
 		dbus-devel libnfsidmap-devel libwbclient-devel libcap-devel \
 		libblkid-devel rpm-build redhat-rpm-config userspace-rcu-devel
@@ -108,7 +108,7 @@ else
 fi
 
 # create and start gluster volume
-yum -y --enablerepo=centos-gluster*-test install glusterfs-server
+yum -y install glusterfs-server
 systemctl start glusterd
 mkdir -p /bricks/${GLUSTER_VOLUME}
 gluster volume create ${GLUSTER_VOLUME} \
