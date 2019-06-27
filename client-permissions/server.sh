@@ -154,8 +154,8 @@ then
 	# basic check if the export is available, some debugging if not
 	if ! showmount -e | grep -q -w -e "${GLUSTER_VOLUME}"
 	then
-		echo "+++ /var/log/ganesha.log +++"
-		cat /var/log/ganesha.log
+		echo "+++ /var/log/ganesha/ganesha.log +++"
+		cat /var/log/ganesha/ganesha.log
 		echo
 		echo "+++ /etc/ganesha/ganesha.conf +++"
 		grep --with-filename -e '' /etc/ganesha/ganesha.conf
