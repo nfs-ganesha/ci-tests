@@ -96,7 +96,7 @@ else
 	yum -y install ${ntirpc_rpm} ${rpm_arch}/nfs-ganesha-{,gluster-}${ganesha_version}.${rpm_arch}.rpm
 
 	# start nfs-ganesha service with an empty configuration
-	> /etc/ganesha/ganesha.conf
+	echo "NFSv4 { Graceless = true; } > /etc/ganesha/ganesha.conf
 	if ! systemctl start nfs-ganesha
 	then
 		echo "+++ systemctl status nfs-ganesha.service +++"
@@ -124,6 +124,8 @@ gluster volume start ${GLUSTER_VOLUME} force
 #enable cache invalidation
 #gluster v set vol1 cache-invalidation on
 
+gluster vol status
+
 # TODO: open only the ports needed?
 # disable the firewall, otherwise the client can not connect
 systemctl stop firewalld || service iptables stop
@@ -140,7 +142,7 @@ chmod 755 create-export-ganesha.sh dbus-send.sh
 /usr/libexec/ganesha/dbus-send.sh /etc/ganesha on ${GLUSTER_VOLUME}
 
 # wait till server comes out of grace period
-sleep 90
+sleep 5
 
 # basic check if the export is available, some debugging if not
 if ! showmount -e | grep -q -w -e "${GLUSTER_VOLUME}"
