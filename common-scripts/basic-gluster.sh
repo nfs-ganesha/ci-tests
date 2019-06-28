@@ -154,6 +154,9 @@ then
 	echo "+++ /var/log/ganesha/ganesha.log +++"
 	cat /var/log/ganesha/ganesha.log
 	echo
+	echo "+++ /var/log/ganesha/ganesha-gfapi.log
+	cat /var/log/ganesha/ganesha-gfapi.log
+	echo
 	echo "+++ /etc/ganesha/ganesha.conf +++"
 	grep --with-filename -e '' /etc/ganesha/ganesha.conf
 	echo
