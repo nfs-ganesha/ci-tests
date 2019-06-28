@@ -126,7 +126,7 @@ gluster volume start ${GLUSTER_VOLUME} force
 
 gluster vol status
 
-mount -t glusterfs $(hostname --fqdn:/${GLUSTER_VOLUME} /mnt
+mount -t glusterfs $(hostname --fqdn):/${GLUSTER_VOLUME} /mnt
 mount
 umount /mnt
 
