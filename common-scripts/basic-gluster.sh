@@ -126,14 +126,13 @@ gluster volume start ${GLUSTER_VOLUME} force
 
 gluster vol status
 
-mount -t glusterfs $(hostname --fqdn):/${GLUSTER_VOLUME} /mnt
-mount
-umount /mnt
-
-
 # TODO: open only the ports needed?
 # disable the firewall, otherwise the client can not connect
 systemctl stop firewalld || service iptables stop
+
+mount -t glusterfs $(hostname --fqdn):/${GLUSTER_VOLUME} /mnt
+mount
+umount /mnt
 
 # Export the volume
 mkdir -p /usr/libexec/ganesha
