@@ -155,6 +155,13 @@ then
 	grep --with-filename -e '' /etc/ganesha/exports/*.conf
 	echo
 	echo "Export ${GLUSTER_VOLUME} is not available"
+	echo
+	echo "+++ /var/log/glusterfs/bricks/*.log"
+	cat /var/log/glusterfs/bricks/*.log
+	echo
+	echo "+++ /var/log/glusterfs/glusterd.log"
+	cat /var/log/glusterfs/glusterd.log
+	echo	
 	exit 1
 fi
 
