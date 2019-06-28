@@ -96,7 +96,7 @@ else
 	yum -y install ${ntirpc_rpm} ${rpm_arch}/nfs-ganesha-{,gluster-}${ganesha_version}.${rpm_arch}.rpm
 
 	# start nfs-ganesha service with an empty configuration
-	echo "NFSv4 { Graceless = true; } > /etc/ganesha/ganesha.conf
+	echo "NFSv4 { Graceless = true; }" > /etc/ganesha/ganesha.conf
 	if ! systemctl start nfs-ganesha
 	then
 		echo "+++ systemctl status nfs-ganesha.service +++"
