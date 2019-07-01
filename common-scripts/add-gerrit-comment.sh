@@ -62,8 +62,8 @@ case ${RET} in
 1)
 	MESSAGE="${JOB_OUTPUT} : FAILED"
 	# TODO: Enable voting if tests are stable. Env parameter?
-	#VERIFIED='--verified -1'
-	VERIFIED=''
+	VERIFIED='--verified -1'
+	#VERIFIED=''
 	NOTIFY='--notify ALL'
 	EXIT=1
 	;;
