@@ -2,7 +2,7 @@
 #
 # Setup a simple gluster environment and export a volume through NFS-Ganesha.
 #
-# This script uses the following environment variables:
+# This script uses the following environment variables:/
 # - GLUSTER_VOLUME: name of the gluster volume to create
 #                   this name will also be used as name for the export
 #
@@ -29,7 +29,7 @@ set -e
 set -x
 
 # enable repositories
-yum -y install centos-release-gluster yum-utils
+yum -y install centos-release-gluster5 yum-utils
 
 # make sure rpcbind is running
 yum -y install rpcbind
