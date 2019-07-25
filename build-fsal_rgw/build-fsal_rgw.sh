@@ -11,7 +11,7 @@ set -e
 GIT_REPO="https://${GERRIT_HOST}/${GERRIT_PROJECT}"
 
 # enable the Storage SIG Gluster and Ceph repositories
-yum -y install centos-release-gluster
+yum -y install centos-release-ceph
 
 # basic packages to install
 xargs yum -y install <<< "
@@ -30,7 +30,8 @@ libnfsidmap-devel
 libwbclient-devel
 redhat-rpm-config
 rpm-build
-glusterfs-api-devel
+libcephfs-devel
+librgw-devel
 xfsprogs-devel
 python2-devel
 userspace-rcu-devel
@@ -49,7 +50,7 @@ git submodule update --init || git submodule sync
 mkdir build
 cd build
 
-( cmake ../src -DCMAKE_BUILD_TYPE=Maintainer -DUSE_FSAL_GLUSTER=ON -DUSE_FSAL_CEPH=OFF -DUSE_FSAL_RGW=OFF -DUSE_DBUS=ON -DUSE_ADMIN_TOOLS=ON && make rpm ) || touch FAILED
+( cmake ../src -DCMAKE_BUILD_TYPE=Maintainer -DUSE_FSAL_GLUSTER=OFF -DUSE_FSAL_CEPH=OFF -DUSE_FSAL_RGW=ON -DUSE_DBUS=ON -DUSE_ADMIN_TOOLS=ON && make rpm ) || touch FAILED
 
 # dont vote if the subject of the last change includes the word "WIP"
 if ( git log --oneline -1 | grep -q -i -w 'WIP' )
