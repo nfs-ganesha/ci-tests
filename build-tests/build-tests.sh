@@ -35,6 +35,8 @@ python2-devel
 userspace-rcu-devel
 lttng-tools-devel
 lttng-ust-devel
+gperftools-devel
+gtest-devel
 "
 
 git clone ${GIT_REPO}
