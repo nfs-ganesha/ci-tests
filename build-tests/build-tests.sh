@@ -11,7 +11,7 @@ set -e
 GIT_REPO="https://${GERRIT_HOST}/${GERRIT_PROJECT}"
 
 # enable the Storage SIG for lttng-{tools,ust}-devel
-yum -y install centos-release-nfsganesha-28
+yum -y install centos-release-nfs-ganesha28
 
 # basic packages to install
 xargs yum -y install <<< "
