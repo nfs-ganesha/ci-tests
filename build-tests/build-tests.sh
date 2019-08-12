@@ -54,27 +54,16 @@ cd build
 
 ( cmake ../src -DCMAKE_BUILD_TYPE=Maintainer -DUSE_GTEST=ON -DUSE_FSAL_GLUSTER=OFF -DUSE_FSAL_CEPH=OFF -DUSE_FSAL_RGW=OFF -DUSE_DBUS=ON -DUSE_ADMIN_TOOLS=ON && make rpm ) || touch FAILED
 
-# dont vote if the subject of the last change includes the word "WIP"
-if ( git log --oneline -1 | grep -q -i -w 'WIP' )
-then
-    echo "Change marked as WIP, not posting result to GerritHub."
-    touch WIP
-fi
-
 # we accept different return values
 # 0 - SUCCESS + VOTE
 # 1 - FAILED + VOTE
 # 10 - SUCCESS + REPORT ONLY (NO VOTE)
 # 11 - FAILED + REPORT ONLY (NO VOTE)
 
-RET=0
+RET=10
 if [ -e FAILED ]
 then
 	RET=$[RET + 1]
 fi
-#if [ -e WIP ]
-#then
-	RET=$[RET + 10]
-#fi
 
 exit ${RET}

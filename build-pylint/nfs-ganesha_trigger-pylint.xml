@@ -16,12 +16,12 @@
         <hudson.model.StringParameterDefinition>
           <name>BOOTSTRAP_SCRIPT</name>
           <description>Python script that reserves a machine from Duffy and starts the ${TEST_SCRIPT}.</description>
-          <defaultValue>https://raw.githubusercontent.com/nfs-ganesha/ci-tests/centos-ci/build-tests/bootstrap.py</defaultValue>
+          <defaultValue>https://raw.githubusercontent.com/nfs-ganesha/ci-tests/centos-ci/build-pylint/bootstrap.py</defaultValue>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>TEST_SCRIPT</name>
           <description>Test script to execute on the reserved machine, should move to the some NFS-Ganesha upstream testing repo at one point.</description>
-          <defaultValue>https://raw.githubusercontent.com/nfs-ganesha/ci-tests/centos-ci/build-tests/build-tests.sh</defaultValue>
+          <defaultValue>https://raw.githubusercontent.com/nfs-ganesha/ci-tests/centos-ci/build-pylint/build-pylint.sh</defaultValue>
         </hudson.model.StringParameterDefinition>
         <hudson.model.ChoiceParameterDefinition>
           <name>GERRIT_HOST</name>
@@ -123,7 +123,7 @@
           <excludeNoCodeChange>true</excludeNoCodeChange>
         </com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.events.PluginPatchsetCreatedEvent>
         <com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.events.PluginCommentAddedContainsEvent>
-          <commentAddedCommentContains>recheck tests</commentAddedCommentContains>
+          <commentAddedCommentContains>recheck pylint</commentAddedCommentContains>
         </com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.events.PluginCommentAddedContainsEvent>
       </triggerOnEvents>
       <dynamicTriggerConfiguration>false</dynamicTriggerConfiguration>
