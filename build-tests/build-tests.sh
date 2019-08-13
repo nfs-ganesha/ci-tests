@@ -55,7 +55,7 @@ git submodule update --init || git submodule sync
 mkdir build
 cd build
 
-( cmake ../src -DCMAKE_BUILD_TYPE=Maintainer -DUSE_GTEST=ON -DUSE_FSAL_GLUSTER=OFF -DUSE_FSAL_CEPH=OFF -DUSE_FSAL_RGW=OFF -DUSE_DBUS=ON -DUSE_ADMIN_TOOLS=OFF && make rpm ) || touch FAILED
+( cmake ../src -DCMAKE_BUILD_TYPE=Maintainer -DUSE_GTEST=ON -DUSE_FSAL_GLUSTER=OFF -DUSE_FSAL_CEPH=OFF -DUSE_FSAL_RGW=OFF -DUSE_DBUS=ON -DUSE_ADMIN_TOOLS=OFF && make) || touch FAILED
 
 # we accept different return values
 # 0 - SUCCESS + VOTE
