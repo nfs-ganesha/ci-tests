@@ -53,7 +53,7 @@ git submodule update --init || git submodule sync
 [ -d build ] && rm -rf build
 
 sed -i -e s/-std=gnu++14/'-std=gnu++11 -fpermissive'/ src/gtest/CMakeLists.txt
-sed -i -e s/'(5s);'/'(std::chrono::seconds(5));'/ -e s/ using namespace std::literals;//  src/gtest/test_ci_hash_dist1.cc
+sed -i -e s/'(5s);'/'(std::chrono::seconds(5));'/ -e s/' using namespace std::literals;'//  src/gtest/test_ci_hash_dist1.cc
 
 mkdir build
 cd build
