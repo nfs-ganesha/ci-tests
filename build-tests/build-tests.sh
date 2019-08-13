@@ -21,6 +21,7 @@ cmake
 dbus-devel
 flex
 gcc-c++
+boost
 git
 krb5-devel
 libacl-devel
