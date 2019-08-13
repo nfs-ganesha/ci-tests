@@ -52,7 +52,7 @@ git submodule update --init || git submodule sync
 # cleanup old build dir
 [ -d build ] && rm -rf build
 
-sed -i -e s/-std=gnu++14// src/gtest/CMakeLists.txt
+sed -i -e s/-std=gnu++14/-std=gnu++11/ src/gtest/CMakeLists.txt
 
 mkdir build
 cd build
