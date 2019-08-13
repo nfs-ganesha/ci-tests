@@ -21,7 +21,7 @@ cmake
 dbus-devel
 flex
 gcc-c++
-boost
+boost-devel
 doxygen
 redhat-lsb
 git
