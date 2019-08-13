@@ -22,6 +22,8 @@ dbus-devel
 flex
 gcc-c++
 boost
+doxygen
+redhat-lsb
 git
 krb5-devel
 libacl-devel
@@ -53,7 +55,7 @@ git submodule update --init || git submodule sync
 mkdir build
 cd build
 
-( cmake ../src -DCMAKE_BUILD_TYPE=Maintainer -DUSE_GTEST=ON -DUSE_FSAL_GLUSTER=OFF -DUSE_FSAL_CEPH=OFF -DUSE_FSAL_RGW=OFF -DUSE_DBUS=ON -DUSE_ADMIN_TOOLS=ON && make rpm ) || touch FAILED
+( cmake ../src -DCMAKE_BUILD_TYPE=Maintainer -DUSE_GTEST=ON -DUSE_FSAL_GLUSTER=OFF -DUSE_FSAL_CEPH=OFF -DUSE_FSAL_RGW=OFF -DUSE_DBUS=ON -DUSE_ADMIN_TOOLS=OFF && make rpm ) || touch FAILED
 
 # we accept different return values
 # 0 - SUCCESS + VOTE
