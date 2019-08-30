@@ -11,7 +11,7 @@
 # Please note, this is a basic script, there is no error handling and there are
 # no real tests for any exceptions. Patches welcome!
 
-import json, urllib, subprocess, sys, os
+import json, urllib, subprocess, sys, time, os
 
 url_base="http://admin.ci.centos.org:8080"
 # we just build on CentOS-7/x86_64, CentOS-6 does not have 'mock'?
