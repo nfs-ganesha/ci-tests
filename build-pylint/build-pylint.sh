@@ -38,6 +38,4 @@ popd
 # 10 - SUCCESS + REPORT ONLY (NO VOTE)
 # 11 - FAILED + REPORT ONLY (NO VOTE)
 
-RET=10
-
-exit ${RET}
+exit 10
