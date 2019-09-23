@@ -41,6 +41,8 @@ systemctl start rpcbind
 echo 'TODO: this is BAD, needs a fix in the selinux-policy'
 setenforce 0
 
+systemctl stop firewalld
+
 if [ -n "${YUM_REPO}" ]
 then
 	yum-config-manager --add-repo=http://artifacts.ci.centos.org/nfs-ganesha/nightly/libntirpc/libntirpc-latest.repo
