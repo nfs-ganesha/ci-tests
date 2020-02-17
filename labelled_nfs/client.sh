@@ -21,7 +21,7 @@ mkdir -p /mnt/nfsv42
 mount -t nfs -o vers=4.2 ${SERVER}:${EXPORT} /mnt/nfsv42
 
 #create dir and file
-mkdir /mnt/nfsv43/dir && touch /mnt/nfs42/dir/file.txt
+mkdir /mnt/nfsv42/dir && touch /mnt/nfsv42/dir/file.txt
 
 #change security context
 cd /mnt/nfsv42/dir
