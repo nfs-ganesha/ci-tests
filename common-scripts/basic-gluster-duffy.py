@@ -57,6 +57,7 @@ server_env+=" GERRIT_REFSPEC='%s'" % os.getenv("GERRIT_REFSPEC")
 server_env+=" YUM_REPO='%s'" % os.getenv("YUM_REPO", "")
 server_env+=" GLUSTER_VOLUME='%s'" % os.getenv("EXPORT")
 server_env+=" ENABLE_ACL='%s'" % os.getenv("ENABLE_ACL", "")
+server_env+=" SECURITY_LABEL='%s'" % os.getenv("SECURITY_LABEL", "")
 
 # add the export with environment to ~/.bashrc
 cmd="""ssh -t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@%s '
