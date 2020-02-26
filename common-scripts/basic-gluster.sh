@@ -189,3 +189,16 @@ then
   dbus-send --type=method_call --print-reply --system  --dest=org.ganesha.nfsd /org/ganesha/nfsd/ExportMgr  org.ganesha.nfsd.exportmgr.UpdateExport string:${conf_file} string:"EXPORT(Export_Id = ${export_id})"
 fi
 
+#Enabling Security_Label for the volume if SECURITY_LABEL param is set to True
+if [ "${SECURITY_LABEL}" == "True" ]
+then
+  conf_file="/etc/ganesha/exports/export."${GLUSTER_VOLUME}".conf"
+  sed -i '/SecType/ a Security_Label = True' ${conf_file}
+  cat ${conf_file}
+
+  #Parsing export id from volume export conf file
+  export_id=$(grep 'Export_Id' ${conf_file} | sed 's/^[[:space:]]*Export_Id.*=[[:space:]]*\([0-9]*\).*/\1/')
+
+  dbus-send --type=method_call --print-reply --system  --dest=org.ganesha.nfsd /org/ganesha/nfsd/ExportMgr  org.ganesha.nfsd.exportmgr.UpdateExport string:${conf_file} string:"EXPORT(Export_Id = ${export_id})"
+fi
+
