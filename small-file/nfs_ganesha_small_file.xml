@@ -1,0 +1,109 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description>Run Small_file test against the latest build of Ganesha with FSAL_GLUSTER.</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>7</daysToKeep>
+        <numToKeep>7</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <com.coravy.hudson.plugins.github.GithubProjectProperty plugin="github@1.19.1">
+      <projectUrl>https://github.com/nfs-ganesha/nfs-ganesha/</projectUrl>
+      <displayName></displayName>
+    </com.coravy.hudson.plugins.github.GithubProjectProperty>
+    <com.chikli.hudson.plugin.naginator.NaginatorOptOutProperty plugin="naginator@1.17">
+      <optOut>false</optOut>
+    </com.chikli.hudson.plugin.naginator.NaginatorOptOutProperty>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>DUFFY_SCRIPT</name>
+          <description>Python script that reserves a machine from Duffy and starts the ${TEST_SCRIPT}.</description>
+          <defaultValue>https://raw.githubusercontent.com/nfs-ganesha/ci-tests/centos-ci/common-scripts/basic-gluster-duffy.py</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>SERVER_TEST_SCRIPT</name>
+          <description>Test script to execute on the reserved machine acting as a server.</description>
+          <defaultValue>https://raw.githubusercontent.com/nfs-ganesha/ci-tests/centos-ci/common-scripts/basic-gluster.sh</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>CLIENT_TEST_SCRIPT</name>
+          <description>Test script to execute on the reserved machine acting as a client.</description>
+          <defaultValue>https://raw.githubusercontent.com/nfs-ganesha/ci-tests/centos-ci/small-file/client.sh</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>YUM_REPO</name>
+          <description>URL to the .repo file to use for installing NFS-Ganesha</description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>GERRIT_HOST</name>
+          <description>Hostname of the Gerrit server.</description>
+          <defaultValue>review.gerrithub.io</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>GERRIT_PROJECT</name>
+          <description>Project name from Gerrit (like &quot;ffilz/nfs-ganesha&quot;).</description>
+          <defaultValue>ffilz/nfs-ganesha</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>GERRIT_REFSPEC</name>
+          <description>Git reference to fetch from the Gerrit project.</description>
+          <defaultValue>refs/heads/next</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>EXPORT</name>
+          <description>Name of the NFS-export to create.</description>
+          <defaultValue>small_file</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>CENTOS_VERSION</name>
+          <description>CentOS version to run the tests on (server + client)</description>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>7</string>
+              <string>6</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>CENTOS_ARCH</name>
+          <description>CentOS architecture to run the tests on (server + client)</description>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>x86_64</string>
+              <string>i386</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <assignedNode>nfs-ganesha</assignedNode>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>true</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>curl -o jenkins-job.py ${DUFFY_SCRIPT}
+python jenkins-job.py</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers/>
+  <buildWrappers>
+    <hudson.plugins.ws__cleanup.PreBuildCleanup plugin="ws-cleanup@0.29">
+      <deleteDirs>false</deleteDirs>
+      <cleanupParameter></cleanupParameter>
+      <externalDelete></externalDelete>
+    </hudson.plugins.ws__cleanup.PreBuildCleanup>
+  </buildWrappers>
+</project>
