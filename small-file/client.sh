@@ -32,7 +32,7 @@ mount -t nfs -o vers=4 ${SERVER}:${EXPORT} /mnt/nfsv4
 
 # v4.1 mount
 mkdir -p /mnt/nfsv41
-mount -t nfs -o vers=3 ${SERVER}:${EXPORT} /mnt/nfsv41
+mount -t nfs -o vers=4.1 ${SERVER}:${EXPORT} /mnt/nfsv41
 ./smallfile_cli.py --files 100000 --threads 10 --file-size 4 --hash-into-dirs Y --top /mnt/nfsv41 --operation create
 
 
