@@ -193,7 +193,7 @@ fi
 if [ "${SECURITY_LABEL}" == "True" ]
 then
   conf_file="/etc/ganesha/exports/export."${GLUSTER_VOLUME}".conf"
-  sed -i '/SecType/ a \     \ Security_Label = True;' ${conf_file}
+  sed -i s/'Security_Label = .*'/'Security_Label = True;'/g ${conf_file}
   cat ${conf_file}
 
   #Parsing export id from volume export conf file
