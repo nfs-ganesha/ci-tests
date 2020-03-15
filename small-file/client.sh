@@ -13,6 +13,10 @@ set -x
 [ -n "${SERVER}" ]
 [ -n "${EXPORT}" ]
 
+Vers_List=" 3 4 4.1"
+Operations_List=" create read chmod stat append rename delete-renamed mkdir rmdir "
+var="/mnt/nfsv"
+
 # install build and runtime dependencies
 yum -y install git gcc nfs-utils time
 
@@ -20,19 +24,16 @@ yum -y install git gcc nfs-utils time
 git clone https://github.com/distributed-system-analysis/smallfile.git
 cd smallfile
 
-# v3 mount
-mkdir -p /mnt/nfsv3
-mount -t nfs -o vers=3 ${SERVER}:${EXPORT} /mnt/nfsv3
-./smallfile_cli.py --files 100000 --threads 10 --file-size 4 --hash-into-dirs Y --top /mnt/nfsv3 --operation create
 
-# v4 mount
-mkdir -p /mnt/nfsv4
-mount -t nfs -o vers=4 ${SERVER}:${EXPORT} /mnt/nfsv4
-./smallfile_cli.py --files 100000 --threads 10 --file-size 4 --hash-into-dirs Y --top /mnt/nfsv4 --operation create
+for i in $Vers_List
+do
+	mount_pt=$var$i
+	mkdir -p $mount_pt
+	mount -t nfs -o vers=$i ${SERVER}:${EXPORT} $mount_pt
 
-# v4.1 mount
-mkdir -p /mnt/nfsv41
-mount -t nfs -o vers=4.1 ${SERVER}:${EXPORT} /mnt/nfsv41
-./smallfile_cli.py --files 100000 --threads 10 --file-size 4 --hash-into-dirs Y --top /mnt/nfsv41 --operation create
-
+	for j in $Operation_List
+	do
+		./smallfile_cli.py --files 100000 --threads 10 --file-size 4 --hash-into-dirs Y --top $mount_pt --operation $j
+	done
+done
 
