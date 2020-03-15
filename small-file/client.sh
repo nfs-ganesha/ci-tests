@@ -33,7 +33,7 @@ do
 
 	for j in $Operation_List
 	do
-		./smallfile_cli.py --files 100000 --threads 10 --file-size 4 --hash-into-dirs Y --top $mount_pt --operation $j
+		./smallfile_cli.py --files 100000 --threads 100 --file-size 64 --hash-into-dirs Y --top $mount_pt --operation $j
 	done
 done
 
