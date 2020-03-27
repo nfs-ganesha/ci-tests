@@ -7,14 +7,11 @@
 # if any command fails, the script should exit
 set -e
 
-# kill the script if any variable referenced is not set
-set -u
-
 # enable some more output
 set -x
 
-[[ -n "${SERVER}" ]]
-[[ -n "${EXPORT}" ]]
+[ -n "${SERVER}" ]
+[ -n "${EXPORT}" ]
 
 Vers_List=" 3 4 4.1"
 Operation_List=" create read chmod stat append rename delete-renamed mkdir rmdir "
