@@ -7,14 +7,17 @@
 # if any command fails, the script should exit
 set -e
 
+# kill the script if any variable referenced is not set
+set -u
+
 # enable some more output
 set -x
 
-[ -n "${SERVER}" ]
-[ -n "${EXPORT}" ]
+[[ -n "${SERVER}" ]]
+[[ -n "${EXPORT}" ]]
 
 Vers_List=" 3 4 4.1"
-Operations_List=" create read chmod stat append rename delete-renamed mkdir rmdir "
+Operation_List=" create read chmod stat append rename delete-renamed mkdir rmdir "
 var="/mnt/nfsv"
 
 # install build and runtime dependencies
