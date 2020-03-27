@@ -7,14 +7,11 @@
 # if any command fails, the script should exit
 set -e
 
-# kill the script if any ariable referenced is not set
-set -u
-
 # enable some more output
 set -x
 
-[[ -n "${SERVER}" ]]
-[[ -n "${EXPORT}" ]]
+[ -n "${SERVER}" ]
+[ -n "${EXPORT}" ]
 
 # install build and runtime dependencies
 yum -y install git gcc nfs-utils time
