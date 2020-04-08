@@ -126,8 +126,8 @@ mkdir -p /etc/ganesha/exports
 cat <<EOF > /etc/ganesha/exports/export.${VFS_VOLUME}.conf
 EXPORT {
     Export_Id = 2;
-    Path = /${VFS_VOLUME};
-    Pseudo = /${VFS_VOLUME};
+    Path = "/${VFS_VOLUME}";
+    Pseudo = "/${VFS_VOLUME}";
     Access_type = RW;
     Disable_ACL = True;
     Protocols = "3","4";
