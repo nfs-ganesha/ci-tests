@@ -94,13 +94,14 @@ else
 	yum -y install ${ntirpc_rpm} ${rpm_arch}/nfs-ganesha-{,gluster-}${ganesha_version}.${rpm_arch}.rpm
 
 	# start nfs-ganesha service with an empty configuration
-	cat <<EOF > /etc/ganesha/ganeha.conf
+	cat <<EOF > /etc/ganesha/ganesha.conf
 NFSv4 { Graceless = true; }
 CacheInode {
     Entries_HWMark = 1;
     Chunks_HWMark = 1;
     LRU_Run_interval = 1;
 }
+%include /etc/ganesha/exports/export.$VFS_VOLUME}.conf
 EOF
 	if ! systemctl start nfs-ganesha
 	then
@@ -123,14 +124,14 @@ yum -y install wget
 wget https://raw.githubusercontent.com/gluster/glusterfs/release-3.10/extras/ganesha/scripts/dbus-send.sh
 chmod 755 dbus-send.sh
 
-mkdir -p /bricks/vfs
-chmod ugo+w /bricks/vfs
+mkdir -p /bricks/${VFS_VOLUME}
+chmod ugo+w /bricks/${VFS_VOLUME}
 
 cat <<EOF > /etc/ganesha/exports/export.${VFS_VOLUME}.conf
 EXPORT {
     Export_Id = 2;
-    Path = /bricks/vfs;
-    Pseudo = /bricks/vfs;
+    Path = /bricks/${VFS_VOLUME};
+    Pseudo = /bricks/${VFS_VOLUME};
     Access_type = RW;
     Disable_ACL = True;
     Protocols = "4" ;
