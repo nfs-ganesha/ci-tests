@@ -130,7 +130,7 @@ EXPORT {
     Pseudo = /${VFS_VOLUME};
     Access_type = RW;
     Disable_ACL = True;
-    Protocols = "4";
+    Protocols = "3","4";
     Transports = "UDP","TCP";
     SecType = "sys";
     Security_Lable = False;
