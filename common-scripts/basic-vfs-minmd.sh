@@ -124,15 +124,15 @@ yum -y install wget
 wget https://raw.githubusercontent.com/gluster/glusterfs/release-3.10/extras/ganesha/scripts/dbus-send.sh
 chmod 755 dbus-send.sh
 
-mkdir -p /bricks/${VFS_VOLUME}
-chmod ugo+w /bricks/${VFS_VOLUME}
+mkdir -p /${VFS_VOLUME}
+chmod ugo+w /${VFS_VOLUME}
 mkdir -p /etc/ganesha/exports
 
 cat <<EOF > /etc/ganesha/exports/export.${VFS_VOLUME}.conf
 EXPORT {
     Export_Id = 2;
-    Path = /bricks/${VFS_VOLUME};
-    Pseudo = /bricks/${VFS_VOLUME};
+    Path = /${VFS_VOLUME};
+    Pseudo = /${VFS_VOLUME};
     Access_type = RW;
     Disable_ACL = True;
     Protocols = "4";
@@ -142,6 +142,7 @@ EXPORT {
     FSAL {
         Name = VFS;
     }
+}
 EOF
 
 echo "%include \"/etc/ganesha/exports/export.${VFS_VOLUME}.conf\"" >> /etc/ganesha/ganesha.conf
