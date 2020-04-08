@@ -101,8 +101,8 @@ CacheInode {
     Chunks_HWMark = 1;
     LRU_Run_interval = 1;
 }
-%include "/etc/ganesha/exports/export.$VFS_VOLUME}.conf"
 EOF
+
 	if ! systemctl start nfs-ganesha
 	then
 		echo "+++ systemctl status nfs-ganesha.service +++"
@@ -143,6 +143,8 @@ EXPORT {
         Name = VFS;
     }
 EOF
+
+echo "%include \"/etc/ganesha/exports/export.${VFS_VOLUME}.conf\"" >> /etc/ganesha/ganesha.conf
 
 /usr/libexec/ganesha/dbus-send.sh /etc/ganesha on ${VFS_VOLUME}
 

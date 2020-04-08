@@ -96,8 +96,8 @@ else
 	# start nfs-ganesha service with an empty configuration
 	cat <<EOF > /etc/ganesha/ganesha.conf
 NFSv4 { Graceless = true; }
-%include "/etc/ganesha/exports/export.${VFS_VOLUME}.conf"
 EOF
+
 	if ! systemctl start nfs-ganesha
 	then
 		echo "+++ systemctl status nfs-ganesha.service +++"
@@ -138,6 +138,8 @@ EXPORT {
         Name = VFS;
     }
 EOF
+
+echo "%include \"/etc/ganesha/exports/export.${VFS_VOLUME}.conf\"" >> /etc/ganesha/ganesha.conf
 
 /usr/libexec/ganesha/dbus-send.sh /etc/ganesha on ${VFS_VOLUME}
 
