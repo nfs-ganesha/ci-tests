@@ -96,7 +96,7 @@ else
 	# start nfs-ganesha service with an empty configuration
 	cat <<EOF > /etc/ganesha/ganesha.conf
 NFSv4 { Graceless = true; }
-%include /etc/ganesha/exports/export.${VFS_VOLUME}.conf
+%include "/etc/ganesha/exports/export.${VFS_VOLUME}.conf"
 EOF
 	if ! systemctl start nfs-ganesha
 	then
@@ -130,7 +130,7 @@ EXPORT {
     Pseudo = /bricks/${VFS_VOLUME};
     Access_type = RW;
     Disable_ACL = True;
-    Protocols = "4" ;
+    Protocols = "4";
     Transports = "UDP","TCP";
     SecType = "sys";
     Security_Lable = False;
