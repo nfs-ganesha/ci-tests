@@ -28,8 +28,8 @@ set -e
 # be a little bit more verbose
 set -x
 
-# enable repositories
-yum -y install yum-utils
+# enable repositories (gluster for liburcu)
+yum -y install centos-release-gluster yum-utils
 
 # make sure rpcbind is running
 yum -y install rpcbind
