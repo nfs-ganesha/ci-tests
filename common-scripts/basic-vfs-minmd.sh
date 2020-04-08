@@ -126,6 +126,7 @@ chmod 755 dbus-send.sh
 
 mkdir -p /bricks/${VFS_VOLUME}
 chmod ugo+w /bricks/${VFS_VOLUME}
+mkdir -p /etc/ganesha/exports
 
 cat <<EOF > /etc/ganesha/exports/export.${VFS_VOLUME}.conf
 EXPORT {
