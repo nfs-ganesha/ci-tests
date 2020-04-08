@@ -20,11 +20,13 @@ cmd = "yum -y install git gcc nfs-utils redhat-rpm-config python-devel krb5-deve
 subprocess.call(cmd, shell=True)
 
 #install pynfs test suite
+print "cloning pynfs.git"
 cmd = "rm -rf /root/pynfs && git clone git://linux-nfs.org/~bfields/pynfs.git"
 subprocess.call(cmd, shell=True)
 
 #Build pynfs
-cmd = "cd /root/pynfs && yes  | python setup.py build"
+print "building pynfs"
+cmd = "cd /root/pynfs && yes | python setup.py build"
 fh = open("/tmp/output_tempfile.txt","w")
 p = subprocess.Popen(cmd, shell=True, stdout=fh, stderr=subprocess.PIPE)
 pout, perr = p.communicate()
@@ -36,27 +38,48 @@ if rtn_code != 0:
     sys.exit(1)
 
 #Run pynfs test suite
-log_file = "/tmp/pynfs" + str(int(time.time())) + ".log"
-cmd = "cd /root/pynfs/nfs4.0 && ./testserver.py %s:%s --verbose --maketree --showomit --rundeps all ganesha %s > %s" %(server, export, test_parameters, log_file)
+print "running pynfs 4.0"
+log_file40 = "/tmp/pynfs" + str(int(time.time())) + ".log"
+cmd = "cd /root/pynfs/nfs4.0 && ./testserver.py %s:%s --verbose --maketree --showomit --rundeps all ganesha %s > %s" %(server, export, test_parameters, log_file40)
 p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 pout, perr = p.communicate()
-rtn_code = p.returncode
+rtn_code40 = p.returncode
 
-print "pynfs test output:"
+print "pynfs 4.0 test output:"
 print "------------------"
-cmd = "cat %s" % log_file
+cmd = "cat %s" % log_file40
 p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 pout, perr = p.communicate()
 print pout
 
-if rtn_code == 0:
-    print "All tests passed in pynfs test suite"
-else:
+print "running pynfs 4.1"
+log_file41 = "/tmp/pynfs" + str(int(time.time())) + ".log"
+cmd = "cd /root/pynfs/nfs4.0 && ./testserver.py %s:%s --verbose --maketree --showomit --rundeps all ganesha %s > %s" %(server, export, test_parameters, log_file41)
+p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+pout, perr = p.communicate()
+rtn_code41 = p.returncode
+
+print "pynfs 4.1 test output:"
+print "------------------"
+cmd = "cat %s" % log_file41
+p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+pout, perr = p.communicate()
+print pout
+
+if rtn_code40 == 0:
+    print "All tests passed in pynfs 4.0 test suite"
+
+if rtn_code41 == 0:
+    print "All tests passed in pynfs 4.1 test suite"
+
+if rtn_code40 != 0 || rtn_code41 != 0:
     cmd = "cat %s | grep FAILURE" % log_file
     p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     pout, perr = p.communicate()
     print "pynfs test suite failures:"
     print "--------------------------"
     print pout
-sys.exit(rtn_code)
+    sys.exit(1)
+
+sys.exit(0)
 
