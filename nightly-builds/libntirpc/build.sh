@@ -54,7 +54,7 @@ pushd ${RESULTDIR}
 createrepo_c .
 
 # create the .repo file pointing to the just built+latest version
-curl ${TEMPLATES_URL}/libntirpc.repo.in | sed s/XXVERSIONXX/${GIT_VERSION}/ > ../../../libntirpc-${GIT_VERSION}.repo
+curl -L ${TEMPLATES_URL}/libntirpc.repo.in | sed s/XXVERSIONXX/${GIT_VERSION}/ > ../../../libntirpc-${GIT_VERSION}.repo
 ln -sf libntirpc-${GIT_VERSION}.repo ../../../libntirpc-latest.repo
 popd
 
