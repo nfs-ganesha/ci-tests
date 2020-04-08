@@ -72,13 +72,19 @@ if rtn_code40 == 0:
 if rtn_code41 == 0:
     print "All tests passed in pynfs 4.1 test suite"
 
-if rtn_code40 != 0 or rtn_code41 != 0:
-    cmd = "cat %s | grep FAILURE" % log_file
+if rtn_code40 != 0:
+    cmd = "cat %s | grep FAILURE" % log_file40
     p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    pout, perr = p.communicate()
-    print "pynfs test suite failures:"
+    pout40, perr = p.communicate()
+    print "pynfs 4.0 test suite failures:"
     print "--------------------------"
-    print pout
+    print pout40
+    cmd = "cat %s | grep FAILURE" % log_file41
+    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    pout41, perr = p.communicate()
+    print "pynfs 4.1 test suite failures:"
+    print "--------------------------"
+    print pout41
     sys.exit(1)
 
 sys.exit(0)
