@@ -91,7 +91,7 @@ else
 		ntirpc_version=$(rpm -q --qf '%{VERSION}-%{RELEASE}' -p ${rpm_arch}/libntirpc-devel*.rpm)
 		ntirpc_rpm=${rpm_arch}/libntirpc-${ntirpc_version}.${rpm_arch}.rpm
 	fi
-	yum -y install ${ntirpc_rpm} ${rpm_arch}/nfs-ganesha-{,gluster-}${ganesha_version}.${rpm_arch}.rpm
+	yum -y install ${ntirpc_rpm} ${rpm_arch}/nfs-ganesha-{,vfs-}${ganesha_version}.${rpm_arch}.rpm
 
 	# start nfs-ganesha service with an empty configuration
 	cat <<EOF > /etc/ganesha/ganesha.conf
@@ -131,8 +131,8 @@ mkdir -p /etc/ganesha/exports
 cat <<EOF > /etc/ganesha/exports/export.${VFS_VOLUME}.conf
 EXPORT {
     Export_Id = 2;
-    Path = /${VFS_VOLUME};
-    Pseudo = /${VFS_VOLUME};
+    Path = "/${VFS_VOLUME}";
+    Pseudo = "/${VFS_VOLUME}";
     Access_type = RW;
     Disable_ACL = True;
     Protocols = "3","4";
