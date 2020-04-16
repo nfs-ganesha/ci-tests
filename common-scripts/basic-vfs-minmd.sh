@@ -96,7 +96,7 @@ else
 	# start nfs-ganesha service with an empty configuration
 	cat <<EOF > /etc/ganesha/ganesha.conf
 NFSv4 { Graceless = true; }
-CacheInode {
+MDCACHE {
     Entries_HWMark = 1;
     Chunks_HWMark = 1;
     LRU_Run_interval = 1;
