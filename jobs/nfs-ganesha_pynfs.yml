@@ -1,0 +1,40 @@
+- job:
+    name: nfs_ganesha_pynfs 
+    node: cico-workspace
+    description: 'Run pynfs (NFSv4.0) tests against the latest build of Ganesha with FSAL_GLUSTER.'
+    project-type: freestyle
+    concurrent: true
+    allow-manual-triggers: true
+
+    properties:
+    - discarder
+    - github:
+        url: http://git.linux-nfs.org/?p=bfields/pynfs.git;a=summary/ 
+
+    parameters:
+    - string:
+        default: "$WORKSPACE/ci-tests/build_scipts/common/basic-gluster.sh"
+        description: Test script to execute on the reserved machine acting as a server.
+        name: SERVER_TEST_SCRIPT
+    - string:
+        default: "$WORKSPACE/ci-tests/build_scripts/pynfs/client.py"
+        description: Test script to execute on the reserved machine acting as a client.
+        name: CLIENT_TEST_SCRIPT
+    - nfs_variables:
+        export_var: 'pynfs'
+    - gerrit_variables
+    - string:
+        default: 'noWRT18 noRD4 noSEC7' 
+        description: 'Pass additional parameters/options to the pynfs execution.'
+        name: TEST_PARAMETERS 
+    - centos_variables
+
+    builders:
+    - shell: !include-raw-escape: scripts/common.sh
+
+    wrappers:
+    - cleanup-ws
+
+    triggers:
+    - gerrithub-trigger:
+        option: 'pynfs'

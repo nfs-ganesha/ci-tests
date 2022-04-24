@@ -1,0 +1,40 @@
+- job:
+    name: Labelled_nfs 
+    node: cico-workspace
+    description: 'Start labelled_nfs test when a new patch is posted to GerritHub.'
+    project-type: freestyle
+    concurrent: false 
+    allow-manual-triggers: false
+
+    properties:
+    - nfs-github
+
+    scm:
+    - ci-tests
+
+    parameters:
+    - script_variables
+    - nfs_variables:
+        export_var: 'labelled_nfs'
+    - gerrit_variables
+    - string:
+        default: True
+        description: Enable or Disable Labelled NFS
+        name: SECURITY_LABEL 
+    - centos_variables
+
+    triggers:
+      - gerrit:
+          projects:
+            - project-compare-type: PLAIN
+              project-pattern: ''
+              branches:
+                - branch-pattern: '**'
+                  branch-compare-type: ANT
+
+    builders:
+    - shell: | 
+        python $WORKSPACE/ci-tests/build_scipts/common/basic-gluster-duffy.py 
+
+    wrappers:
+    - cleanup-ws

@@ -1,0 +1,36 @@
+- job:
+    name: nfs-ganesha_trigger-libntirpc-builds 
+    node: cico-workspace
+    project-type: freestyle
+    concurrent: true 
+    allow-manual-triggers: false 
+
+    properties:
+    - nfs-ntirpc
+
+    scm:
+    - git:
+        branches:
+        - '**'
+        url: https://github.com/nfs-ganesha/ntirpc.git
+
+    builders:
+      - trigger-builds:
+        - project: nfs-ganesha_build-libntirpc 
+          predefined-parameters: |
+            CENTOS_VERSION=7
+            CENTOS_ARCH=x86_64
+      - trigger-builds:
+        - project: nfs-ganesha_build-libntirpc
+          predefined-parameters: |
+            CENTOS_VERSION=6
+            CENTOS_ARCH=x86_64
+      - trigger-builds:
+        - project: nfs-ganesha_build-libntirpc
+          predefined-parameters: |
+            CENTOS_VERSION=6
+            CENTOS_ARCH=i386
+
+    triggers:
+      - pollscm:
+          cron: "@daily" 

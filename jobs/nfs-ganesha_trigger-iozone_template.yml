@@ -1,0 +1,53 @@
+- project:
+    name: 'nfs_ganesha'
+    flavours:
+      - iozone:
+          recheck_val: 'iozone$'
+          script_name: "$WORKSPACE/ci-tests/build_scipts/common/basic-gluster.sh"
+      - iozone_vfs:
+          recheck_val: 'iozone_vfs$'
+          script_name: "$WORKSPACE/ci-tests/build_scipts/common/basic-vfs.sh"
+      - iozone_vfs_minmdcache:
+          recheck_val: 'iozone_vfs_minmdcache$'
+          script_name: "$WORKSPACE/ci-tests/build_scipts/common/basic-vfs-minmd.sh" 
+
+    jobs:
+      - '{name}_{flavours}'
+
+- job-template:
+    name: '{name}_{flavours}'
+    node: cico-workspace
+    project-type: freestyle
+    concurrent: true 
+    allow-manual-triggers: true 
+
+    properties:
+    - discarder
+
+    scm:
+    - ci-tests
+
+    parameters:
+    parameters:
+    - string:
+        default: '{script_name}'
+        description: Test script to execute on the reserved machine acting as a server.
+        name: SERVER_TEST_SCRIPT
+    - string:
+        default: "$WORKSPACE/ci-tests/build_scipts/iozone/client.sh"
+        description: Test script to execute on the reserved machine acting as a client.
+        name: CLIENT_TEST_SCRIPT
+    - nfs_variables:
+        export_var: 'ganeshaExport'
+    - gerrit_variables
+    - centos_variables
+
+    builders:
+    - shell: !include-raw-escape: scripts/common.sh 
+
+    triggers:
+    - gerrithub-trigger:
+        option: '{recheck_val}'
+
+    wrappers:
+    - cleanup-ws

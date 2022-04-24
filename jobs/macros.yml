@@ -1,0 +1,116 @@
+- scm:
+    name: ci-tests
+    scm:
+    - git:
+        branches:
+        - 'refs/heads/centos-ci'
+        browser: auto
+        skip-tag: true
+        shallow-clone: true
+        url: https://github.com/nfs-ganesha/ci-tests.git 
+        basedir: "$WORKSPACE/ci-tests"
+
+- property:
+    name: nfs-github
+    properties:
+    - github:
+        url: https://github.com/nfs-ganesha/nfs-ganesha/
+
+- property:
+    name: nfs-ntirpc
+    properties:
+    - github:
+        url: https://github.com/nfs-ganesha/ntirpc/
+
+- property:
+    name: discarder
+    properties:
+    - build-discarder:
+        days-to-keep: 14
+
+- wrapper:
+    name: ssh-agent
+    wrappers:
+      - ssh-agent-credentials:
+          users: ''
+
+- wrapper:
+    name: cleanup-ws
+    wrappers:
+      - workspace-cleanup:
+          include: ''
+
+- trigger:
+    name: gerrithub-trigger
+    triggers:
+      - gerrit:
+          server-name: nfs-ganesha-gerrithub
+          silent: true
+          trigger-on:
+            - patchset-created-event:
+                exclude-drafts: true
+                exclude-no-code-change: true
+            - comment-added-contains-event:
+                comment-contains-value: 'recheck {option}'
+          projects:
+            - project-compare-type: PLAIN
+              project-pattern: 'ffilz/nfs-ganesha'
+              branches:
+                - branch-pattern: '**'
+                  branch-compare-type: ANT
+
+- parameter:
+    name: script_variables
+    parameters:
+    - string:
+        default: "$WORKSPACE/ci-tests/build_scipts/common/basic-gluster.sh" 
+        description: Test script to execute on the reserved machine acting as a server.
+        name: SERVER_TEST_SCRIPT
+    - string:
+        default: "$WORKSPACE/ci-tests/build_scipts/common/client.sh"
+        description: Test script to execute on the reserved machine acting as a client.
+        name: CLIENT_TEST_SCRIPT
+
+- parameter:
+    name: nfs_variables
+    parameters:
+    - string:
+        default: ''
+        description: URL to the .repo file to use for installing NFS-Ganesha
+        name: YUM_REPO
+    - string:
+        default: '{export_var}'
+        description: 'Name of the NFS-export to create.'
+        name: EXPORT
+
+- parameter:
+    name: gerrit_variables
+    parameters:
+    - string:
+        default: 'review.gerrithub.io'
+        description: 'Hostname of the Gerrit server.'
+        name: GERRIT_HOST
+    - string:
+        default: ffilz/nfs-ganesha
+        description: Project name from Gerrit (like "ffilz/nfs-ganesha").
+        name: GERRIT_PROJECT
+    - string:
+        default: refs/heads/next
+        description: Git reference to fetch from the Gerrit project.
+        name: GERRIT_REFSPEC
+
+- parameter:
+    name: centos_variables
+    parameters:
+    - choice:
+        choices:
+        - "7"
+        - "6"
+        description: 'CentOS version to run the tests on (server + client)'
+        name: CENTOS_VERSION
+    - choice:
+        choices:
+        - x86_64
+        - i386
+        description: 'CentOS architecture to run the tests on (server + client)'
+        name: CENTOS_ARCH

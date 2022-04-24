@@ -1,0 +1,51 @@
+- job:
+    name: nfs-ganesha_trigger-checkpatch 
+    node: cico-workspace
+    description: "Run checkpatch on nfs-ganesha. This job is triggered by sending a change to https://review.gerrithub.io/#/q/project:ffilz/nfs-ganesha for review\n\nNote: it is possible to retrigger a test for a change by including recheck checkpatch in a comment on GerritHub." 
+    project-type: freestyle
+    concurrent: false 
+    allow-manual-triggers: false
+
+    properties:
+    - discarder
+    - nfs-github
+
+    parameters:
+    - string:
+        default: false
+        description: 'Whether to submit checkpatch result'
+        name: GERRIT_PUBLISH 
+    - string:
+        default: next
+        description: 'Reference used to push to gerrit e.g. 243215/3'
+        name: GERRIT_REF 
+    - string:
+        default: next
+        description: 'git commit revision to check'
+        name: REVISION 
+    - string:
+        default: jenkins-glusterorg
+        description: 'gerrit user to comment with'
+        name: GERRIT_USER 
+
+    builders:
+    - shell: !include-raw: scripts/checkpatch.sh
+
+    triggers:
+      - gerrit:
+          server-name: nfs-ganesha-gerrithub 
+          silent: true
+          trigger-on:
+            - patchset-created-event:
+                exclude-drafts: true
+            - comment-added-contains-event: 
+                comment-contains-value: 'recheck checkpatch'
+          projects:
+            - project-compare-type: PLAIN
+              project-pattern: 'ffilz/nfs-ganesha'
+              branches:
+                - branch-pattern: '**' 
+                  branch-compare-type: ANT
+
+    wrappers:
+    - ssh-agent

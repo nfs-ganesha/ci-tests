@@ -1,0 +1,26 @@
+- job:
+    name: nfs_ganesha_code_compilation 
+    node: cico-workspace
+    description: 'Run code compilation for nfs-ganesha against the latest build of Ganesha with FSAL_GLUSTER.'
+    project-type: freestyle
+    concurrent: true
+    allow-manual-triggers: true
+
+    properties:
+    - discarder
+
+    parameters:
+    - nfs_variables:
+        export_var: 'code_compilation'
+    - gerrit_variables
+    - centos_variables
+
+    triggers:
+    - gerrithub-trigger:
+        option: 'code_compilation'
+
+    builders:
+    - shell: !include-raw-escape: scripts/common.sh
+
+    wrappers:
+    - cleanup-ws
