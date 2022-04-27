@@ -1,0 +1,34 @@
+- job:
+    name: nfs_ganesha_dbench 
+    node: cico-workspace
+    description: 'Run dbench test suite against the latest build of Ganesha with FSAL_GLUSTER.'
+    project-type: freestyle
+    concurrent: true
+    allow-manual-triggers: true
+
+    properties:
+    - discarder
+
+    parameters:
+    - string:
+        default: "$WORKSPACE/ci-tests/build_scipts/common/basic-gluster.sh"
+        description: Test script to execute on the reserved machine acting as a server.
+        name: SERVER_TEST_SCRIPT
+    - string:
+        default: "$WORKSPACE/ci-tests/build_scipts/dbench/client.sh"
+        description: Test script to execute on the reserved machine acting as a client.
+        name: CLIENT_TEST_SCRIPT
+    - nfs_variables:
+        export_var: 'ganeshaExport'
+    - gerrit_variables
+    - centos_variables
+
+    triggers:
+    - gerrithub-trigger:
+        option: 'dbench'
+
+    builders:
+    - shell: !include-raw-escape: scripts/common.sh
+
+    wrappers:
+    - cleanup-ws

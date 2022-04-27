@@ -1,0 +1,38 @@
+- project:
+    name: 'nfs-ganesha_trigger-fsal'
+    product:
+      - cephfs
+      - gluster
+      - rgw
+
+    jobs:
+      - '{name}_{product}'
+
+- job-template:
+    name: '{name}_{product}'
+    node: cico-workspace
+    project-type: freestyle
+    concurrent: false
+    allow-manual-triggers: false 
+
+    properties:
+    - discarder 
+    - nfs-github
+
+    scm:
+    - ci-tests
+
+    parameters:
+    - string:
+        default: "$WORKSPACE/ci-tests/build_scripts/build-fsal/build-fsal_{product}.sh"
+        description: Test script to execute on the reserved machine, should move to the some NFS-Ganesha upstream testing repo at one point.
+        name: TEST_SCRIPT
+    - gerrit_variables
+    - centos_variables
+
+    builders:
+    - shell: !include-raw-escape: scripts/fsal-build.sh
+
+    triggers:
+    -  gerrithub-trigger:
+         option: '{product}'

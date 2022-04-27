@@ -1,0 +1,25 @@
+- job:
+    name: nfs-ganesha_trigger-tests 
+    node: cico-workspace
+    project-type: freestyle
+    concurrent: true
+    allow-manual-triggers: true
+
+    properties:
+    - discarder
+    - nfs-github
+
+    parameters:
+    - string:
+        default: "$WORKSPACE/ci-tests/build_scripts/build-tests/build-tests.sh"
+        description: Test script to execute on the reserved machine, should move to the some NFS-Ganesha upstream testing repo at one point.
+        name: TEST_SCRIPT
+    - gerrit_variables
+    - centos_variables
+
+    builders:
+    - shell: !include-raw: scripts/tests.sh
+
+    triggers:
+    - gerrithub-trigger:
+        option: 'tests'

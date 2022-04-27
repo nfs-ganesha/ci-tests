@@ -1,0 +1,32 @@
+- job:
+    name: nfs-ganesha_build-libntirpc 
+    node: cico-workspace
+    description: 'Build RPMs for libntirpc.'
+    project-type: freestyle
+    concurrent: true
+    allow-manual-triggers: false 
+
+    scm:
+    - ci-tests
+
+    properties:
+    - discarder
+    - nfs-github
+
+    parameters:
+    - string:
+        default: "$WORKSPACE/ci-tests/build_scripts/build-libntirpc/build-libntirpc.sh"
+        description: 'Test script to execute on the reserved machine.'
+        name: TEST_SCRIPT
+    - string:
+        default: 'https://raw.githubusercontent.com/nfs-ganesha/ci-tests/centos-ci/nightly-builds/nfs-ganesha/'
+        description: 'URL pointing to the directory with the templates for when building the source RPM and .repo file.'
+        name: TEMPLATES_URL
+    - centos_variables
+
+    builders:
+    - shell: |
+        python $WORKSPACE/ci-tests/build_scripts/build-libntirpc/get-node.py
+
+    wrappers:
+    - cleanup-ws

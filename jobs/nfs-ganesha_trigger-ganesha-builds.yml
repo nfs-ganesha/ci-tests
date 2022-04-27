@@ -1,0 +1,36 @@
+- job:
+    name: nfs-ganesha_trigger-ganesha-builds
+    node: cico-workspace
+    project-type: freestyle
+    concurrent: true 
+    allow-manual-triggers: false 
+
+    properties:
+    - nfs-github
+
+    scm:
+    - git:
+        branches:
+        - '**'
+        url: https://github.com/nfs-ganesha/nfs-ganesha.git 
+
+    builders:
+      - trigger-builds:
+        - project: nfs-ganesha_build-ganesha
+          predefined-parameters: |
+            CENTOS_VERSION=7
+            CENTOS_ARCH=x86_64
+      - trigger-builds:
+        - project: nfs-ganesha_build-ganesha
+          predefined-parameters: |
+            CENTOS_VERSION=6
+            CENTOS_ARCH=x86_64
+      - trigger-builds:
+        - project: nfs-ganesha_build-ganesha
+          predefined-parameters: |
+            CENTOS_VERSION=6
+            CENTOS_ARCH=i386
+
+    triggers:
+      - pollscm:
+          cron: "@daily" 

@@ -1,0 +1,23 @@
+- job:
+    name: nfs_ganesha_cthon04 
+    node: cico-workspace
+    description: 'Run cthon04 tests against the latest build of Ganesha with FSAL_GLUSTER.'
+    project-type: freestyle
+    concurrent: true
+    allow-manual-triggers: true
+
+    properties:
+    - discarder
+    - github:
+        url: http://git.linux-nfs.org/?p=steved/cthon04.git;a=summary/ 
+
+    parameters:
+    - nfs_variables:
+        export_var: 'cthon04'
+
+    builders:
+    - shell: |
+        python $WORKSPACE/ci-tests/build_scripts/common/basic-gluster-duffy.py
+
+    wrappers:
+    - cleanup-ws
