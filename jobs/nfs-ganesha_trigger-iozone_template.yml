@@ -51,3 +51,4 @@
 
     wrappers:
     - cleanup-ws
+    - gerrithub_key

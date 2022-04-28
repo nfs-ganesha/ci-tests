@@ -23,3 +23,6 @@
     triggers:
     - gerrithub-trigger:
         option: 'tests'
+
+    wrappers:
+    - gerrithub_key
