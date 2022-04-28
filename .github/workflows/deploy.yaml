@@ -11,6 +11,8 @@ jobs:
     if: github.repository == 'nfs-ganesha/ci-tests'
     steps:
       - uses: actions/checkout@v2
+        with:
+          ref: 'centos-ci'
       - name: build JJB container image
         run: docker build -t nfs-ganesha-ci-tests -f tests/Containerfile .
       - name: update Jenkins Jobs
