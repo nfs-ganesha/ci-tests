@@ -114,3 +114,11 @@
         - i386
         description: 'CentOS architecture to run the tests on (server + client)'
         name: CENTOS_ARCH
+
+- wrapper:
+    name: gerrithub_key
+    wrappers:
+    - credentials-binding:
+         - file:
+            credential-id: GERRITHUB_PRIVATE_KEY
+            variable: GERRITHUB_KEY

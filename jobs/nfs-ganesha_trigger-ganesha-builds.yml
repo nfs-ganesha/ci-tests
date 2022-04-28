@@ -4,6 +4,7 @@
     project-type: freestyle
     concurrent: true 
     allow-manual-triggers: false 
+    disabled: true
 
     properties:
     - nfs-github

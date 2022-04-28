@@ -36,3 +36,6 @@
     triggers:
     -  gerrithub-trigger:
          option: '{product}'
+
+    wrappers:
+    - gerrithub_key

@@ -26,6 +26,6 @@ publish_checkpatch() {
 
 # cd to ~/checkpatch for checkpatch.pl as a hack to get config without modifying $HOME
 GIT_DIR=nfs-ganesha/.git git show --format=email      | \
-  ( cd ~/checkpatch && ./checkpatch.pl -q - || true ) | \
-  python ~/checkpatch/checkpatch-to-gerrit-json.py    | \
+  ( cd $WORKSPACE/ci-tests/build_scripts/checkpatch && ./checkpatch.pl -q - || true ) | \
+  python $WORKSPACE/ci-tests/build_scripts/checkpatch/checkpatch-to-gerrit-json.py    | \
   publish_checkpatch
