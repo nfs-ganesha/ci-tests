@@ -6,16 +6,19 @@
     concurrent: true
     allow-manual-triggers: true
 
+    scm:
+    - ci-tests
+
     properties:
     - discarder
 
     parameters:
     - string:
-        default: "$WORKSPACE/ci-tests/build_scipts/common/basic-gluster.sh"
+        default: "$WORKSPACE/ci-tests/build_scripts/common/basic-gluster.sh"
         description: Test script to execute on the reserved machine acting as a server.
         name: SERVER_TEST_SCRIPT
     - string:
-        default: "$WORKSPACE/ci-tests/build_scipts/dbench/client.sh"
+        default: "$WORKSPACE/ci-tests/build_scripts/dbench/client.sh"
         description: Test script to execute on the reserved machine acting as a client.
         name: CLIENT_TEST_SCRIPT
     - nfs_variables:
@@ -28,7 +31,7 @@
         option: 'dbench'
 
     builders:
-    - shell: !include-raw-escape: scripts/common.sh
+    - shell: !include-raw: scripts/common.sh
 
     wrappers:
     - cleanup-ws

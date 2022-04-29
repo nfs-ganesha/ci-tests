@@ -6,6 +6,9 @@
     concurrent: true
     allow-manual-triggers: true
 
+    scm:
+    - ci-tests
+
     properties:
     - discarder
     - github:
