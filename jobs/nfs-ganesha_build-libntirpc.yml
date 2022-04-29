@@ -11,7 +11,7 @@
 
     properties:
     - discarder
-    - nfs-github
+    - nfs-ntirpc
 
     parameters:
     - string:
@@ -19,7 +19,7 @@
         description: 'Test script to execute on the reserved machine.'
         name: TEST_SCRIPT
     - string:
-        default: 'https://raw.githubusercontent.com/nfs-ganesha/ci-tests/centos-ci/nightly-builds/nfs-ganesha/'
+        default: "$WORKSPACE/ci-tests/build_scripts/build-libntirpc/template_files/"
         description: 'URL pointing to the directory with the templates for when building the source RPM and .repo file.'
         name: TEMPLATES_URL
     - centos_variables

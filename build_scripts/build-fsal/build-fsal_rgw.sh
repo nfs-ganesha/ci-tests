@@ -37,7 +37,7 @@ python2-devel
 userspace-rcu-devel
 "
 
-git clone ${GIT_REPO}
+git clone --depth=1 ${GIT_REPO}
 cd $(basename "${GERRIT_PROJECT}")
 git fetch origin ${GERRIT_REFSPEC} && git checkout FETCH_HEAD
 

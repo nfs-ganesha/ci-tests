@@ -32,7 +32,7 @@ yum -y install git rpm-build gcc gcc-c++ mock createrepo_c
 # clone the repository, github is faster than our Gerrit
 #git clone https://review.gluster.org/glusterfs
 # git clone https://github.com/gluster/glusterfs
-git clone https://github.com/nfs-ganesha/nfs-ganesha.git
+git clone --depth=1 https://github.com/nfs-ganesha/nfs-ganesha.git
 pushd nfs-ganesha
 
 # switch to the branch we want to build

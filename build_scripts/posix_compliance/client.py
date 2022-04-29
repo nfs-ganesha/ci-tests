@@ -32,7 +32,7 @@ if rtn_code != 0:
 
 #Cloning nfs ganesha specific posix compliance test suite
 logging.info("Cloning nfs ganesha specific posix compliance test suite")
-cmd = "rm -rf %s && git clone %s" % (posix_home, posix_test_repo)
+cmd = "rm -rf %s && git clone --depth=1 %s" % (posix_home, posix_test_repo)
 logging.info("Executing cmd: %s" % cmd)
 rtn_code = subprocess.call(cmd, shell=True)
 if rtn_code != 0:

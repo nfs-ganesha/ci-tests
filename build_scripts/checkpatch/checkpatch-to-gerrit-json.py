@@ -40,7 +40,7 @@ def main(fp=sys.stdin):
             'message': 'Checkpatch OK',
             'notify': 'NONE'
         }
-    print json.dumps(output)
+    print (json.dumps(output))
 
 if __name__ == '__main__':
     main()

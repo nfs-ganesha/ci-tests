@@ -37,6 +37,8 @@ if rtn_code != 0:
     print "Building pynfs test suite failed"
     sys.exit(1)
 
+subprocess.call("sleep 600", shell=True)
+
 #Run pynfs test suite
 print "running pynfs 4.0"
 log_file40 = "/tmp/pynfs" + str(int(time.time())) + ".log"

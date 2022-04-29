@@ -1,4 +1,5 @@
-set -o pipefail
+set -o pipefail 
+set -x
 
 if [[ -n "$GERRIT_REFSPEC" ]]; then
   GERRIT_REF="$GERRIT_REFSPEC"
@@ -6,8 +7,10 @@ if [[ -n "$GERRIT_REFSPEC" ]]; then
   GERRIT_PUBLISH=true
 fi
 
+#ssh -o 'StrictHostKeyChecking no' -p 29418 $GERRIT_USER@review.gerrithub.io -v
+
 if ! [ -d nfs-ganesha ]; then
-  git clone -o gerrit ssh://$GERRIT_USER@review.gerrithub.io:29418/ffilz/nfs-ganesha.git
+  GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no" git clone --depth=1 -o gerrit ssh://$GERRIT_USER@review.gerrithub.io:29418/ffilz/nfs-ganesha.git -v
 fi
 
 ( cd nfs-ganesha && git fetch gerrit $GERRIT_REF && git checkout $REVISION )
@@ -29,3 +32,5 @@ GIT_DIR=nfs-ganesha/.git git show --format=email      | \
   ( cd $WORKSPACE/ci-tests/build_scripts/checkpatch && ./checkpatch.pl -q - || true ) | \
   python $WORKSPACE/ci-tests/build_scripts/checkpatch/checkpatch-to-gerrit-json.py    | \
   publish_checkpatch
+
+

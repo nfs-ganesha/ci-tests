@@ -18,7 +18,7 @@ set -e
 yum -y install git rpm-build mock createrepo_c
 
 # clone the repository
-git clone https://github.com/nfs-ganesha/ntirpc.git
+git clone --depth=1 https://github.com/nfs-ganesha/ntirpc.git
 pushd ntirpc
 
 # switch to the branch we want to build
@@ -31,7 +31,7 @@ GIT_HASH="$(git log -1 --format=%h)"
 VERSION="${GIT_VERSION}.$(date +%Y%m%d).${GIT_HASH}"
 
 # generate the tar.gz archive
-curl -L ${TEMPLATES_URL}/libntirpc.spec.in | sed s/XXVERSIONXX/${VERSION}/ > libntirpc.spec
+${TEMPLATES_URL}/libntirpc.spec.in | sed s/XXVERSIONXX/${VERSION}/ > libntirpc.spec
 tar czf ../ntirpc-${VERSION}.tar.gz --exclude-vcs ../ntirpc
 popd
 
@@ -54,7 +54,7 @@ pushd ${RESULTDIR}
 createrepo_c .
 
 # create the .repo file pointing to the just built+latest version
-curl -L ${TEMPLATES_URL}/libntirpc.repo.in | sed s/XXVERSIONXX/${GIT_VERSION}/ > ../../../libntirpc-${GIT_VERSION}.repo
+${TEMPLATES_URL}/libntirpc.repo.in | sed s/XXVERSIONXX/${GIT_VERSION}/ > ../../../libntirpc-${GIT_VERSION}.repo
 ln -sf libntirpc-${GIT_VERSION}.repo ../../../libntirpc-latest.repo
 popd
 
