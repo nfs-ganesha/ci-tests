@@ -34,7 +34,7 @@
 
     builders:
     - shell: | 
-        python $WORKSPACE/ci-tests/build_scipts/common/basic-gluster-duffy.py 
+        python $WORKSPACE/ci-tests/build_scripts/common/basic-gluster-duffy.py 
 
     wrappers:
     - cleanup-ws

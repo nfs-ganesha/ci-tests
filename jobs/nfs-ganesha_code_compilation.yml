@@ -20,7 +20,7 @@
         option: 'code_compilation'
 
     builders:
-    - shell: !include-raw-escape: scripts/common.sh
+    - shell: !include-raw: scripts/common.sh
 
     wrappers:
     - cleanup-ws

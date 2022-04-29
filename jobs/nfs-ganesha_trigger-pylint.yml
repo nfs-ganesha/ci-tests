@@ -23,7 +23,7 @@
         option: 'pylint'
 
     builders:
-    - shell: !include-raw-escape: scripts/pylint.sh
+    - shell: !include-raw: scripts/pylint.sh
 
     wrappers:
     - gerrithub_key

@@ -12,7 +12,7 @@
 
     parameters:
     - string:
-        default: "$WORKSPACE/ci-tests/build_scipts/common/basic-gluster.sh"
+        default: "$WORKSPACE/ci-tests/build_scripts/common/basic-gluster.sh"
         description: Test script to execute on the reserved machine acting as a server.
         name: SERVER_TEST_SCRIPT
     - string:
@@ -33,7 +33,7 @@
         name: ENABLE_ACL
 
     builders:
-    - shell: !include-raw-escape: scripts/common.sh
+    - shell: !include-raw: scripts/common.sh
 
     wrappers:
     - cleanup-ws

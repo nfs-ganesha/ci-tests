@@ -57,6 +57,12 @@ server_env+=" GLUSTER_VOLUME='%s'" % os.getenv("EXPORT")
 server_env+=" ENABLE_ACL='%s'" % os.getenv("ENABLE_ACL", "")
 server_env+=" SECURITY_LABEL='%s'" % os.getenv("SECURITY_LABEL", "")
 
+job_name=os.environ['JOB_NAME']
+if job_name == "nfs_ganesha_iozone_vfs" or job_name == "nfs_ganesha_iozone_vfs_minmdcache":
+    server_env+=" VFS_VOLUME='%s'" % os.getenv("EXPORT")
+else:
+    server_env+=" GLUSTER_VOLUME='%s'" % os.getenv("EXPORT")
+
 # add the export with environment to ~/.bashrc
 cmd="""ssh -t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@%s '
 tee -a ~/.bashrc' <<< "%s"
@@ -65,7 +71,14 @@ subprocess.call(cmd, shell=True)
 
 copy_serverscript="""scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no %s root@%s:./%s
 """%(server_script, b['hosts'][0], os.path.basename(server_script))
-subprocess.call(copy_serverscript, shell=True)
+copy_ret=subprocess.call(copy_serverscript, shell=True)
+if copy_ret == 0:
+    print ("Successfully copied")
+else:
+    print ("Copy failed")
+
+copy_verify="""ssh -t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@%s 'ls -l'"""%(b['hosts'][0])
+subprocess.call(copy_verify, shell=True)
 
 cmd="""ssh -t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@%s 'bash %s'""" % (b['hosts'][0], os.path.basename(server_script))
 rtn_code=subprocess.call(cmd, shell=True)
