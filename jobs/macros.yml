@@ -63,11 +63,11 @@
     name: script_variables
     parameters:
     - string:
-        default: "$WORKSPACE/ci-tests/build_scipts/common/basic-gluster.sh" 
+        default: "$WORKSPACE/ci-tests/build_scripts/common/basic-gluster.sh"
         description: Test script to execute on the reserved machine acting as a server.
         name: SERVER_TEST_SCRIPT
     - string:
-        default: "$WORKSPACE/ci-tests/build_scipts/common/client.sh"
+        default: "$WORKSPACE/ci-tests/build_scripts/common/client.sh"
         description: Test script to execute on the reserved machine acting as a client.
         name: CLIENT_TEST_SCRIPT
 

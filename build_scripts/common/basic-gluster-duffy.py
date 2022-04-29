@@ -89,7 +89,7 @@ if rtn_code == 0:
     elif client_script.endswith(".sh"):
         interpreter_to_run = "bash"
     copy_clientscript="""scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no %s root@%s:./%s
-                      """%(client_script, os.path.basename(client_script))
+                      """%(client_script, b['hosts'][1], os.path.basename(client_script))
     subprocess.call(copy_clientscript, shell=True)
     cmd="""ssh -t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@%s '%s %s'""" % (b['hosts'][1], interpreter_to_run, os.path.basename(client_script))
     rtn_code=subprocess.call(cmd, shell=True)

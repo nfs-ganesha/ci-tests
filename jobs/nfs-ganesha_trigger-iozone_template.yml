@@ -3,13 +3,13 @@
     flavours:
       - iozone:
           recheck_val: 'iozone$'
-          script_name: "$WORKSPACE/ci-tests/build_scipts/common/basic-gluster.sh"
+          script_name: "$WORKSPACE/ci-tests/build_scripts/common/basic-gluster.sh"
       - iozone_vfs:
           recheck_val: 'iozone_vfs$'
-          script_name: "$WORKSPACE/ci-tests/build_scipts/common/basic-vfs.sh"
+          script_name: "$WORKSPACE/ci-tests/build_scripts/common/basic-vfs.sh"
       - iozone_vfs_minmdcache:
           recheck_val: 'iozone_vfs_minmdcache$'
-          script_name: "$WORKSPACE/ci-tests/build_scipts/common/basic-vfs-minmd.sh" 
+          script_name: "$WORKSPACE/ci-tests/build_scripts/common/basic-vfs-minmd.sh" 
 
     jobs:
       - '{name}_{flavours}'
@@ -34,7 +34,7 @@
         description: Test script to execute on the reserved machine acting as a server.
         name: SERVER_TEST_SCRIPT
     - string:
-        default: "$WORKSPACE/ci-tests/build_scipts/iozone/client.sh"
+        default: "$WORKSPACE/ci-tests/build_scripts/iozone/client.sh"
         description: Test script to execute on the reserved machine acting as a client.
         name: CLIENT_TEST_SCRIPT
     - nfs_variables:
