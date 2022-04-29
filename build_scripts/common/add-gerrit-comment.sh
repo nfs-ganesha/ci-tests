@@ -95,7 +95,7 @@ if [ -n "${GERRIT_PATCHSET_REVISION}" ]
 then
     ssh \
         -l jenkins-glusterorg \
-        -i ~/.ssh/gerrithub@gluster.org \
+        -i $GERRITHUB_KEY \
         -o StrictHostKeyChecking=no \
         -p ${GERRIT_PORT} \
         ${GERRIT_HOST} \
