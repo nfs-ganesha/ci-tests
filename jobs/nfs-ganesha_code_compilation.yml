@@ -6,10 +6,21 @@
     concurrent: true
     allow-manual-triggers: true
 
+    scm:
+    - ci-tests
+
     properties:
     - discarder
 
     parameters:
+    - string:
+        default: "$WORKSPACE/ci-tests/build_scripts/common/basic-gluster.sh"
+        description: Test script to execute on the reserved machine acting as a server.
+        name: SERVER_TEST_SCRIPT
+    - string:
+        default: "$WORKSPACE/ci-tests/build_scripts/code-compilation/client.sh"
+        description: Test script to execute on the reserved machine acting as a client.
+        name: CLIENT_TEST_SCRIPT
     - nfs_variables:
         export_var: 'code_compilation'
     - gerrit_variables
