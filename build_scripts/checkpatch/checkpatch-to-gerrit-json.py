@@ -22,7 +22,7 @@ def main(fp=sys.stdin):
         if match is not None:
             filename = match.group(1)
             lineno   = match.group(2)
-            report = { 'line': lineno, 'message': line.strip() }
+            report = { 'line': lineno, 'message': line.strip(), 'unresolved': 'True' }
         else:
             filename = '/COMMIT_MSG'
             report = { 'message': line.strip() }

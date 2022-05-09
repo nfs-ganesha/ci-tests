@@ -6,6 +6,9 @@
     concurrent: false 
     allow-manual-triggers: false
 
+    scm:
+    - ci-tests
+
     properties:
     - discarder
     - nfs-github

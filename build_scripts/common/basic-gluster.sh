@@ -69,13 +69,27 @@ else
 	GIT_URL="https://${GERRIT_HOST}/${GERRIT_PROJECT}"
 
         BASE_PACKAGES="git bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel rpm-build redhat-rpm-config"
-       	yum -y install libgfapi-devel
- 	yum -y install ${BASE_PACKAGES} libnfsidmap-devel libwbclient-devel libcap-devel libblkid-devel userspace-rcu-devel
+        if [ "${CENTOS_VERSION}" = "7" ]; then
+            yum -y install libgfapi-devel
+            yum -y install ${BASE_PACKAGES} libnfsidmap-devel libwbclient-devel libcap-devel libblkid-devel userspace-rcu-devel userspace-rcu
+        elif [ "${CENTOS_VERSION}" = "8-stream" ]; then
+            yum -y install libgfapi-devel
+            yum -y install ${BASE_PACKAGES}
+            yum -y --enablerepo=powertools install libnfsidmap-devel libwbclient-devel libcap-devel libblkid-devel userspace-rcu-devel
+        fi
 
 	git init "${GIT_REPO}"
 	pushd "${GIT_REPO}"
 
-	git fetch "${GIT_URL}" "${GERRIT_REFSPEC}"
+        #Its observed that fetch is failing so this little hack is added! Will delete in future if it turns out useless!
+	git fetch --depth=1 "${GIT_URL}" "${GERRIT_REFSPEC}" > /dev/null
+        if [ $? = 0 ]; then
+            echo "Fetch succeeded"
+        else
+            sleep 2
+            git fetch "${GIT_URL}" "${GERRIT_REFSPEC}"
+        fi       
+
 	git checkout -b "${GERRIT_REFSPEC}" FETCH_HEAD
 
 	# update libntirpc
