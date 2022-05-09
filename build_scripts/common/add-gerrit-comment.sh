@@ -97,7 +97,7 @@ then
         -l jenkins-glusterorg \
         -i $GERRITHUB_KEY \
         -o StrictHostKeyChecking=no \
-        -p ${GERRIT_PORT} \
+        -p 29418 \
         ${GERRIT_HOST} \
         gerrit review \
             --message "'${MESSAGE}'" \

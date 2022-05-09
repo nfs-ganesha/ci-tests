@@ -6,9 +6,13 @@
     concurrent: true
     allow-manual-triggers: true
 
+    scm:
+    - ci-tests
+
     properties:
     - discarder
-    - nfs-github
+    - github:
+        url: http://git.linux-nfs.org/?p=bfields/pynfs.git;a=summary/
 
     parameters:
     - string:
@@ -34,6 +38,10 @@
 
     builders:
     - shell: !include-raw: scripts/common.sh
+
+    triggers:
+    - gerrithub-trigger:
+        option: 'pynfs acl'
 
     wrappers:
     - cleanup-ws

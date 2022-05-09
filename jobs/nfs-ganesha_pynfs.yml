@@ -5,7 +5,9 @@
     project-type: freestyle
     concurrent: true
     allow-manual-triggers: true
-    disabled: true
+
+    scm:
+    - ci-tests
 
     properties:
     - discarder

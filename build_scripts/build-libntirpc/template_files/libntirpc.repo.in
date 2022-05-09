@@ -1,0 +1,5 @@
+[libntirpc-nightly-XXVERSIONXX]
+name=Gluster Nightly builds (XXVERSIONXX)
+baseurl=http://artifacts.ci.centos.org/nfs-ganesha/nightly/libntirpc/XXVERSIONXX/$releasever/$basearch
+enabled=1
+gpgcheck=0
