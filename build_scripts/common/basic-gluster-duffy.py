@@ -63,6 +63,9 @@ if job_name == "nfs_ganesha_iozone_vfs" or job_name == "nfs_ganesha_iozone_vfs_m
 else:
     server_env+=" GLUSTER_VOLUME='%s'" % os.getenv("EXPORT")
 
+if os.getenv("CENTOS_VERSION") != "":
+    server_env+=" CENTOS_VERSION='%s'" % os.getenv("CENTOS_VERSION")
+
 # add the export with environment to ~/.bashrc
 cmd="""ssh -t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@%s '
 tee -a ~/.bashrc' <<< "%s"
