@@ -40,9 +40,15 @@ scp_cmd="""scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no %s ro
 """%(script_url, b['hosts'][0])
 subprocess.call(scp_cmd, shell=True)
 
+scp_templates="""scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -r %s root@%s:/root/
+"""%(templates_url, b['hosts'][0])
+subprocess.call(scp_templates, shell=True)
+
+subprocess.call("sleep 300", shell=True)
+
 cmd="""ssh -t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@%s '
         CENTOS_VERSION="%s" CENTOS_ARCH="%s" TEMPLATES_URL="%s" bash build.sh'
-""" % (b['hosts'][0], ver, arch, templates_url)
+""" % (b['hosts'][0], ver, arch, "/root/template_files")
 rtn_code=subprocess.call(cmd, shell=True)
 
 # copy the mock/resultdir logs for archiving as artifacts by the Jenkins job
