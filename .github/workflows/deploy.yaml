@@ -16,4 +16,4 @@ jobs:
       - name: build JJB container image
         run: docker build -t nfs-ganesha-ci-tests -f tests/Containerfile .
       - name: update Jenkins Jobs
-        run: docker run --rm --env="JENKINS_API_KEY=${{ secrets.JENKINS_API_KEY }}" --entrypoint=tests/deploy-nfs-ganesha-ci.sh nfs-ganesha-ci-tests:latest
+        run: docker run --rm --env="JENKINS_API_KEY=${{ secrets.JENKINS_API_KEY2 }}" --entrypoint=tests/deploy-nfs-ganesha-ci.sh nfs-ganesha-ci-tests:latest
