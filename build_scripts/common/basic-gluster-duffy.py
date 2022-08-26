@@ -47,6 +47,7 @@ while retries < max_retries:
     print("Waiting %d seconds before retrying #%d..." % (retry_delay, retries))
     time.sleep(retry_delay)
 
+print (b['hosts'])
 
 # NFS-Ganesha Server (parameters need double escape, passed on ssh commandline)
 server_env="export GERRIT_HOST='%s'" % os.getenv("GERRIT_HOST")
