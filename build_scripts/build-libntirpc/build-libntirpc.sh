@@ -31,6 +31,7 @@ GIT_HASH="$(git log -1 --format=%h)"
 VERSION="${GIT_VERSION}.$(date +%Y%m%d).${GIT_HASH}"
 
 # generate the tar.gz archive
+chmod +x ${TEMPLATES_URL}/libntirpc.spec.in
 ${TEMPLATES_URL}/libntirpc.spec.in | sed s/XXVERSIONXX/${VERSION}/ > libntirpc.spec
 tar czf ../ntirpc-${VERSION}.tar.gz --exclude-vcs ../ntirpc
 popd
