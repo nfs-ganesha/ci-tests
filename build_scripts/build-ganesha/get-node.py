@@ -31,6 +31,11 @@ get_nodes_url="%s/Node/get?key=%s&ver=%s&arch=%s&count=%s" % (url_base,api,ver,a
 dat=urllib.request.urlopen(get_nodes_url).read()
 b=json.loads(dat)
 
+SSID_FILE=os.getenv("WORKSPACE")+"/cico-ssid"
+ff=open(SSID_FILE, "w")
+ff.write(str(b['ssid'])+'\n')
+ff.close()
+
 # create a rsync.passwd file on the reserved system to store RPMs on artifacts.ci.centos.org
 cmd="echo %s | cut -c1-13 | ssh -t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@%s 'cat > rsync.passwd ; chmod 0600 rsync.passwd'" % (api, b['hosts'][0])
 print (cmd)

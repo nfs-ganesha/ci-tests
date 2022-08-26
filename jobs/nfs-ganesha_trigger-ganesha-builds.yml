@@ -2,7 +2,7 @@
     name: nfs-ganesha_trigger-ganesha-builds
     node: cico-workspace
     project-type: freestyle
-    concurrent: true 
+    concurrent: false
     allow-manual-triggers: false 
 
     properties:

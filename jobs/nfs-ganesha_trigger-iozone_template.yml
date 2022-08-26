@@ -18,7 +18,7 @@
     name: '{name}_{flavours}'
     node: cico-workspace
     project-type: freestyle
-    concurrent: true 
+    concurrent: false
     allow-manual-triggers: true 
 
     properties:
@@ -52,3 +52,6 @@
     wrappers:
     - cleanup-ws
     - gerrithub_key
+
+    publishers:
+    - post_build_task_return-node
