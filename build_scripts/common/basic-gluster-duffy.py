@@ -37,10 +37,10 @@ while retries < max_retries:
         dat=urllib.request.urlopen(get_nodes_url).read()
         b=json.loads(dat)
         if b == "Failed to allocate nodes":
-             print ("Failed to allocate nodes! sleeping for 5 mins.")
-             time.sleep(retry_delay)
-        # all is fine, break out of the loop
-        break
+            print ("Failed to allocate nodes! sleeping for 5 mins.")
+        else:
+            # all is fine, break out of the loop
+            break
     except ValueError as ve:
         print("Failed to parse Duffy response: %s" % (dat))
     except Exception as e:
