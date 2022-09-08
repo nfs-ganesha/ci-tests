@@ -3,7 +3,7 @@
     node: cico-workspace
     decription: '[next/el7/x86_64] Trigger tests whenever a new automated build is available in the YUM repository.'
     project-type: freestyle
-    concurrent: true
+    concurrent: false
     allow-manual-triggers: false 
 
     properties:

@@ -39,3 +39,6 @@
 
     wrappers:
     - gerrithub_key
+
+    publishers:
+    - post_build_task_return-node

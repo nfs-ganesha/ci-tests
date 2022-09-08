@@ -3,7 +3,7 @@
     node: cico-workspace
     description: 'Run pynfs (NFSv4.0) tests against the latest build of Ganesha with FSAL_GLUSTER.'
     project-type: freestyle
-    concurrent: true
+    concurrent: false
     allow-manual-triggers: true
 
     scm:
@@ -41,3 +41,6 @@
     triggers:
     - gerrithub-trigger:
         option: 'pynfs'
+
+    publishers:
+    - post_build_task_return-node
