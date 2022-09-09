@@ -57,6 +57,13 @@ ff=open(SSID_FILE, "w")
 ff.write(str(b['ssid'])+'\n')
 ff.close()
 
+IPS=os.getenv("WORKSPACE")+"/ip_addresses_"+os.getenv("JOB_NAME")+"_"+os.getenv("BUILD_NUMBER")+".txt"
+ffd=open(IPS, "w")
+ffd.write(os.getenv("JOB_NAME")+'\n'+os.getenv("BUILD_NUMBER")+'\n')
+out=subprocess.getoutput("cico inventory | grep %s"%(str(b['ssid'])))
+ffd.write(str(out)+'\n')
+ffd.close()
+
 scp_cmd="""scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no %s root@%s:./build.sh
 """%(script_url, host)
 subprocess.call(scp_cmd, shell=True)
