@@ -3,7 +3,7 @@
     node: cico-workspace
     description: 'Run dbench test suite against the latest build of Ganesha with FSAL_GLUSTER.'
     project-type: freestyle
-    concurrent: true
+    concurrent: false
     allow-manual-triggers: true
 
     scm:
@@ -36,3 +36,6 @@
     wrappers:
     - cleanup-ws
     - gerrithub_key
+
+    publishers:
+    - post_build_task_return-node

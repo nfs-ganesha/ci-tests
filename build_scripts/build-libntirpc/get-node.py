@@ -15,12 +15,13 @@ import json, urllib.request, subprocess, sys, os
 
 url_base="http://admin.ci.centos.org:8080"
 # we just build on CentOS-7/x86_64, CentOS-6 does not have 'mock'?
-ver='7'
-arch='x86_64'
+ver=os.getenv("CENTOS_VERSION")
+arch=os.getenv("CENTOS_ARCH")
 
 count=1
 script_url=os.getenv("TEST_SCRIPT")
 templates_url=os.getenv("TEMPLATES_URL")
+template_path, template_folder = templates_url.rsplit('/',1)
 
 # read the API key for Duffy from the ~/duffy.key file
 api=os.environ['CICO_API_KEY']
@@ -32,6 +33,11 @@ get_nodes_url="%s/Node/get?key=%s&ver=%s&arch=%s&count=%s" % (url_base,api,ver,a
 dat=urllib.request.urlopen(get_nodes_url).read()
 b=json.loads(dat)
 
+SSID_FILE=os.getenv("WORKSPACE")+"/cico-ssid"
+ff=open(SSID_FILE, "w")
+ff.write(str(b['ssid'])+'\n')
+ff.close()
+
 # create a rsync.passwd file on the reserved system to store RPMs on artifacts.ci.centos.org
 cmd="cut -c1-13 < %s | ssh -t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@%s 'cat > rsync.passwd ; chmod 0600 rsync.passwd'" % (api, b['hosts'][0])
 rtn_code=subprocess.call(cmd, shell=True)
@@ -40,20 +46,18 @@ scp_cmd="""scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no %s ro
 """%(script_url, b['hosts'][0])
 subprocess.call(scp_cmd, shell=True)
 
-scp_templates="""scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -r %s root@%s:/root/
+scp_cmd="""scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -r %s root@%s:
 """%(templates_url, b['hosts'][0])
-subprocess.call(scp_templates, shell=True)
-
-subprocess.call("sleep 300", shell=True)
+subprocess.call(scp_cmd, shell=True)
 
 cmd="""ssh -t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@%s '
-        CENTOS_VERSION="%s" CENTOS_ARCH="%s" TEMPLATES_URL="%s" bash build.sh'
-""" % (b['hosts'][0], ver, arch, "/root/template_files")
+        CENTOS_VERSION="%s" CENTOS_ARCH="%s" TEMPLATES_URL="/root/%s" bash build.sh'
+""" % (b['hosts'][0], ver, arch, template_folder)
 rtn_code=subprocess.call(cmd, shell=True)
 
 # copy the mock/resultdir logs for archiving as artifacts by the Jenkins job
 if rtn_code != 0:
-  resultdir="/srv/libntirpc/nightly/%s/%s" % (os.getenv("CENTOS_VERSION"), os.getenv("CENTOS_ARCH"))
+  resultdir="/srv/nightly/libntirpc/next/%s/%s" % (os.getenv("CENTOS_VERSION"), os.getenv("CENTOS_ARCH"))
   cmd="scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@%s:%s/*.log ." % (b['hosts'][0], resultdir)
   subprocess.call(cmd, shell=True)
 

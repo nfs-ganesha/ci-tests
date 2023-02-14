@@ -2,7 +2,7 @@
     name: nfs-ganesha_trigger-tests 
     node: cico-workspace
     project-type: freestyle
-    concurrent: true
+    concurrent: false
     allow-manual-triggers: true
 
     scm:
@@ -29,3 +29,6 @@
 
     wrappers:
     - gerrithub_key
+
+    publishers:
+    - post_build_task_return-node

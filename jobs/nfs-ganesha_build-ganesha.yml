@@ -3,7 +3,7 @@
     node: cico-workspace
     description: 'Build RPMs for NFS-Ganesha.'
     project-type: freestyle
-    concurrent: true
+    concurrent: false
     allow-manual-triggers: true
 
     scm:
@@ -33,3 +33,6 @@
 
     wrappers:
     - cleanup-ws
+
+    publishers:
+    - post_build_task_return-node

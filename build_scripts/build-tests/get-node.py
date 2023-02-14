@@ -52,6 +52,11 @@ if retries == max_retries:
     print("Failed to get systems from Duffy, exiting...")
     sys.exit(1)
 
+SSID_FILE=os.getenv("WORKSPACE")+"/cico-ssid"
+ff=open(SSID_FILE, "w")
+ff.write(str(b['ssid'])+'\n')
+ff.close()
+
 scp_cmd="""scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no %s root@%s:./build.sh
 """%(script_url, host)
 subprocess.call(scp_cmd, shell=True)

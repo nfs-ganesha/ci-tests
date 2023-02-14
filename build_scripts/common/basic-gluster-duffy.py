@@ -36,8 +36,11 @@ while retries < max_retries:
     try:
         dat=urllib.request.urlopen(get_nodes_url).read()
         b=json.loads(dat)
-        # all is fine, break out of the loop
-        break
+        if b == "Failed to allocate nodes":
+            print ("Failed to allocate nodes! sleeping for 5 mins.")
+        else:
+            # all is fine, break out of the loop
+            break
     except ValueError as ve:
         print("Failed to parse Duffy response: %s" % (dat))
     except Exception as e:
@@ -47,6 +50,10 @@ while retries < max_retries:
     print("Waiting %d seconds before retrying #%d..." % (retry_delay, retries))
     time.sleep(retry_delay)
 
+SSID_FILE=os.getenv("WORKSPACE")+"/cico-ssid"
+ff=open(SSID_FILE, "w")
+ff.write(str(b['ssid'])+'\n')
+ff.close()
 
 # NFS-Ganesha Server (parameters need double escape, passed on ssh commandline)
 server_env="export GERRIT_HOST='%s'" % os.getenv("GERRIT_HOST")

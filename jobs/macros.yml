@@ -122,3 +122,17 @@
          - file:
             credential-id: GERRITHUB_PRIVATE_KEY
             variable: GERRITHUB_KEY
+
+- publisher:
+    name: post_build_task_return-node
+    publishers:
+    - post-tasks:
+        - matches:
+            - log-text: Building remotely
+              operator: OR
+            - log-text: Build step 'Execute shell' marked build as failure
+              operator: OR
+            - log-text: Build was aborted
+              operator: OR
+          script:
+            !include-raw: ../build_scripts/common/return-node.sh
