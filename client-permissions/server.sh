@@ -71,7 +71,7 @@ then
 		GIT_URL="https://${GERRIT_HOST}/${GERRIT_PROJECT}"
 
 		# install NFS-Ganesha build dependencies
-		yum -y --enablerepo=centos-gluster*-test install glusterfs-api-devel
+		yum -y --enablerepo=centos-gluster*-test install libgfapi-devel
 		yum -y install git bison flex cmake gcc-c++ libacl-devel krb5-devel \
 			dbus-devel libnfsidmap-devel libwbclient-devel libcap-devel \
 			libblkid-devel rpm-build redhat-rpm-config userspace-rcu-devel

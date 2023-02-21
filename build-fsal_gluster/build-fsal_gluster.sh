@@ -30,7 +30,7 @@ libnfsidmap-devel
 libwbclient-devel
 redhat-rpm-config
 rpm-build
-glusterfs-api-devel
+libgfapi-devel
 xfsprogs-devel
 python2-devel
 userspace-rcu-devel
