@@ -135,7 +135,7 @@
   <builders>
     <hudson.tasks.Shell>
       <command># no need for verbose output
-set +x
+set -x
 
 # do not immediately fail on an error
 set +e
