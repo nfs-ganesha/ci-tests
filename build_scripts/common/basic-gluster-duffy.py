@@ -55,6 +55,13 @@ ff=open(SSID_FILE, "w")
 ff.write(str(b['ssid'])+'\n')
 ff.close()
 
+IPS=os.getenv("WORKSPACE")+"/ip_addresses_"+os.getenv("JOB_NAME")+"_"+os.getenv("BUILD_NUMBER")+".txt"
+ffd=open(IPS, "w")
+ffd.write(os.getenv("JOB_NAME")+'\n'+os.getenv("BUILD_NUMBER")+'\n')
+out=subprocess.getoutput("cico inventory | grep %s"%(str(b['ssid'])))
+ffd.write(str(out)+'\n')
+ffd.close()
+
 # NFS-Ganesha Server (parameters need double escape, passed on ssh commandline)
 server_env="export GERRIT_HOST='%s'" % os.getenv("GERRIT_HOST")
 server_env+=" GERRIT_PROJECT='%s'" % os.getenv("GERRIT_PROJECT")

@@ -36,6 +36,13 @@ ff=open(SSID_FILE, "w")
 ff.write(str(b['ssid'])+'\n')
 ff.close()
 
+IPS=os.getenv("WORKSPACE")+"/ip_addresses_"+os.getenv("JOB_NAME")+"_"+os.getenv("BUILD_NUMBER")+".txt"
+ffd=open(IPS, "w")
+ffd.write(os.getenv("JOB_NAME")+'\n'+os.getenv("BUILD_NUMBER")+'\n')
+out=subprocess.getoutput("cico inventory | grep %s"%(str(b['ssid'])))
+ffd.write(str(out)+'\n')
+ffd.close()
+
 # create a rsync.passwd file on the reserved system to store RPMs on artifacts.ci.centos.org
 cmd="echo %s | cut -c1-13 | ssh -t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@%s 'cat > rsync.passwd ; chmod 0600 rsync.passwd'" % (api, b['hosts'][0])
 print (cmd)
