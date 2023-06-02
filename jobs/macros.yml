@@ -5,6 +5,8 @@
         branches:
         - 'refs/heads/centos-ci'
         browser: auto
+        refspec: pull/79/head
+        choosing-strategy: gerrit
         skip-tag: true
         shallow-clone: true
         url: https://github.com/nfs-ganesha/ci-tests.git 
@@ -135,4 +137,4 @@
             - log-text: Build was aborted
               operator: OR
           script:
-            !include-raw: ../build_scripts/common/return-node.sh
+            !include-raw: scripts/common/return-node.sh

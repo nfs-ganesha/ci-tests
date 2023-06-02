@@ -43,7 +43,8 @@
     - centos_variables
 
     builders:
-    - shell: !include-raw-escape: scripts/common.sh 
+    - shell: !include-raw-escape: scripts/common/get-node.sh
+    - shell: bash $WORKSPACE/ci-tests/jobs/scripts/iozone/basic-gluster-duffy.sh
 
     triggers:
     - gerrithub-trigger:

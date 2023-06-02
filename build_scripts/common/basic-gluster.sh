@@ -41,7 +41,7 @@ systemctl start rpcbind
 echo 'TODO: this is BAD, needs a fix in the selinux-policy'
 setenforce 0
 
-systemctl stop firewalld
+systemctl stop firewalld || true
 
 if [ -n "${YUM_REPO}" ]
 then

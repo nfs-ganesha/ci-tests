@@ -33,8 +33,8 @@
                   branch-compare-type: ANT
 
     builders:
-    - shell: | 
-        python $WORKSPACE/ci-tests/build_scripts/common/basic-gluster-duffy.py 
+    - shell: !include-raw-escape: scripts/common/get-node.sh
+    - shell: bash $WORKSPACE/ci-tests/jobs/scripts/labelled_nfs/basic-gluster-duffy.sh
 
     wrappers:
     - cleanup-ws

@@ -37,7 +37,8 @@
         name: ENABLE_ACL
 
     builders:
-    - shell: !include-raw: scripts/common.sh
+    - shell: !include-raw-escape: scripts/common/get-node.sh
+    - shell: bash $WORKSPACE/ci-tests/jobs/scripts/pynfs/basic-gluster-duffy.sh
 
     triggers:
     - gerrithub-trigger:

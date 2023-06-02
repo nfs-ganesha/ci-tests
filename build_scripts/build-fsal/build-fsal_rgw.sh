@@ -2,7 +2,11 @@
 
 set -e
 
+echo "I have entered build.sh"
+
 # these variables need to be set
+echo ${GERRIT_HOST}
+
 [ -n "${GERRIT_HOST}" ]
 [ -n "${GERRIT_PROJECT}" ]
 [ -n "${GERRIT_REFSPEC}" ]
