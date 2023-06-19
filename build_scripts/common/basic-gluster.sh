@@ -41,7 +41,7 @@ systemctl start rpcbind
 echo 'TODO: this is BAD, needs a fix in the selinux-policy'
 setenforce 0
 
-systemctl stop firewalld
+systemctl stop firewalld || true
 
 if [ -n "${YUM_REPO}" ]
 then
@@ -69,13 +69,14 @@ else
 	GIT_URL="https://${GERRIT_HOST}/${GERRIT_PROJECT}"
 
         BASE_PACKAGES="git bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel rpm-build redhat-rpm-config"
+        BUILDREQUIRES_EXTRA="libnsl2-devel libnfsidmap-devel libwbclient-devel libcephfs-devel userspace-rcu-devel"
         if [ "${CENTOS_VERSION}" = "7" ]; then
             yum -y install libgfapi-devel
             yum -y install ${BASE_PACKAGES} libnfsidmap-devel libwbclient-devel libcap-devel libblkid-devel userspace-rcu-devel userspace-rcu
-        elif [ "${CENTOS_VERSION}" = "8-stream" ]; then
-            yum -y install libgfapi-devel
-            yum -y install ${BASE_PACKAGES}
-            yum -y --enablerepo=powertools install libnfsidmap-devel libwbclient-devel libcap-devel libblkid-devel userspace-rcu-devel
+        elif [ "${CENTOS_VERSION}" = "8s" ]; then
+            yum install -y ${BASE_PACKAGES} libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build libgfapi-devel xfsprogs-devel python2-devel
+            yum install --enablerepo=powertools -y ${BUILDREQUIRES_EXTRA}
+            yum -y install selinux-policy-devel sqlite
         fi
 
 	git init "${GIT_REPO}"
@@ -107,7 +108,7 @@ else
 		ntirpc_version=$(rpm -q --qf '%{VERSION}-%{RELEASE}' -p ${rpm_arch}/libntirpc-devel*.rpm)
 		ntirpc_rpm=${rpm_arch}/libntirpc-${ntirpc_version}.${rpm_arch}.rpm
 	fi
-	yum -y install ${ntirpc_rpm} ${rpm_arch}/nfs-ganesha-{,gluster-}${ganesha_version}.${rpm_arch}.rpm
+	yum -y install {x86_64,noarch}/*.rpm
 
 	# start nfs-ganesha service with an empty configuration
 	echo "NFSv4 { Graceless = true; }" > /etc/ganesha/ganesha.conf
@@ -122,7 +123,12 @@ else
 fi
 
 # create and start gluster volume
-yum -y install glusterfs-server
+if [ "${CENTOS_VERSION}" = "7" ]; then
+  yum -y install glusterfs-server
+elif [ "${CENTOS_VERSION}" = "8s" ]; then
+  yum -y install --enablerepo=powertools glusterfs-server
+fi
+
 systemctl start glusterd
 mkdir -p /bricks/${GLUSTER_VOLUME}
 gluster volume create ${GLUSTER_VOLUME} \
@@ -142,7 +148,7 @@ gluster vol status
 
 # TODO: open only the ports needed?
 # disable the firewall, otherwise the client can not connect
-systemctl stop firewalld || service iptables stop
+systemctl stop firewalld || service iptables stop || true
 
 mount -t glusterfs $(hostname --fqdn):/${GLUSTER_VOLUME} /mnt
 mount

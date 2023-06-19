@@ -32,7 +32,14 @@ do
     cd /mnt/nfs
     if [ $once -eq 0 ]
     then
-        yum -y install bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel libnfsidmap-devel libwbclient-devel libcap-devel libblkid-devel rpm-build redhat-rpm-config
+        if [ "${CENTOS_VERSION}" == "7" ]; then
+          yum -y install bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel libnfsidmap-devel libwbclient-devel libcap-devel libblkid-devel rpm-build redhat-rpm-config centos-release-gluster userspace-rcu-devel userspace-rcu libnsl2-devel libcephfs-devel
+        elif [ "${CENTOS_VERSION}" == "8s" ]; then
+          yum -y install bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel libcap-devel libblkid-devel rpm-build redhat-rpm-config glusterfs-api
+          yum -y --enablerepo=powertools install libnfsidmap-devel libwbclient-devel userspace-rcu-devel userspace-rcu libnsl2-devel libcephfs-devel
+        else
+          echo "Check the parameter $CENTOS_VERSION"
+        fi
         git clone --depth=1 https://review.gerrithub.io/ffilz/nfs-ganesha
     fi
     cd nfs-ganesha

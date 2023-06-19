@@ -104,8 +104,8 @@
     parameters:
     - choice:
         choices:
+        - "8s"
         - "7"
-        - "6"
         description: 'CentOS version to run the tests on (server + client)'
         name: CENTOS_VERSION
     - choice:
@@ -135,4 +135,4 @@
             - log-text: Build was aborted
               operator: OR
           script:
-            !include-raw: ../build_scripts/common/return-node.sh
+            !include-raw: scripts/common/return-node.sh

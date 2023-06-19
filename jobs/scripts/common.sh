@@ -1,13 +1,18 @@
-export CENTOS_VERSION=7
-export CENTOS_ARCH=x86_64
+export CENTOS_VERSION=${CENTOS_VERSION}
+export CENTOS_ARCH=${CENTOS_ARCH}
 export GERRIT_HOST=${GERRIT_HOST}
 export GERRIT_PROJECT=${GERRIT_PROJECT}
 export GERRIT_REFSPEC=${GERRIT_REFSPEC}
 export LAST_TRIGGERED_JOB_NAME=$JOB_NAME
 export BUILD_NUMBER=${BUILD_NUMBER}
 
-python $WORKSPACE/ci-tests/build_scripts/common/basic-gluster-duffy.py
-RET=$?
+if [ "$JOB_NAME" == "nfs_ganesha_dbench" ]; then 
+  bash $WORKSPACE/ci-tests/jobs/scripts/dbench/basic-gluster-duffy.sh
+  RET=$?
+elif [ "$JOB_NAME" == "nfs_ganesha_code_compilation" ]; then
+  bash $WORKSPACE/ci-tests/jobs/scripts/code_compilation/basic-gluster-duffy.sh
+  RET=$?
+fi
 
 JOB_OUTPUT="${JENKINS_URL}/job/${LAST_TRIGGERED_JOB_NAME}/${BUILD_NUMBER}/console"
 
