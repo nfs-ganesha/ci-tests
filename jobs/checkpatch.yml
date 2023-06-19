@@ -1,5 +1,5 @@
 - job:
-    name: nfs-ganesha_trigger-checkpatch 
+    name: checkpatch 
     node: cico-workspace
     description: "Run checkpatch on nfs-ganesha. This job is triggered by sending a change to https://review.gerrithub.io/#/q/project:ffilz/nfs-ganesha for review\n\nNote: it is possible to retrigger a test for a change by including recheck checkpatch in a comment on GerritHub." 
     project-type: freestyle
@@ -51,4 +51,4 @@
                   branch-compare-type: ANT
 
     wrappers:
-    - ssh-agent
+    - gerrithub_key 

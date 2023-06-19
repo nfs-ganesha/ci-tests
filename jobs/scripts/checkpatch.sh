@@ -7,16 +7,14 @@ if [[ -n "$GERRIT_REFSPEC" ]]; then
   GERRIT_PUBLISH=true
 fi
 
-#ssh -o 'StrictHostKeyChecking no' -p 29418 $GERRIT_USER@review.gerrithub.io -v
-
 if ! [ -d nfs-ganesha ]; then
-  GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no" git clone --depth=1 -o gerrit ssh://$GERRIT_USER@review.gerrithub.io:29418/ffilz/nfs-ganesha.git -v
+  GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no -i $GERRITHUB_KEY" git clone --depth=1 -o gerrit ssh://$GERRIT_USER@review.gerrithub.io:29418/ffilz/nfs-ganesha.git -v
 fi
 
 ( cd nfs-ganesha && git fetch gerrit $GERRIT_REF && git checkout $REVISION )
 
 publish_checkpatch() {
-  local SSH_GERRIT="ssh -p 29418 $GERRIT_USER@review.gerrithub.io"
+  local SSH_GERRIT="ssh -p 29418 -i $GERRITHUB_KEY $GERRIT_USER@review.gerrithub.io"
   if [[ "$GERRIT_PUBLISH" == "true" ]]; then
     tee /proc/$$/fd/1 | $SSH_GERRIT "gerrit review --json --project ffilz/nfs-ganesha $REVISION"
   else

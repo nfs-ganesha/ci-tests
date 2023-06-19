@@ -1,4 +1,4 @@
-#!/bin/sh
+-devel userspace-rcu libnsl2-devel libcephfs-devel#!/bin/sh
 #
 # Environment variables used:
 #  - SERVER: hostname or IP-address of the NFS-server
@@ -15,7 +15,7 @@ set -x
 
 # install build and runtime dependencies
 echo "Install build and runtime dependencies"
-yum -y install nfs-utils git gcc time
+yum -y install nfs-utils git gcc time centos-release-gluster
 
 # flag for commands which should run only once
 once=0
@@ -33,7 +33,9 @@ do
     if [ $once -eq 0 ]
     then
         if [ "${CENTOS_VERSION}" == "7" ]; then
-          yum -y install bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel libnfsidmap-devel libwbclient-devel libcap-devel libblkid-devel rpm-build redhat-rpm-config centos-release-gluster userspace-rcu-devel userspace-rcu libnsl2-devel libcephfs-devel
+          yum -y install bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel libnfsidmap-devel libwbclient-devel libcap-devel libblkid-devel rpm-build redhat-rpm-config glusterfs-api libnsl2-devel libcephfs-devel
+          yum clean all & yum clean metadata
+          yum -y install userspace-rcu-devel
         elif [ "${CENTOS_VERSION}" == "8s" ]; then
           yum -y install bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel libcap-devel libblkid-devel rpm-build redhat-rpm-config glusterfs-api
           yum -y --enablerepo=powertools install libnfsidmap-devel libwbclient-devel userspace-rcu-devel userspace-rcu libnsl2-devel libcephfs-devel
