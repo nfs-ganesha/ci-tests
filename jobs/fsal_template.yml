@@ -1,15 +1,15 @@
 - project:
-    name: 'nfs-ganesha_trigger-fsal'
+    name: 'fsal'
     product:
       - cephfs
       - gluster
       - rgw
 
     jobs:
-      - '{name}_{product}'
+      - '{name}-{product}'
 
 - job-template:
-    name: '{name}_{product}'
+    name: '{name}-{product}'
     node: cico-workspace
     project-type: freestyle
     concurrent: false
@@ -31,6 +31,11 @@
     - centos_variables
 
     builders:
+
+    - shell: !include-raw-escape: scripts/fsal-build.sh
+
+    builders:
+    - shell: !include-raw-escape: scripts/common/get-node.sh
     - shell: !include-raw-escape: scripts/fsal-build.sh
 
     triggers:

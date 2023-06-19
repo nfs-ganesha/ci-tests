@@ -9,8 +9,8 @@ export BUILD_NUMBER=${BUILD_NUMBER}
 if [ "$JOB_NAME" == "nfs_ganesha_dbench" ]; then 
   bash $WORKSPACE/ci-tests/jobs/scripts/dbench/basic-gluster-duffy.sh
   RET=$?
-elif [ "$JOB_NAME" == "nfs_ganesha_code_compilation" ]; then
-  bash $WORKSPACE/ci-tests/jobs/scripts/code_compilation/basic-gluster-duffy.sh
+elif [ "$JOB_NAME" == "code-compilation" ]; then
+  bash $WORKSPACE/ci-tests/build_scripts/code-compilation/basic-gluster-duffy.sh
   RET=$?
 fi
 

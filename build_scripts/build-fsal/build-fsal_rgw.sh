@@ -13,29 +13,26 @@ GIT_REPO="https://${GERRIT_HOST}/${GERRIT_PROJECT}"
 # enable the Storage SIG Gluster and Ceph repositories
 yum -y install centos-release-ceph
 
+BUILDREQUIRES="git bison cmake dbus-devel flex gcc-c++ krb5-devel libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build xfsprogs-devel python2-devel"
+
+BUILDREQUIRES_EXTRA="libnsl2-devel libnfsidmap-devel libwbclient-devel libcephfs-devel userspace-rcu-devel librgw-devel"
+
 # basic packages to install
-xargs yum -y install <<< "
-git
-bison
-cmake
-dbus-devel
-flex
-gcc-c++
-git
-krb5-devel
-libacl-devel
-libblkid-devel
-libcap-devel
-libnfsidmap-devel
-libwbclient-devel
-redhat-rpm-config
-rpm-build
-libcephfs-devel
-librgw-devel
-xfsprogs-devel
-python2-devel
-userspace-rcu-devel
-"
+case "${CENTOS_VERSION}" in
+    7)
+        yum install -y ${BUILDREQUIRES} ${BUILDREQUIRES_EXTRA}
+    ;;
+    8s)
+        yum install -y ${BUILDREQUIRES}
+        yum install --enablerepo=powertools -y ${BUILDREQUIRES_EXTRA}
+    ;;
+    *)
+        ENABLE_REPOS="--enablerepo=powertools"
+        BUILDREQUIRES="${BUILDREQUIRES} python3-devel rpcgen libtirpc-devel liburing-devel rsync "
+        yum -y update --skip-broken --nobest
+        yum -y install epel-release
+    ;;
+esac
 
 git clone --depth=1 ${GIT_REPO}
 cd $(basename "${GERRIT_PROJECT}")

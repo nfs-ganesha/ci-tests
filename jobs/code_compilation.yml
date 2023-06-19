@@ -1,5 +1,5 @@
 - job:
-    name: nfs_ganesha_code_compilation 
+    name: code-compilation
     node: cico-workspace
     description: 'Run code compilation for nfs-ganesha against the latest build of Ganesha with FSAL_GLUSTER.'
     project-type: freestyle

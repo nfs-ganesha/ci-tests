@@ -5,7 +5,7 @@ set +x
 set +e
 
 # run the bootstrap script
-python $WORKSPACE/ci-tests/build_scripts/common/bootstrap.py
+bash $WORKSPACE/ci-tests/build_scripts/build-fsal/bootstrap.sh
 RET=$?
 
 # we accept different return values
