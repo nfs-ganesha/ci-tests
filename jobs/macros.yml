@@ -104,8 +104,8 @@
     parameters:
     - choice:
         choices:
+        - "8"
         - "7"
-        - "6"
         description: 'CentOS version to run the tests on (server + client)'
         name: CENTOS_VERSION
     - choice:

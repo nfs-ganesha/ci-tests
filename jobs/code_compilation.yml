@@ -3,7 +3,7 @@
     node: cico-workspace
     description: 'Run code compilation for nfs-ganesha against the latest build of Ganesha with FSAL_GLUSTER.'
     project-type: freestyle
-    concurrent: false
+    concurrent: false 
     allow-manual-triggers: true
 
     scm:
@@ -31,9 +31,11 @@
         option: 'code_compilation'
 
     builders:
+    - shell: !include-raw: scripts/common/get-node.sh
     - shell: !include-raw: scripts/common.sh
 
     wrappers:
+    - gerrithub_key
     - cleanup-ws
 
     publishers:
