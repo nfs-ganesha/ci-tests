@@ -10,6 +10,8 @@ import subprocess
 import time
 import sys
 
+subprocess.call("sleep 6000", shell=True)
+
 #get the environment variables
 server=os.getenv("SERVER")
 export=os.getenv("EXPORT")

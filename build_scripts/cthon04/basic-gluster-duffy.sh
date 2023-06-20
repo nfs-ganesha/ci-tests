@@ -10,10 +10,6 @@ server_env+=" YUM_REPO='${YUM_REPO}'"
 server_env+=" GLUSTER_VOLUME='${EXPORT}'"
 server_env+=" CENTOS_VERSION='${CENTOS_VERSION}'"
 
-if [ "$JOB_NAME" == "pynfs-acl" ]; then
-    server_env+=" ENABLE_ACL='${ENABLE_ACL}'"
-fi
-
 SERVER_IP=$(cat $WORKSPACE/hosts | sed -n '1p')
 CLIENT_IP=$(cat $WORKSPACE/hosts | sed -n '2p')
 
@@ -34,7 +30,6 @@ RETURN_CODE=$?
 if [ $RETURN_CODE == 0 ]; then
     client_env="export SERVER='${SERVER_IP}'"
     client_env+=" EXPORT='/${EXPORT}'"
-    client_env+=" TEST_PARAMETERS='${TEST_PARAMETERS}'"
     client_env+=" CENTOS_VERSION='${CENTOS_VERSION}'"
 
     echo $client_env > $WORKSPACE/CLIENT_ENV.txt

@@ -1,5 +1,5 @@
 - job:
-    name: nfs-ganesha_trigger-cthon04-on-new-patch
+    name: trigger-cthon04-on-new-patch
     node: cico-workspace
     description: 'Start cthon04 test when a new patch is posted to GerritHub.' 
     project-type: freestyle
@@ -14,7 +14,7 @@
 
     builders:
       - trigger-builds:
-        - project: nfs_ganesha_cthon04
+        - project: cthon04
           block: true
           block-thresholds:
             build-step-failure-threshold: never
