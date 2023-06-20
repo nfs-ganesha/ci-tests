@@ -15,7 +15,14 @@ yum -y install nfs-utils time centos-release-gluster
 
 mkdir -p /mnt/ganesha
 
-yum --enablerepo=centos-gluster*test -y install iozone
+if [ "$CENTOS_VERSION" == "7" ]; then
+  yum --enablerepo=centos-gluster*test -y install iozone
+elif [ "$CENTOS_VERSION" == "8s" ]; then
+  curl -o /etc/yum.repos.d/iozone.repo https://copr.fedorainfracloud.org/coprs/aflyhorse/iozone/repo/centos-stream-8/aflyhorse-iozone-centos-stream-8.repo
+  yum install -y iozone
+else
+  echo "Please check the CENTOS_VERSION! The build implementation for this version=${CENTOS_VERSION} is in progress!"
+fi
 
 mount -t nfs -o vers=3 ${SERVER}:${EXPORT} /mnt/ganesha
 

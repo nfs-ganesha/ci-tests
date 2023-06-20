@@ -20,10 +20,10 @@ echo "Install runtime dependencies"
 yum -y install nfs-utils
 
 # dbench is available from the testing repositories in the CentOS Storage SIG
-if [ "{$CENTOS_VERSION}" == "7" ]; then
+if [ "$CENTOS_VERSION" == "7" ]; then
   yum -y install centos-release-gluster
   yum --enablerepo=centos-gluster*-test -y install dbench
-elif [ "{$CENTOS_VERSION}" == "8s" ]
+elif [ "$CENTOS_VERSION" == "8s" ]; then
   yum -y install epel-release
   yum -y install dbench
 else

@@ -1,21 +1,21 @@
 - project:
-    name: 'nfs_ganesha'
+    name: 'iozone-template'
     flavours:
       - iozone:
           recheck_val: 'iozone$'
           script_name: "$WORKSPACE/ci-tests/build_scripts/common/basic-gluster.sh"
-      - iozone_vfs:
+      - iozone-vfs:
           recheck_val: 'iozone_vfs$'
           script_name: "$WORKSPACE/ci-tests/build_scripts/common/basic-vfs.sh"
-      - iozone_vfs_minmdcache:
+      - iozone-vfs-minmdcache:
           recheck_val: 'iozone_vfs_minmdcache$'
           script_name: "$WORKSPACE/ci-tests/build_scripts/common/basic-vfs-minmd.sh" 
 
     jobs:
-      - '{name}_{flavours}'
+      - '{flavours}'
 
 - job-template:
-    name: '{name}_{flavours}'
+    name: '{flavours}'
     node: cico-workspace
     project-type: freestyle
     concurrent: false
@@ -43,7 +43,8 @@
     - centos_variables
 
     builders:
-    - shell: !include-raw-escape: scripts/common.sh 
+    - shell: !include-raw-escape: scripts/common/get-node.sh
+    - shell: !include-raw-escape: scripts/common.sh  
 
     triggers:
     - gerrithub-trigger:

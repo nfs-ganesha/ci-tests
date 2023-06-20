@@ -41,7 +41,7 @@ systemctl start rpcbind
 echo 'TODO: this is BAD, needs a fix in the selinux-policy'
 setenforce 0
 
-systemctl stop firewalld
+systemctl stop firewalld || true
 
 if [ -n "${YUM_REPO}" ]
 then
@@ -65,15 +65,21 @@ else
 	GIT_REPO=$(basename "${GERRIT_PROJECT}")
 	GIT_URL="https://${GERRIT_HOST}/${GERRIT_PROJECT}"
 
-	# install NFS-Ganesha build dependencies
-	yum -y install git bison flex cmake gcc-c++ libacl-devel krb5-devel \
-		dbus-devel libnfsidmap-devel libwbclient-devel libcap-devel \
-		libblkid-devel rpm-build redhat-rpm-config userspace-rcu-devel
+        #Packages required for Centos-7 and Centos8 Stream
+        BUILDREQUIRES="git bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel rpm-build redhat-rpm-config libblkid-devel libcap-devel libgfapi-devel xfsprogs-devel python2-devel"
+        BUILDREQUIRES_EXTRA="libnsl2-devel libnfsidmap-devel libwbclient-devel libcephfs-devel userspace-rcu-devel"
+        if [ "${CENTOS_VERSION}" = "7" ]; then
+            yum -y install ${BUILDREQUIRES} libnsl2-devel libnfsidmap-devel libwbclient-devel libcephfs-devel userspace-rcu-devel
+        elif [ "${CENTOS_VERSION}" = "8s" ]; then
+            yum install -y ${BUILDREQUIRES}
+            yum install --enablerepo=powertools -y ${BUILDREQUIRES_EXTRA}
+            yum install -y selinux-policy-devel
+        fi
 
 	git init "${GIT_REPO}"
 	pushd "${GIT_REPO}"
 
-	git fetch "${GIT_URL}" "${GERRIT_REFSPEC}"
+	git fetch --depth=1 "${GIT_URL}" "${GERRIT_REFSPEC}"
 	git checkout -b "${GERRIT_REFSPEC}" FETCH_HEAD
 
 	# update libntirpc
@@ -91,7 +97,7 @@ else
 		ntirpc_version=$(rpm -q --qf '%{VERSION}-%{RELEASE}' -p ${rpm_arch}/libntirpc-devel*.rpm)
 		ntirpc_rpm=${rpm_arch}/libntirpc-${ntirpc_version}.${rpm_arch}.rpm
 	fi
-	yum -y install ${ntirpc_rpm} ${rpm_arch}/nfs-ganesha-{,vfs-}${ganesha_version}.${rpm_arch}.rpm
+        yum -y install {x86_64,noarch}/*.rpm
 
 	# start nfs-ganesha service with an empty configuration
 	cat <<EOF > /etc/ganesha/ganesha.conf
@@ -110,7 +116,7 @@ fi
 
 # TODO: open only the ports needed?
 # disable the firewall, otherwise the client can not connect
-systemctl stop firewalld || service iptables stop
+systemctl stop firewalld || service iptables stop || true
 
 # Export the volume
 mkdir -p /usr/libexec/ganesha

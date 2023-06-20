@@ -7,12 +7,15 @@ export LAST_TRIGGERED_JOB_NAME=$JOB_NAME
 export BUILD_NUMBER=${BUILD_NUMBER}
 
 if [ "$JOB_NAME" == "dbench" ]; then 
-  bash $WORKSPACE/ci-tests/build_scripts/dbench/basic-gluster-duffy.sh
-  RET=$?
+  FOLDER_NAME="dbench"
 elif [ "$JOB_NAME" == "code-compilation" ]; then
-  bash $WORKSPACE/ci-tests/build_scripts/code-compilation/basic-gluster-duffy.sh
-  RET=$?
+  FOLDER_NAME="code-compilation"
+elif [[ $JOB_NAME =~ iozone-* ]]; then
+  FOLDER_NAME="iozone"
 fi
+
+bash $WORKSPACE/ci-tests/build_scripts/${FOLDER_NAME}/basic-gluster-duffy.sh
+RET=$?
 
 JOB_OUTPUT="${JENKINS_URL}/job/${LAST_TRIGGERED_JOB_NAME}/${BUILD_NUMBER}/console"
 
