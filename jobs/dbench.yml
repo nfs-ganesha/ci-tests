@@ -1,5 +1,5 @@
 - job:
-    name: nfs_ganesha_dbench 
+    name: dbench 
     node: cico-workspace
     description: 'Run dbench test suite against the latest build of Ganesha with FSAL_GLUSTER.'
     project-type: freestyle
@@ -31,6 +31,7 @@
         option: 'dbench'
 
     builders:
+    - shell: !include-raw: scripts/common/get-node.sh
     - shell: !include-raw: scripts/common.sh
 
     wrappers:

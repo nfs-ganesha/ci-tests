@@ -6,8 +6,8 @@ export GERRIT_REFSPEC=${GERRIT_REFSPEC}
 export LAST_TRIGGERED_JOB_NAME=$JOB_NAME
 export BUILD_NUMBER=${BUILD_NUMBER}
 
-if [ "$JOB_NAME" == "nfs_ganesha_dbench" ]; then 
-  bash $WORKSPACE/ci-tests/jobs/scripts/dbench/basic-gluster-duffy.sh
+if [ "$JOB_NAME" == "dbench" ]; then 
+  bash $WORKSPACE/ci-tests/build_scripts/dbench/basic-gluster-duffy.sh
   RET=$?
 elif [ "$JOB_NAME" == "code-compilation" ]; then
   bash $WORKSPACE/ci-tests/build_scripts/code-compilation/basic-gluster-duffy.sh
