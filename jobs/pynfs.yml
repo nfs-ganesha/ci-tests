@@ -1,7 +1,7 @@
 - job:
-    name: nfs_ganesha_pynfs_acl 
+    name: pynfs 
     node: cico-workspace
-    description: 'Run pynfs (NFSv4.0) tests against the latest build of Ganesha with FSAL_GLUSTER with ACL enabled on the volume'
+    description: 'Run pynfs (NFSv4.0) tests against the latest build of Ganesha with FSAL_GLUSTER.'
     project-type: freestyle
     concurrent: false
     allow-manual-triggers: true
@@ -12,7 +12,7 @@
     properties:
     - discarder
     - github:
-        url: http://git.linux-nfs.org/?p=bfields/pynfs.git;a=summary/
+        url: http://git.linux-nfs.org/?p=bfields/pynfs.git;a=summary/ 
 
     parameters:
     - string:
@@ -27,24 +27,22 @@
         export_var: 'pynfs'
     - gerrit_variables
     - string:
-        default: 'noWRT18 noRD4 noSEC7'
+        default: 'noWRT18 noRD4 noSEC7' 
         description: 'Pass additional parameters/options to the pynfs execution.'
-        name: TEST_PARAMETERS
+        name: TEST_PARAMETERS 
     - centos_variables
-    - string:
-        default: True
-        description: 'Enable acl on the volume'
-        name: ENABLE_ACL
 
     builders:
+    - shell: !include-raw: scripts/common/get-node.sh
     - shell: !include-raw: scripts/common.sh
+
+    wrappers:
+    - gerrithub_key
+    - cleanup-ws
 
     triggers:
     - gerrithub-trigger:
-        option: 'pynfs acl'
-
-    wrappers:
-    - cleanup-ws
+        option: 'pynfs'
 
     publishers:
     - post_build_task_return-node
