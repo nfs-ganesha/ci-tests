@@ -22,7 +22,7 @@ do
         fi
 done
 
-if [[ $JOB_NAME =~ fsal-* ]]; then
+if [[ $JOB_NAME =~ fsal-* ]] || [ "$JOB_NAME" == "pylint" ]; then
     node_count=1
 else
     node_count=2

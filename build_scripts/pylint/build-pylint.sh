@@ -11,7 +11,13 @@ set -e
 GIT_REPO="https://${GERRIT_HOST}/${GERRIT_PROJECT}"
 
 # enable the Storage SIG for pylint
-yum -y install centos-release-nfs-ganesha28
+if [ "$CENTOS_VERSION" == "7" ]; then
+  yum -y install centos-release-nfs-ganesha28
+elif [ "$CENTOS_VERSION" == "8s" ]; then
+  yum -y install epel-release
+else
+  echo "Please check the CENTOS_VERSION! The build implementation for this version=${CENTOS_VERSION} is in progress!"
+fi
 
 # basic packages to install
 xargs yum -y install <<< "
@@ -21,7 +27,7 @@ pylint
 
 git clone --depth=1 ${GIT_REPO}
 cd $(basename "${GERRIT_PROJECT}")
-git fetch origin ${GERRIT_REFSPEC} && git checkout FETCH_HEAD
+git fetch --depth=1 origin ${GERRIT_REFSPEC} && git checkout FETCH_HEAD
 
 pushd src/scripts/ganeshactl
 

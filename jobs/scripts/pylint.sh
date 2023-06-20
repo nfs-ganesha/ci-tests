@@ -5,7 +5,7 @@ set +x
 set +e
 
 # run the get-node script
-python $WORKSPACE/ci-tests/build_scripts/build-pylint/get-node.py
+bash $WORKSPACE/ci-tests/build_scripts/pylint/basic-gluster-duffy.sh
 RET=$?
 
 # we accept different return values

@@ -1,5 +1,5 @@
 - job:
-    name: nfs-ganesha_trigger-pylint 
+    name: pylint 
     node: cico-workspace
     description: 'Run dbench test suite against the latest build of Ganesha with FSAL_GLUSTER.'
     project-type: freestyle
@@ -15,7 +15,7 @@
 
     parameters:
     - string:
-        default: "$WORKSPACE/ci-tests/build_scripts/build-pylint/build-pylint.sh"
+        default: "$WORKSPACE/ci-tests/build_scripts/pylint/build-pylint.sh"
         description: 'Test script to execute on the reserved machine, should move to the some NFS-Ganesha upstream testing repo at one point.'
         name: TEST_SCRIPT
     - gerrit_variables
@@ -26,6 +26,7 @@
         option: 'pylint'
 
     builders:
+    - shell: !include-raw: scripts/common/get-node.sh
     - shell: !include-raw: scripts/pylint.sh
 
     wrappers:
