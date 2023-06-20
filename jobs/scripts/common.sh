@@ -12,7 +12,7 @@ elif [ "$JOB_NAME" == "code-compilation" ]; then
   FOLDER_NAME="code-compilation"
 elif [[ $JOB_NAME =~ iozone-* ]]; then
   FOLDER_NAME="iozone"
-elif [ "$JOB_NAME" == "pynfs" ]; then
+elif [[ $JOB_NAME =~ pynfs(-)* ]]; then
   FOLDER_NAME="pynfs"
 fi
 

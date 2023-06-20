@@ -45,7 +45,7 @@ if [ $RETURN_CODE == 0 ]; then
 
     scp ${SSH_OPTIONS} ${CLIENT_TEST_SCRIPT} root@${CLIENT_IP}:./$(basename ${CLIENT_TEST_SCRIPT})
 
-    ssh -t ${SSH_OPTIONS} root@${CLIENT_IP} "python ./$(basename ${CLIENT_TEST_SCRIPT})"
+    ssh -t ${SSH_OPTIONS} root@${CLIENT_IP} "python3 ./$(basename ${CLIENT_TEST_SCRIPT})"
     RETURN_CODE_CLIENT=$?
 
     exit $RETURN_CODE_CLIENT
