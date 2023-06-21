@@ -7,7 +7,7 @@ export LAST_TRIGGERED_JOB_NAME=nfs_ganesha_posix_compliance
 export BUILD_NUMBER=${BUILD_NUMBER}
 
 set +e
-python $WORKSPACE/ci-tests/build_scripts/common/basic-gluster-duffy.py
+bash $WORKSPACE/ci-tests/build_scripts/posix-compliance/basic-gluster-duffy.sh
 RET=$?
 set -e
 

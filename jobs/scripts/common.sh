@@ -16,6 +16,23 @@ elif [[ $JOB_NAME =~ pynfs(-)* ]]; then
   FOLDER_NAME="pynfs"
 fi
 
+case "$JOB_NAME" in
+  dbench)
+    D_FOLDER_NAME="dbench"
+  ;;
+  code-compilation)
+    D_FOLDER_NAME="code-compilation"
+  ;;
+  iozone-*)
+    D_FOLDER_NAME="iozone"
+  ;;
+  pynfs(-)*)
+    D_FOLDER_NAME="pynfs"
+  ;;
+esac
+
+echo ${D_FOLDER_NAME}
+
 bash $WORKSPACE/ci-tests/build_scripts/${FOLDER_NAME}/basic-gluster-duffy.sh
 RET=$?
 
