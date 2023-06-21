@@ -1,5 +1,5 @@
 - job:
-    name: nfs-ganesha_trigger-ganesha-builds
+    name: trigger-ganesha-builds
     node: cico-workspace
     project-type: freestyle
     concurrent: false
@@ -16,20 +16,15 @@
 
     builders:
       - trigger-builds:
-        - project: nfs-ganesha_build-ganesha
+        - project: ganesha-build
+          predefined-parameters: |
+            CENTOS_VERSION=8s
+            CENTOS_ARCH=x86_64
+      - trigger-builds:
+        - project: ganesha-build
           predefined-parameters: |
             CENTOS_VERSION=7
             CENTOS_ARCH=x86_64
-      - trigger-builds:
-        - project: nfs-ganesha_build-ganesha
-          predefined-parameters: |
-            CENTOS_VERSION=6
-            CENTOS_ARCH=x86_64
-      - trigger-builds:
-        - project: nfs-ganesha_build-ganesha
-          predefined-parameters: |
-            CENTOS_VERSION=6
-            CENTOS_ARCH=i386
 
     triggers:
       - pollscm:
