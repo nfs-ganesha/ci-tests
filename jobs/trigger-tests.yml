@@ -1,5 +1,5 @@
 - job:
-    name: nfs-ganesha_trigger-tests 
+    name: trigger-tests 
     node: cico-workspace
     project-type: freestyle
     concurrent: false
@@ -21,6 +21,7 @@
     - centos_variables
 
     builders:
+    - shell: !include-raw: scripts/common/get-node.sh
     - shell: !include-raw: scripts/tests.sh
 
     triggers:

@@ -5,7 +5,7 @@ set +x
 set +e
 
 # download and run the bootstrap script
-python $WORKSPACE/ci-tests/build_scripts/build-tests/get-node.py 
+bash $WORKSPACE/ci-tests/build_scripts/build-tests/basic-gluster-duffy.sh 
 RET=$?
 
 # we accept different return values
