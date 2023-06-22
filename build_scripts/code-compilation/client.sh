@@ -1,4 +1,4 @@
--devel userspace-rcu libnsl2-devel libcephfs-devel#!/bin/sh
+#!/bin/sh
 #
 # Environment variables used:
 #  - SERVER: hostname or IP-address of the NFS-server
@@ -42,7 +42,19 @@ do
         else
           echo "Check the parameter $CENTOS_VERSION"
         fi
-        git clone --depth=1 https://review.gerrithub.io/ffilz/nfs-ganesha
+        set +e
+        timeout -s SIGKILL 60s git clone --depth=1 https://review.gerrithub.io/ffilz/nfs-ganesha
+        TIMED_OUT=$?
+        #Return code will be 124 if it ends the process by using SIGTERM for not getting any response. 137 when used SIGKILL to kill the process
+        if [ $TIMED_OUT == 137 ]; then
+          echo -e "The process timed out after 1 minute!\nChecking the Server process to see if it has crashed!"
+          sleep 60
+          CHECK_SERVER_PROCESS=$(ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i ./ssh-privatekey root@${SERVER} "ps ax | grep ganesha | grep -v grep")
+          if [ -z "${CHECK_SERVER_PROCESS}" ]; then
+            echo "No Server process found! Looks like Ganesha has crashed!"
+            exit 1
+          fi
+        fi
     fi
     cd nfs-ganesha
     git checkout next

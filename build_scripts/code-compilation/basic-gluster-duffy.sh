@@ -46,6 +46,10 @@ if [ $RETURN_CODE == 0 ]; then
 
     ssh -t ${SSH_OPTIONS} root@$CLIENT_IP 'tee -a ~/.bashrc < ./CLIENT_ENV.txt'
 
+    scp ${SSH_OPTIONS} /duffy-ssh-key/ssh-privatekey root@${CLIENT_IP}:./ssh-privatekey
+
+    ssh -t ${SSH_OPTIONS} root@${CLIENT_IP} 'chmod 0600 ./ssh-privatekey'
+
     scp ${SSH_OPTIONS} ${CLIENT_TEST_SCRIPT} root@${CLIENT_IP}:./$(basename ${CLIENT_TEST_SCRIPT})
 
     ssh -t ${SSH_OPTIONS} root@${CLIENT_IP} "bash ./$(basename ${CLIENT_TEST_SCRIPT})"
