@@ -47,7 +47,14 @@ set +e
 #Run posix compliance test suite for nfsv3
 echo "Run posix compliance test suite for nfsv3"
 LOG_FILE_NFSV3="/tmp/posix_nfsv3"$(date +%s)".log"
-cd ${MOUNT_POINT} && prove -rf ${POSIX_HOME}/tests > ${LOG_FILE_NFSV3}
+timeout -s SIGKILL 240s cd ${MOUNT_POINT} && prove -rf ${POSIX_HOME}/tests > ${LOG_FILE_NFSV3} 
+TIMED_OUT=$?
+#Return code will be 124 if it ends the process by using SIGTERM for not getting any response. 137 when used SIGKILL to kill the process
+if [ $TIMED_OUT == 137 ]; then
+  echo -e "The process timed out after 4 minute!\nLooks like the Server process to see if it has crashed!"
+  exit 1
+fi
+#cd ${MOUNT_POINT} && prove -rf ${POSIX_HOME}/tests > ${LOG_FILE_NFSV3}
 RETURN_CODE_NFSV3=$?
 
 echo -e "posix compliance test output for nfsv3:\n---------------------------------------"
@@ -64,7 +71,14 @@ fi
 #Run posix compliance test suite for nfsv4
 echo "Run posix compliance test suite for nfsv4"
 LOG_FILE_NFSV4="/tmp/posix_nfsv4"$(date +%s)".log"
-cd ${MOUNT_POINT} && prove -rf ${POSIX_HOME}/tests > ${LOG_FILE_NFSV4}
+timeout -s SIGKILL 240s cd ${MOUNT_POINT} && prove -rf ${POSIX_HOME}/tests > ${LOG_FILE_NFSV4} 
+TIMED_OUT=$?
+#Return code will be 124 if it ends the process by using SIGTERM for not getting any response. 137 when used SIGKILL to kill the process
+if [ $TIMED_OUT == 137 ]; then
+  echo -e "The process timed out after 4 minute!\nLooks like the Server process to see if it has crashed!"
+  exit 1
+fi
+#cd ${MOUNT_POINT} && prove -rf ${POSIX_HOME}/tests > ${LOG_FILE_NFSV4}
 RETURN_CODE_NFSV4=$?
 
 echo -e "posix compliance test output for nfsv4:\n---------------------------------------"
@@ -81,7 +95,14 @@ fi
 #Run posix compliance test suite for nfsv4.1
 echo "Run posix compliance test suite for nfsv4.1"
 LOG_FILE_NFSV41="/tmp/posix_nfsv41"$(date +%s)".log"
-cd ${MOUNT_POINT} && prove -rf ${POSIX_HOME}/tests > ${LOG_FILE_NFSV41}
+timeout -s SIGKILL 240 cd ${MOUNT_POINT} && prove -rf ${POSIX_HOME}/tests > ${LOG_FILE_NFSV41}s
+TIMED_OUT=$?
+#Return code will be 124 if it ends the process by using SIGTERM for not getting any response. 137 when used SIGKILL to kill the process
+if [ $TIMED_OUT == 137 ]; then
+  echo -e "The process timed out after 4 minute!\nLooks like the Server process to see if it has crashed!"
+  exit 1
+fi
+#cd ${MOUNT_POINT} && prove -rf ${POSIX_HOME}/tests > ${LOG_FILE_NFSV41}
 RETURN_CODE_NFSV41=$?
 
 echo -e "posix compliance test output for nfsv4.1:\n---------------------------------------"

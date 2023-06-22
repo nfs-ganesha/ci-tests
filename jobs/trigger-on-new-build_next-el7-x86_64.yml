@@ -1,5 +1,5 @@
 - job:
-    name: nfs-ganesha_trigger-on-new-build_next-el7-x86_64 
+    name: trigger-on-new-build_next-el7-x86_64 
     node: cico-workspace
     decription: '[next/el7/x86_64] Trigger tests whenever a new automated build is available in the YUM repository.'
     project-type: freestyle
@@ -17,17 +17,17 @@
 
     builders:
       - trigger-builds:
-        - project: nfs_ganesha_cthon04 
+        - project: cthon04 
           predefined-parameters: |
             CENTOS_VERSION=7
             CENTOS_ARCH=x86_64
             YUM_REPO=http://artifacts.ci.centos.org/nfs-ganesha/nightly/nfs-ganesha-next.repo
       - trigger-builds:
-        - project: nfs_ganesha_pynfs 
+        - project: pynfs 
           predefined-parameters: |
-            CENTOS_ARCH=x86_64
+            CENTOS_VERSION=7
             YUM_REPO=http://artifacts.ci.centos.org/nfs-ganesha/nightly/nfs-ganesha-next.repo
-            CENTOS_ARCH=i386
+            CENTOS_ARCH=x86_64
 
     triggers:
       - pollurl:

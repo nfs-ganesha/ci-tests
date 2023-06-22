@@ -24,7 +24,13 @@ make all
 # v3 mount
 mkdir -p /mnt/nfsv3
 mount -t nfs -o vers=3 ${SERVER}:${EXPORT} /mnt/nfsv3
-./server -a -p ${EXPORT} -m /mnt/nfsv3 ${SERVER}
+timeout -s SIGKILL 240s ./server -a -p ${EXPORT} -m /mnt/nfsv3 ${SERVER} 
+TIMED_OUT=$?
+#Return code will be 124 if it ends the process by using SIGTERM for not getting any response. 137 when used SIGKILL to kill the process
+if [ $TIMED_OUT == 137 ]; then
+  echo -e "The process timed out after 4 minute!\nLooks like the Server process to see if it has crashed!"
+  exit 1
+fi
 
 # v4 mount
 mkdir -p /mnt/nfsv4

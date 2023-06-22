@@ -46,7 +46,13 @@ mkdir /mnt/nfsv3/v3
 echo "---------------------------------------"
 echo "dbench Test Running for v3 Mount..."
 echo "---------------------------------------"
-dbench --directory=/mnt/nfsv3/v3 --loadfile=${WORKDIR}/client.txt 2 > ${WORKDIR}/dbenchTestLog.txt
+timeout --preserve-status -s SIGKILL 240s dbench --directory=/mnt/nfsv3/v3 --loadfile=${WORKDIR}/client.txt 2 > ${WORKDIR}/dbenchTestLog.txt 
+TIMED_OUT=$?
+#Return code will be 124 if it ends the process by using SIGTERM for not getting any response. 137 when used SIGKILL to kill the process
+if [ $TIMED_OUT == 137 ]; then
+  echo -e "The process timed out after 4 minute!\nLooks like the Server process to see if it has crashed!"
+  exit 1
+fi
 tail -1 ${WORKDIR}/dbenchTestLog.txt | grep "Throughput"
 status=$?
 if [ $status -eq 0 ]
@@ -70,7 +76,13 @@ mkdir /mnt/nfsv4/v4
 echo "---------------------------------------"
 echo "dbench Test Running for v4.0 Mount..."
 echo "---------------------------------------"
-dbench --directory=/mnt/nfsv4/v4 --loadfile=${WORKDIR}/client.txt 2 > ${WORKDIR}/dbenchTestLog.txt
+timeout --preserve-status -s SIGKILL 240s dbench --directory=/mnt/nfsv4/v4 --loadfile=${WORKDIR}/client.txt 2 > ${WORKDIR}/dbenchTestLog.txt
+TIMED_OUT=$?
+#Return code will be 124 if it ends the process by using SIGTERM for not getting any response. 137 when used SIGKILL to kill the process
+if [ $TIMED_OUT == 137 ]; then
+  echo -e "The process timed out after 4 minute!\nLooks like the Server process to see if it has crashed!"
+  exit 1
+fi
 tail -1 ${WORKDIR}/dbenchTestLog.txt | grep "Throughput"
 status=$?
 if [ $status -eq 0 ]

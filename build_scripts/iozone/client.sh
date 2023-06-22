@@ -31,7 +31,13 @@ cd /mnt/ganesha
 echo "Running Iozone Test On NFSv3 "
 echo "+++++++++++++++++++++++++++++"
 
-iozone -a > ../ioZoneLog.txt
+timeout -s SIGKILL 240s iozone -a > ../ioZoneLog.txt
+TIMED_OUT=$?
+#Return code will be 124 if it ends the process by using SIGTERM for not getting any response. 137 when used SIGKILL to kill the process
+if [ $TIMED_OUT == 137 ]; then
+  echo -e "The process timed out after 4 minute!\nLooks like the Server process to see if it has crashed!"
+  exit 1
+fi
 
 grep "iozone test complete" ../ioZoneLog.txt;
 
