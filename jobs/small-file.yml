@@ -1,5 +1,5 @@
 - job:
-    name: Small-File 
+    name: small-file 
     node: cico-workspace
     description: 'Start Small_File test when a new patch is posted to GerritHub.'
     project-type: freestyle
@@ -27,11 +27,13 @@
     - centos_variables
 
     triggers:
-    - gerrithub-trigger
+    - gerrithub-trigger:
+        option: 'small-file'
 
     builders:
+    - shell: !include-raw: scripts/common/get-node.sh
     - shell: |
-        python $WORKSPACE/ci-tests/build_scripts/common/basic-gluster-duffy.py
+        bash $WORKSPACE/ci-tests/build_scripts/small-file/basic-gluster-duffy.sh
 
     wrappers:
     - cleanup-ws

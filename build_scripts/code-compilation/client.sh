@@ -48,8 +48,7 @@ do
         #Return code will be 124 if it ends the process by using SIGTERM for not getting any response. 137 when used SIGKILL to kill the process
         if [ $TIMED_OUT == 137 ]; then
           echo -e "The process timed out after 1 minute!\nChecking the Server process to see if it has crashed!"
-          sleep 60
-          CHECK_SERVER_PROCESS=$(ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i ./ssh-privatekey root@${SERVER} "ps ax | grep ganesha | grep -v grep")
+          CHECK_SERVER_PROCESS=$(ssh -t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i ./ssh-privatekey root@${SERVER} "ps ax | grep ganesha | grep -v grep")
           if [ -z "${CHECK_SERVER_PROCESS}" ]; then
             echo "No Server process found! Looks like Ganesha has crashed!"
             exit 1

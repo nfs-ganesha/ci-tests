@@ -18,7 +18,7 @@ Operation_List=" create read chmod stat append rename delete-renamed mkdir rmdir
 var="/mnt/nfsv"
 
 # install build and runtime dependencies
-yum -y install git gcc nfs-utils time
+yum -y install git gcc nfs-utils time python3
 
 # Cloning the small file test repo
 git clone https://github.com/distributed-system-analysis/smallfile.git
