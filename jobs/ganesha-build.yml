@@ -37,3 +37,5 @@
 
     publishers:
     - post_build_task_return-node
+    - archive:
+        artifacts: 'x86_64/*.log'

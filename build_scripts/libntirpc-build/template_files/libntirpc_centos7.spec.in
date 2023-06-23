@@ -13,9 +13,11 @@ Source0:	https://github.com/nfs-ganesha/ntirpc/archive/v%{dev_version}/ntirpc-XX
 
 BuildRequires:	cmake
 BuildRequires:	krb5-devel
+BuildRequires:  userspace-rcu-devel >= 0.7
+BuildRequires:  libntirpc
 # libtirpc has /etc/netconfig, most machines probably have it anyway
 # for NFS client
-Requires:	libtirpc
+Requires:       libtirpc
 
 %description
 This package contains a new implementation of the original libtirpc, 
@@ -49,7 +51,7 @@ make %{?_smp_mflags}
 ## make install is broken in various ways
 ## make install DESTDIR=%%{buildroot}
 mkdir -p %{buildroot}%{_libdir}/pkgconfig
-install -p -m 0755 src/%{name}.so.1.4.0 %{buildroot}%{_libdir}/
+#install -p -m 0755 src/%{name}.so.1.4.0 %{buildroot}%{_libdir}/
 ln -s %{name}.so.1.4.0 %{buildroot}%{_libdir}/%{name}.so.1
 ln -s %{name}.so.1.4.0 %{buildroot}%{_libdir}/%{name}.so
 mkdir -p %{buildroot}%{_includedir}/ntirpc

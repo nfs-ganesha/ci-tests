@@ -29,7 +29,7 @@ set -e
 set -x
 
 # enable repositories
-yum -y install centos-release-gluster yum-utils
+yum -y install centos-release-gluster yum-utils centos-release-ceph
 
 # make sure rpcbind is running
 yum -y install rpcbind
@@ -74,8 +74,12 @@ else
             yum -y install libgfapi-devel
             yum -y install ${BASE_PACKAGES} libnfsidmap-devel libwbclient-devel libcap-devel libblkid-devel userspace-rcu-devel userspace-rcu
         elif [ "${CENTOS_VERSION}" = "8s" ]; then
-            yum install -y ${BASE_PACKAGES} libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build libgfapi-devel xfsprogs-devel python2-devel
+            yum install -y ${BASE_PACKAGES} libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build libgfapi-devel xfsprogs-devel
             yum install --enablerepo=powertools -y ${BUILDREQUIRES_EXTRA}
+            yum -y install selinux-policy-devel sqlite
+        elif [ "${CENTOS_VERSION}" = "9s" ]; then
+            yum install -y ${BASE_PACKAGES} libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build libgfapi-devel xfsprogs-devel
+            yum install --enablerepo=crb -y ${BUILDREQUIRES_EXTRA}
             yum -y install selinux-policy-devel sqlite
         fi
 
@@ -127,6 +131,8 @@ if [ "${CENTOS_VERSION}" = "7" ]; then
   yum -y install glusterfs-server
 elif [ "${CENTOS_VERSION}" = "8s" ]; then
   yum -y install --enablerepo=powertools glusterfs-server
+elif [ "${CENTOS_VERSION}" = "9s" ]; then
+  yum -y install --enablerepo=crb glusterfs-server
 fi
 
 systemctl start glusterd
@@ -219,4 +225,3 @@ then
 
   dbus-send --type=method_call --print-reply --system  --dest=org.ganesha.nfsd /org/ganesha/nfsd/ExportMgr  org.ganesha.nfsd.exportmgr.UpdateExport string:${conf_file} string:"EXPORT(Export_Id = ${export_id})"
 fi
-

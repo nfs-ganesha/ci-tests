@@ -22,21 +22,25 @@ do
         fi
 done
 
-if [[ $JOB_NAME =~ fsal-* ]] || [ "$JOB_NAME" == "pylint" ] || [ "$JOB_NAME" == "ganesha-build" ]; then
+if [[ $JOB_NAME =~ fsal-* ]] || [ "$JOB_NAME" == "pylint" ] || [ "$JOB_NAME" == "ganesha-build" ] || [ "$JOB_NAME" == "libntirpc-build" ]; then
     node_count=1
 else
     node_count=2
 fi
 
-for my_pool in ${LIST_POOLS[@]};
-do
-        if [[ $(duffy client show-pool $my_pool | jq -r '.pool.levels.ready') -gt 1 ]]; then
+retry=0
+
+while [ $retry == 0 ]; do
+    for my_pool in ${LIST_POOLS[@]};
+    do
+        if [[ $(duffy client show-pool $my_pool | jq -r '.pool.levels.ready') -ge $node_count ]]; then
                 SESSION=$(duffy client request-session pool="${my_pool}",quantity=$node_count)
                 CHECK_ERR=$(echo ${SESSION} | jq -r '.error.detail')
                 echo $CHECK_ERR
                 if [ "${CHECK_ERR}" == "null" ]; then
                   echo "${SESSION}" | jq -r '.session.nodes[].ipaddr' > "${WORKSPACE}"/hosts
                   echo "${SESSION}" | jq -r '.session.id' > "${WORKSPACE}"/session_id
+                  retry=1
                   break
                 else
                   echo -e "Failed to reserve node for the following reasons!\n-------------------------------------------------\n${CHECK_ERR}"
@@ -44,4 +48,5 @@ do
         fi
         sleep 60
         echo -n "."
+    done
 done

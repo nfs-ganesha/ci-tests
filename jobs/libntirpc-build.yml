@@ -1,5 +1,5 @@
 - job:
-    name: nfs-ganesha_build-libntirpc 
+    name: libntirpc-build
     node: cico-workspace
     description: 'Build RPMs for libntirpc.'
     project-type: freestyle
@@ -15,18 +15,19 @@
 
     parameters:
     - string:
-        default: "$WORKSPACE/ci-tests/build_scripts/build-libntirpc/build-libntirpc.sh"
+        default: "$WORKSPACE/ci-tests/build_scripts/libntirpc-build/build-libntirpc.sh"
         description: 'Test script to execute on the reserved machine.'
         name: TEST_SCRIPT
     - string:
-        default: "$WORKSPACE/ci-tests/build_scripts/build-libntirpc/template_files"
+        default: "$WORKSPACE/ci-tests/build_scripts/libntirpc-build/template_files"
         description: 'URL pointing to the directory with the templates for when building the source RPM and .repo file.'
         name: TEMPLATES_URL
     - centos_variables
 
     builders:
+    - shell: !include-raw: scripts/common/get-node.sh
     - shell: |
-        python $WORKSPACE/ci-tests/build_scripts/build-libntirpc/get-node.py
+        bash $WORKSPACE/ci-tests/build_scripts/libntirpc-build/basic-gluster-duffy.sh
 
     wrappers:
     - cleanup-ws
@@ -34,5 +35,4 @@
     publishers:
     - post_build_task_return-node
     - archive:
-        artifacts: '*.log'
-
+        artifacts: 'x86_64/*.log'

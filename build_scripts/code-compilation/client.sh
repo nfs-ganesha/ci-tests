@@ -15,7 +15,7 @@ set -x
 
 # install build and runtime dependencies
 echo "Install build and runtime dependencies"
-yum -y install nfs-utils git gcc time centos-release-gluster
+yum -y install nfs-utils git gcc time centos-release-gluster centos-release-ceph
 
 # flag for commands which should run only once
 once=0
@@ -39,8 +39,9 @@ do
         elif [ "${CENTOS_VERSION}" == "8s" ]; then
           yum -y install bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel libcap-devel libblkid-devel rpm-build redhat-rpm-config glusterfs-api
           yum -y --enablerepo=powertools install libnfsidmap-devel libwbclient-devel userspace-rcu-devel userspace-rcu libnsl2-devel libcephfs-devel
-        else
-          echo "Check the parameter $CENTOS_VERSION"
+        elif [ "${CENTOS_VERSION}" == "9s" ]; then
+          yum -y install bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel libcap-devel libblkid-devel rpm-build redhat-rpm-config glusterfs-api
+          yum -y --enablerepo=crb install libnfsidmap-devel libwbclient-devel userspace-rcu-devel userspace-rcu libnsl2-devel libcephfs-devel libuuid libuuid-devel
         fi
         timeout -s SIGKILL 240s git clone --depth=1 https://review.gerrithub.io/ffilz/nfs-ganesha
         TIMED_OUT=$?
