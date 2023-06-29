@@ -2,9 +2,10 @@
 
 artifact()
 {
+    rm -rf ${RESULTDIR}/*.log
     [ -e ~/ssh-private-key ] || return 0
-    #scp -q -o StrictHostKeyChecking=no -i ~/ssh-private-key -r "${@}" nfs-ganesha@artifacts.ci.centos.org:/srv/artifacts/nfs-ganesha/
-    rsync -av --password-file ~/ssh-private-key --exclude='*.log' ${@} nfs-ganesha@artifacts.ci.centos.org::nfs-ganesha/
+    scp -q -o StrictHostKeyChecking=no -i ~/ssh-private-key -r "${@}" nfs-ganesha@artifacts.ci.centos.org:/srv/artifacts/nfs-ganesha/
+    #rsync -av --password-file ~/ssh-private-key --exclude='*.log' ${@} nfs-ganesha@artifacts.ci.centos.org::nfs-ganesha/
 }
 
 
@@ -81,11 +82,12 @@ case "${CENTOS_VERSION}" in
 ;;
 esac
 
-RESULTDIR=/srv/nightly/libntirpc/${GIT_VERSION}/${CENTOS_VERSION}/${CENTOS_ARCH}
+RESULTDIR="/srv/nightly/libntirpc/${GIT_VERSION}/${CENTOS_VERSION//s}/${CENTOS_ARCH}"
 /usr/bin/mock \
     --root ${MOCK_CHROOT} \
     --resultdir ${RESULTDIR} \
     --rebuild ${SRPM}
+RET=$?
 
 pushd ${RESULTDIR}
 createrepo_c .

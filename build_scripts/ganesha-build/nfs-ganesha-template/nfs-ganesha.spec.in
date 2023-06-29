@@ -103,7 +103,7 @@ Requires: openSUSE-release
 %bcond_without mspac_support
 %global use_mspac_support %{on_off_switch mspac_support}
 
-%bcond_without monitoring_support
+%bcond_with monitoring_support
 %global use_monitoring_support %{on_off_switch monitoring_support}
 
 %bcond_with sanitize_address
@@ -125,7 +125,6 @@ License:        LGPLv3+
 Url:            https://github.com/nfs-ganesha/nfs-ganesha/wiki
 
 Source0:        https://github.com/%{name}/%{name}/archive/V%{dash_dev_version}/%{name}-XXVERSIONXX.tar.gz
-Patch0002:	0002-CMakeLists.txt.patch
 
 BuildRequires:	cmake
 BuildRequires:	make
@@ -278,7 +277,7 @@ Requires:	dbus-python, pygobject2, pyparsing
 BuildRequires:	python-devel
 %else
 Requires:	python3-gobject, python3-pyparsing
-BuildRequires:	python36-rpm-macros
+BuildRequires:	python3-rpm-macros
 BuildRequires:	python3-devel
 BuildRequires:	python3-setuptools
 %if ( 0%{?suse_version} )
@@ -517,7 +516,6 @@ Development headers and auxiliary files for developing with %{name}.
 
 %prep
 %setup -q -n nfs-ganesha
-%patch0002 -p1
 
 %build
 export VERBOSE=1
@@ -861,9 +859,11 @@ exit 0
 %if ( 0%{?rhel} && 0%{?rhel} < 8 )
 %{python_sitelib}/Ganesha/*
 %{python_sitelib}/ganeshactl-*-info
+%{python_sitelib}/ganesha_top-*-info
 %else
 %{python3_sitelib}/Ganesha/*
 %{python3_sitelib}/ganeshactl-*-info
+%{python3_sitelib}/ganesha_top-*-info
 %endif
 %if %{with gui_utils}
 %{_bindir}/ganesha-admin
@@ -871,6 +871,7 @@ exit 0
 %{_bindir}/manage_exports
 %{_bindir}/manage_logger
 %{_bindir}/ganeshactl
+%{_bindir}/ganesha-top
 %if %{with 9P}
 %{_bindir}/client_stats_9pOps
 %{_bindir}/export_stats_9pOps

@@ -32,9 +32,11 @@ if [ "${CENTOS_VERSION}" = "7" ]; then
   yum -y install libgfapi-devel mock
   yum -y install ${BASE_PACKAGES} libnfsidmap-devel libwbclient-devel libcap-devel libblkid-devel userspace-rcu-devel userspace-rcu librgw2-devel
 elif [ "${CENTOS_VERSION}" = "8s" ]; then
-  yum install -y ${BASE_PACKAGES} libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build libgfapi-devel xfsprogs-devel python2-devel
+  yum install -y ${BASE_PACKAGES} libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build libgfapi-devel xfsprogs-devel python2-devel selinux-policy-devel 
   yum install --enablerepo=powertools -y ${BUILDREQUIRES_EXTRA} mock python3-sphinx python3-qt5-devel librgw2-devel librados-devel
-  yum -y install selinux-policy-devel sqlite libgfapi-devel
+elif [ "${CENTOS_VERSION}" = "9s" ]; then
+  yum install -y ${BASE_PACKAGES} libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build libgfapi-devel xfsprogs-devel selinux-policy-devel python3-rpm-macros python-rpm-macros
+  yum install --enablerepo=crb -y ${BUILDREQUIRES_EXTRA} mock python3-sphinx python3-qt5-devel librgw2-devel librados-devel
 fi
 
 # clone the repository, github is faster than our Gerrit
@@ -60,7 +62,6 @@ popd
 
 # build the SRPM (TODO: run "cmake" and then "make srpm")
 rm -f *.src.rpm
-mv /root/nfs-ganesha-template/0002-CMakeLists.txt.patch /root/
 SRPM=$(rpmbuild --define 'dist .autobuild' --define "_srcrpmdir ${PWD}" \
 	--define '_source_payload w9.gzdio' \
 	--define '_source_filedigest_algorithm 1' \
@@ -79,7 +80,7 @@ esac
 
 # do the actual RPM build in mock
 # TODO: use a CentOS Storage SIG buildroot
-RESULTDIR=/srv/nfs-ganesha/nightly/${GIT_VERSION}/${CENTOS_VERSION}/${CENTOS_ARCH}
+RESULTDIR=/srv/nfs-ganesha/nightly/${GIT_VERSION}/${CENTOS_VERSION//s}/${CENTOS_ARCH}
 mkdir -p ${RESULTDIR}
 
 # TODO: we should use mock, but we need additional repositories

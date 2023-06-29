@@ -26,6 +26,6 @@ ssh -t ${SSH_OPTIONS} root@${SERVER_IP} "CENTOS_VERSION='${CENTOS_VERSION}' CENT
 RETURN_CODE=$?
 
 #Copy the logs/rpms to the workspace
-scp ${SSH_OPTIONS} -r root@${SERVER_IP}:/srv/nightly/libntirpc/next/${CENTOS_VERSION}/${CENTOS_ARCH} $WORKSPACE/
+#scp ${SSH_OPTIONS} -r root@${SERVER_IP}:/srv/nightly/libntirpc/next/${CENTOS_VERSION//s}/${CENTOS_ARCH} $WORKSPACE/
 
 exit $RETURN_CODE

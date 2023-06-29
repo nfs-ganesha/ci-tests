@@ -18,12 +18,12 @@
       - trigger-builds:
         - project: ganesha-build
           predefined-parameters: |
-            CENTOS_VERSION=8s
+            CENTOS_VERSION=9s
             CENTOS_ARCH=x86_64
       - trigger-builds:
         - project: ganesha-build
           predefined-parameters: |
-            CENTOS_VERSION=7
+            CENTOS_VERSION=8s
             CENTOS_ARCH=x86_64
 
     triggers:
