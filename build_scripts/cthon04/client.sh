@@ -14,7 +14,7 @@ set -x
 [ -n "${EXPORT}" ]
 
 # install build and runtime dependencies
-yum -y install git gcc nfs-utils time
+yum -y install git gcc nfs-utils time make
 
 # checkout the connectathon tests
 git clone --depth=1 git://git.linux-nfs.org/projects/steved/cthon04.git
