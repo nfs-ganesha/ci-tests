@@ -48,6 +48,8 @@ if [ $RETURN_CODE == 0 ]; then
 
     scp ${SSH_OPTIONS} ${CLIENT_TEST_SCRIPT} root@${CLIENT_IP}:./$(basename ${CLIENT_TEST_SCRIPT})
 
+    sleep 180
+
     ssh -t ${SSH_OPTIONS} root@${CLIENT_IP} "bash ./$(basename ${CLIENT_TEST_SCRIPT})"
     RETURN_CODE_CLIENT=$?
 

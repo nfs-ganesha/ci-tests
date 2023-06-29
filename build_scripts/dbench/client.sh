@@ -26,8 +26,9 @@ if [ "$CENTOS_VERSION" == "7" ]; then
 elif [ "$CENTOS_VERSION" == "8s" ]; then
   yum -y install epel-release
   yum -y install dbench
-else
-  echo "Please check the CENTOS_VERSION! The build implementation for this version=${CENTOS_VERSION} is in progress!"
+elif [ "${CENTOS_VERSION}" == "9s" ]; then
+  yum -y install epel-release
+  yum -y install dbench
 fi
 
 # place all used files in ${WORKDIR}
