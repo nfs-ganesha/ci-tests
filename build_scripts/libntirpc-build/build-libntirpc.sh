@@ -3,7 +3,8 @@
 artifact()
 {
     [ -e ~/ssh-private-key ] || return 0
-    scp -q -o StrictHostKeyChecking=no -i ~/ssh-private-key -r "${@}" nfs-ganesha@artifacts.ci.centos.org:/srv/artifacts/nfs-ganesha/
+    #scp -q -o StrictHostKeyChecking=no -i ~/ssh-private-key -r "${@}" nfs-ganesha@artifacts.ci.centos.org:/srv/artifacts/nfs-ganesha/
+    rsync -av --password-file ~/ssh-private-key --exclude='*.log' ${@} nfs-ganesha@artifacts.ci.centos.org::nfs-ganesha/
 }
 
 
@@ -18,7 +19,7 @@ set -x
 [ -n "${CENTOS_ARCH}" ]
 
 yum -y install yum-utils
-yum -y install centos-release-gluster epel-release
+yum -y install centos-release-gluster epel-release centos-release-ceph
 
 BASE_PACKAGES="git bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel rpm-build redhat-rpm-config createrepo_c python3 cmake"
 BUILDREQUIRES_EXTRA="libnsl2-devel libnfsidmap-devel libwbclient-devel libcephfs-devel userspace-rcu-devel"
@@ -28,6 +29,10 @@ if [ "${CENTOS_VERSION}" = "7" ]; then
 elif [ "${CENTOS_VERSION}" = "8s" ]; then
   yum install -y ${BASE_PACKAGES} libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build libgfapi-devel xfsprogs-devel python2-devel
   yum install --enablerepo=powertools -y ${BUILDREQUIRES_EXTRA} mock
+  yum -y install selinux-policy-devel sqlite
+elif [ "${CENTOS_VERSION}" = "9s" ]; then
+  yum install -y ${BASE_PACKAGES} libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build libgfapi-devel xfsprogs-devel
+  yum install --enablerepo=crb -y ${BUILDREQUIRES_EXTRA} mock
   yum -y install selinux-policy-devel sqlite
 fi
 
@@ -70,6 +75,9 @@ case "${CENTOS_VERSION}" in
 ;;
 8s)
   MOCK_CHROOT=centos-stream+epel-next-8-x86_64
+;;
+9s)
+  MOCK_CHROOT=centos-stream+epel-next-9-x86_64
 ;;
 esac
 

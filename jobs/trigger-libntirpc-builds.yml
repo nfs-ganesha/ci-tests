@@ -16,12 +16,12 @@
 
     builders:
       - trigger-builds:
-        - project: nfs-ganesha_build-libntirpc 
+        - project: libntirpc-build
           predefined-parameters: |
             CENTOS_VERSION=8s
             CENTOS_ARCH=x86_64
       - trigger-builds:
-        - project: nfs-ganesha_build-libntirpc
+        - project: libntirpc-build 
           predefined-parameters: |
             CENTOS_VERSION=7
             CENTOS_ARCH=x86_64
