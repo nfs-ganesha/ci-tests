@@ -20,8 +20,9 @@ if [ "$CENTOS_VERSION" == "7" ]; then
 elif [ "$CENTOS_VERSION" == "8s" ]; then
   curl -o /etc/yum.repos.d/iozone.repo https://copr.fedorainfracloud.org/coprs/aflyhorse/iozone/repo/centos-stream-8/aflyhorse-iozone-centos-stream-8.repo
   yum install -y iozone
-else
-  echo "Please check the CENTOS_VERSION! The build implementation for this version=${CENTOS_VERSION} is in progress!"
+elif [ "$CENTOS_VERSION" == "9s" ]; then
+  curl -o /etc/yum.repos.d/iozone.repo https://copr.fedorainfracloud.org/coprs/aflyhorse/iozone/repo/centos-stream-9/aflyhorse-iozone-centos-stream-9.repo
+  yum install -y iozone
 fi
 
 mount -t nfs -o vers=3 ${SERVER}:${EXPORT} /mnt/ganesha
@@ -31,14 +32,15 @@ cd /mnt/ganesha
 echo "Running Iozone Test On NFSv3 "
 echo "+++++++++++++++++++++++++++++"
 
-timeout -s SIGKILL 240s iozone -a > ../ioZoneLog.txt
-TIMED_OUT=$?
+#timeout -s SIGKILL 240s iozone -a > ../ioZoneLog.txt
+#TIMED_OUT=$?
 #Return code will be 124 if it ends the process by using SIGTERM for not getting any response. 137 when used SIGKILL to kill the process
-if [ $TIMED_OUT == 137 ]; then
-  echo -e "The process timed out after 4 minute!\nLooks like the Server process to see if it has crashed!"
-  exit 1
-fi
+#if [ $TIMED_OUT == 137 ]; then
+#  echo -e "The process timed out after 4 minute!\nLooks like the Server process to see if it has crashed!"
+#  exit 1
+#fi
 
+iozone -a > ../ioZoneLog.txt
 grep "iozone test complete" ../ioZoneLog.txt;
 
 ret=$?

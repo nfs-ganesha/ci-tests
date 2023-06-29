@@ -13,18 +13,22 @@ GIT_REPO="https://${GERRIT_HOST}/${GERRIT_PROJECT}"
 # enable the Storage SIG Gluster and Ceph repositories
 yum -y install centos-release-gluster
 
-BUILDREQUIRES="git bison cmake dbus-devel flex gcc-c++ krb5-devel libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build libgfapi-devel xfsprogs-devel python2-devel"
+BUILDREQUIRES="git bison cmake dbus-devel flex gcc-c++ krb5-devel libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build libgfapi-devel xfsprogs-devel"
 
-BUILDREQUIRES_EXTRA="libnsl2-devel libnfsidmap-devel libwbclient-devel libcephfs-devel userspace-rcu-devel"
+BUILDREQUIRES_EXTRA="libnsl2-devel libnfsidmap-devel libwbclient-devel userspace-rcu-devel"
 
 # basic packages to install
 case "${CENTOS_VERSION}" in
     7)
-        yum install -y ${BUILDREQUIRES} ${BUILDREQUIRES_EXTRA}
+        yum install -y ${BUILDREQUIRES} ${BUILDREQUIRES_EXTRA} python2-devel
     ;;
     8s)
         yum install -y ${BUILDREQUIRES}
         yum install --enablerepo=powertools -y ${BUILDREQUIRES_EXTRA}
+    ;;
+    9s)
+        yum install -y ${BUILDREQUIRES}
+        yum install --enablerepo=crb -y ${BUILDREQUIRES_EXTRA}
     ;;
 esac
 

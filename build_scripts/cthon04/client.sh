@@ -15,6 +15,9 @@ set -x
 
 # install build and runtime dependencies
 yum -y install git gcc nfs-utils time make
+if [ "${CENTOS_VERSION}" == "9s" ]; then
+  yum -y install libtirpc-devel
+fi
 
 # checkout the connectathon tests
 git clone --depth=1 git://git.linux-nfs.org/projects/steved/cthon04.git

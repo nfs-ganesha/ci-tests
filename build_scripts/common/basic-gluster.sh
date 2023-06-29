@@ -72,7 +72,7 @@ else
         BUILDREQUIRES_EXTRA="libnsl2-devel libnfsidmap-devel libwbclient-devel libcephfs-devel userspace-rcu-devel"
         if [ "${CENTOS_VERSION}" = "7" ]; then
             yum -y install libgfapi-devel
-            yum -y install ${BASE_PACKAGES} libnfsidmap-devel libwbclient-devel libcap-devel libblkid-devel userspace-rcu-devel userspace-rcu
+            yum -y install ${BASE_PACKAGES} libnfsidmap-devel libwbclient-devel libcap-devel libblkid-devel userspace-rcu-devel userspace-rcu python2-devel
         elif [ "${CENTOS_VERSION}" = "8s" ]; then
             yum install -y ${BASE_PACKAGES} libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build libgfapi-devel xfsprogs-devel
             yum install --enablerepo=powertools -y ${BUILDREQUIRES_EXTRA}
