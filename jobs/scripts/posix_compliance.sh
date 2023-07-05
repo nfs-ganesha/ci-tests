@@ -7,7 +7,7 @@ export LAST_TRIGGERED_JOB_NAME=nfs_ganesha_posix_compliance
 export BUILD_NUMBER=${BUILD_NUMBER}
 
 set +e
-bash $WORKSPACE/ci-tests/build_scripts/posix-compliance/basic-gluster-duffy.sh
+bash $WORKSPACE/ci-tests/build_scripts/common/basic-server-client.sh
 RET=$?
 set -e
 

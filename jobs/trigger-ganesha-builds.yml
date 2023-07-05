@@ -11,7 +11,7 @@
     scm:
     - git:
         branches:
-        - '**'
+        - 'refs/heads/next'
         url: https://github.com/nfs-ganesha/nfs-ganesha.git 
 
     builders:

@@ -19,15 +19,15 @@
         description: 'Test script to execute on the reserved machine.'
         name: TEST_SCRIPT
     - string:
-        default: "$WORKSPACE/ci-tests/build_scripts/libntirpc-build/template_files"
+        default: "$WORKSPACE/ci-tests/build_scripts/libntirpc-build/libntirpc-template"
         description: 'URL pointing to the directory with the templates for when building the source RPM and .repo file.'
         name: TEMPLATES_URL
     - centos_variables
 
     builders:
-    - shell: !include-raw: scripts/common/get-node.sh
+    - get-node
     - shell: |
-        bash $WORKSPACE/ci-tests/build_scripts/libntirpc-build/basic-gluster-duffy.sh
+        bash $WORKSPACE/ci-tests/build_scripts/common/basic-server-client.sh
 
     wrappers:
     - cleanup-ws

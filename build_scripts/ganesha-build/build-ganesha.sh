@@ -2,6 +2,7 @@
 
 artifact()
 {
+    rm -rf ${RESULTDIR}/*.log
     [ -e ~/ssh-private-key ] || return 0
     scp -q -o StrictHostKeyChecking=no -i ~/ssh-private-key -r "${@}" nfs-ganesha@artifacts.ci.centos.org:/srv/artifacts/nfs-ganesha/
 }

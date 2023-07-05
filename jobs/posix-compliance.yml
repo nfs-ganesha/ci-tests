@@ -34,7 +34,7 @@
         option: 'posix_compliance'
 
     builders:
-    - shell: !include-raw: scripts/common/get-node.sh
+    - get-node
     - shell: !include-raw: scripts/posix_compliance.sh
 
     wrappers:

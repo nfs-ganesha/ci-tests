@@ -5,7 +5,7 @@ set +x
 set +e
 
 # download and run the bootstrap script
-bash $WORKSPACE/ci-tests/build_scripts/build-tests/basic-gluster-duffy.sh 
+bash $WORKSPACE/ci-tests/build_scripts/common/basic-server-client.sh
 RET=$?
 
 # we accept different return values

@@ -32,3 +32,6 @@
     triggers:
     - gerrithub-trigger:
         option: 'cthon04'
+
+    wrappers:
+    - gerrithub_key

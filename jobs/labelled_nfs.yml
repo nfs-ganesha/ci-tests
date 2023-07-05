@@ -24,17 +24,12 @@
     - centos_variables
 
     triggers:
-      - gerrit:
-          projects:
-            - project-compare-type: PLAIN
-              project-pattern: ''
-              branches:
-                - branch-pattern: '**'
-                  branch-compare-type: ANT
+    - gerrithub-trigger:
 
     builders:
+    - get-node
     - shell: | 
-        python $WORKSPACE/ci-tests/build_scripts/common/basic-gluster-duffy.py 
+        bash $WORKSPACE/ci-tests/build_scripts/common/basic-server-client.sh
 
     wrappers:
     - cleanup-ws

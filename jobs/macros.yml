@@ -10,6 +10,11 @@
         url: https://github.com/nfs-ganesha/ci-tests.git 
         basedir: "$WORKSPACE/ci-tests"
 
+- builder:
+    name: get-node
+    builders:
+    - shell: !include-raw: ../build_scripts/common/get-node.sh
+
 - property:
     name: nfs-github
     properties:
@@ -145,4 +150,4 @@
             - log-text: Build was aborted
               operator: OR
           script:
-            !include-raw: scripts/common/return-node.sh
+            !include-raw: ../build_scripts/common/return-node.sh

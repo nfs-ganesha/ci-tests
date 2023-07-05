@@ -29,9 +29,9 @@
     - centos_variables
 
     builders:
-    - shell: !include-raw: scripts/common/get-node.sh
+    - get-node
     - shell: |
-        bash $WORKSPACE/ci-tests/build_scripts/cthon04/basic-gluster-duffy.sh
+        bash $WORKSPACE/ci-tests/build_scripts/common/basic-server-client.sh
 
     wrappers:
     - cleanup-ws

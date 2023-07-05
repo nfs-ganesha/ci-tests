@@ -27,9 +27,9 @@
     - centos_variables
 
     builders:
-    - shell: !include-raw: scripts/common/get-node.sh
+    - get-node
     - shell: |
-        bash $WORKSPACE/ci-tests/build_scripts/ganesha-build/basic-gluster-duffy.sh
+        bash $WORKSPACE/ci-tests/build_scripts/common/basic-server-client.sh
 
     wrappers:
     - gerrithub_key

@@ -21,7 +21,7 @@
     - centos_variables
 
     builders:
-    - shell: !include-raw: scripts/common/get-node.sh
+    - get-node
     - shell: !include-raw: scripts/tests.sh
 
     triggers:

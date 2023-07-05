@@ -35,7 +35,7 @@
     - shell: !include-raw-escape: scripts/fsal-build.sh
 
     builders:
-    - shell: !include-raw-escape: scripts/common/get-node.sh
+    - get-node
     - shell: !include-raw-escape: scripts/fsal-build.sh
 
     triggers:

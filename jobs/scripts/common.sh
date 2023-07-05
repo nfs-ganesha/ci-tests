@@ -6,17 +6,7 @@ export GERRIT_REFSPEC=${GERRIT_REFSPEC}
 export LAST_TRIGGERED_JOB_NAME=$JOB_NAME
 export BUILD_NUMBER=${BUILD_NUMBER}
 
-if [ "$JOB_NAME" == "dbench" ]; then 
-  FOLDER_NAME="dbench"
-elif [ "$JOB_NAME" == "code-compilation" ]; then
-  FOLDER_NAME="code-compilation"
-elif [[ $JOB_NAME =~ iozone-* ]]; then
-  FOLDER_NAME="iozone"
-elif [[ $JOB_NAME =~ pynfs(-)* ]]; then
-  FOLDER_NAME="pynfs"
-fi
-
-bash $WORKSPACE/ci-tests/build_scripts/${FOLDER_NAME}/basic-gluster-duffy.sh
+bash $WORKSPACE/ci-tests/build_scripts/common/basic-server-client.sh
 RET=$?
 
 JOB_OUTPUT="${JENKINS_URL}/job/${LAST_TRIGGERED_JOB_NAME}/${BUILD_NUMBER}/console"

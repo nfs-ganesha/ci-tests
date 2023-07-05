@@ -1,9 +1,8 @@
-# cico-node-done-from-ansible.sh
-# A script that releases nodes from a SSID file written by
-set +x
-SSID_FILE=${SSID_FILE:-$WORKSPACE/cico-ssid}
+#!/bin/bash
+# A script that releases nodes from session ids
 
-for ssid in $(cat ${SSID_FILE})
-do
-    cico -q node done $ssid
-done
+set +x
+
+SESSION_ID=$(cat "${WORKSPACE}"/session_id)
+
+duffy client retire-session "${SESSION_ID}" > /dev/null
