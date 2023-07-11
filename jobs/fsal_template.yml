@@ -4,6 +4,7 @@
       - cephfs
       - gluster
       - rgw
+      - gpfs
 
     jobs:
       - '{name}-{product}'

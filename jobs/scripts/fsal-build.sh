@@ -5,7 +5,7 @@ set +x
 set +e
 
 # run the bootstrap script
-bash $WORKSPACE/ci-tests/build_scripts/build-fsal/bootstrap.sh
+bash $WORKSPACE/ci-tests/build_scripts/common/basic-server-client.sh
 RET=$?
 
 # we accept different return values
