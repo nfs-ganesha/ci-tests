@@ -35,6 +35,7 @@
 
     wrappers:
     - cleanup-ws
+    - terminate_stuck_build
     - gerrithub_key
 
     publishers:

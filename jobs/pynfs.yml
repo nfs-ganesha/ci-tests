@@ -38,6 +38,7 @@
 
     wrappers:
     - gerrithub_key
+    - terminate_stuck_build
     - cleanup-ws
 
     triggers:

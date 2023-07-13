@@ -76,7 +76,7 @@ else
         elif [ "${CENTOS_VERSION}" = "8s" ]; then
             yum install -y ${BASE_PACKAGES} libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build libgfapi-devel xfsprogs-devel
             yum install --enablerepo=powertools -y ${BUILDREQUIRES_EXTRA}
-            yum -y install selinux-policy-devel sqlite
+            yum -y install selinux-policy-devel sqlite samba-winbind
         elif [ "${CENTOS_VERSION}" = "9s" ]; then
             yum install -y ${BASE_PACKAGES} libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build libgfapi-devel xfsprogs-devel
             yum install --enablerepo=crb -y ${BUILDREQUIRES_EXTRA}
@@ -113,6 +113,11 @@ else
 		ntirpc_rpm=${rpm_arch}/libntirpc-${ntirpc_version}.${rpm_arch}.rpm
 	fi
 	yum -y install {x86_64,noarch}/*.rpm
+
+        #Test block
+        ulimit -a
+        ulimit -c unlimited
+        ulimit -a
 
 	# start nfs-ganesha service with an empty configuration
 	echo "NFSv4 { Graceless = true; }" > /etc/ganesha/ganesha.conf

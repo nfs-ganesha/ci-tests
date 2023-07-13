@@ -130,13 +130,14 @@
             variable: GERRITHUB_KEY
 
 #Enable this to over-ride the configuration under Manage Jenkins > Configure System >  Global Build Time Out 
-#- wrapper:
-#    name: terminate_stuck_build
-#    wrappers:
-#    - timeout:
-#        timeout: 120 
-#        abort: true
-#        type: no-activity 
+#This one is meant for pynfs jobs, setting the value to 4 hours as a part of my testing!
+- wrapper:
+    name: terminate_stuck_build
+    wrappers:
+    - timeout:
+        timeout: 240
+        abort: true
+        type: no-activity
 
 - publisher:
     name: post_build_task_return-node
