@@ -15,9 +15,13 @@ set -x
 
 # install build and runtime dependencies
 yum -y install git gcc nfs-utils time make
-if [ "${CENTOS_VERSION}" == "8s" ] || [ "${CENTOS_VERSION}" == "9s" ]; then
-  yum -y install libtirpc-devel
+
+if [ "${CENTOS_VERSION}" == "8s" ]; then 
+  ENABLE_REPO="--enablerepo=powertools"
+elif [ "${CENTOS_VERSION}" == "9s" ]; then
+  ENABLE_REPO="--enablerepo=crb"
 fi
+yum ${ENABLE_REPO} install -y libtirpc-devel
 
 #Logic to generate corefiles
 echo "/tmp/cores/core.%e.%p.%h.%t" > /proc/sys/kernel/core_pattern

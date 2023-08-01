@@ -29,7 +29,7 @@ set -e
 set -x
 
 # enable repositories (gluster for liburcu)
-yum -y install centos-release-gluster yum-utils centos-release-ceph
+yum -y install centos-release-gluster yum-utils centos-release-ceph epel-release
 
 # make sure rpcbind is running
 yum -y install rpcbind

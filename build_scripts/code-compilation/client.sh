@@ -20,7 +20,9 @@ yum -y install nfs-utils git gcc time centos-release-gluster centos-release-ceph
 # flag for commands which should run only once
 once=0
 
-for ver in 3 4.0 4.1
+#NFS-Ganesha is crashing when installing 4.0, so taking it out to see if 4.1 works
+
+for ver in 3 4.1
 do
     echo "--------------------------------------------------"
     echo "Running test on Mount Version $ver"

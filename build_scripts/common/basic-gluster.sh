@@ -29,7 +29,7 @@ set -e
 set -x
 
 # enable repositories
-yum -y install centos-release-gluster yum-utils centos-release-ceph
+yum -y install centos-release-gluster yum-utils centos-release-ceph epel-release 
 
 # make sure rpcbind is running
 yum -y install rpcbind
@@ -68,19 +68,19 @@ else
 	GIT_REPO=$(basename "${GERRIT_PROJECT}")
 	GIT_URL="https://${GERRIT_HOST}/${GERRIT_PROJECT}"
 
-        BASE_PACKAGES="git bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel rpm-build redhat-rpm-config"
-        BUILDREQUIRES_EXTRA="libnsl2-devel libnfsidmap-devel libwbclient-devel libcephfs-devel userspace-rcu-devel"
+        BASE_PACKAGES="git bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel rpm-build redhat-rpm-config gdb"
+        BUILDREQUIRES_EXTRA="libnsl2-devel libnfsidmap-devel libwbclient-devel userspace-rcu-devel libcephfs-devel"
         if [ "${CENTOS_VERSION}" = "7" ]; then
             yum -y install libgfapi-devel
             yum -y install ${BASE_PACKAGES} libnfsidmap-devel libwbclient-devel libcap-devel libblkid-devel userspace-rcu-devel userspace-rcu python2-devel
         elif [ "${CENTOS_VERSION}" = "8s" ]; then
             yum install -y ${BASE_PACKAGES} libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build libgfapi-devel xfsprogs-devel
             yum install --enablerepo=powertools -y ${BUILDREQUIRES_EXTRA}
-            yum -y install selinux-policy-devel sqlite samba-winbind
+            yum -y install selinux-policy-devel sqlite samba-winbind 
         elif [ "${CENTOS_VERSION}" = "9s" ]; then
             yum install -y ${BASE_PACKAGES} libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build libgfapi-devel xfsprogs-devel
             yum install --enablerepo=crb -y ${BUILDREQUIRES_EXTRA}
-            yum -y install selinux-policy-devel sqlite
+            yum -y install selinux-policy-devel sqlite samba-winbind 
         fi
 
 	git init "${GIT_REPO}"
@@ -103,7 +103,7 @@ else
 	mkdir build
 	pushd build
 
-	cmake -DCMAKE_BUILD_TYPE=Maintainer -DUSE_FSAL_GLUSTER=ON ../src
+	cmake -DCMAKE_BUILD_TYPE=Maintainer -DUSE_FSAL_GLUSTER=ON -DUSE_DBUS=ON -D_MSPAC_SUPPORT=OFF ../src
 	make dist
 	rpmbuild -ta --define "_srcrpmdir $PWD" --define "_rpmdir $PWD" *.tar.gz
 	rpm_arch=$(rpm -E '%{_arch}')

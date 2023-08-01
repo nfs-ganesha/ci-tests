@@ -14,7 +14,7 @@ GIT_REPO="https://${GERRIT_HOST}/${GERRIT_PROJECT}"
 yum -y install centos-release-gluster yum-utils centos-release-ceph epel-release 
 
 BASE_PACKAGES="git bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel rpm-build redhat-rpm-config libacl-devel libblkid-devel libcap-devel gperftools-devel gtest-devel"
-BUILDREQUIRES_EXTRA="libnsl2-devel libnfsidmap-devel libwbclient-devel libcephfs-devel userspace-rcu-devel  boost-devel doxygen xfsprogs-devel lttng-tools-devel lttng-ust-devel"
+BUILDREQUIRES_EXTRA="libnsl2-devel libnfsidmap-devel libwbclient-devel userspace-rcu-devel  boost-devel doxygen xfsprogs-devel lttng-tools-devel lttng-ust-devel"
 
 if [ "${CENTOS_VERSION}" = "7" ]; then
   yum -y install libgfapi-devel
@@ -22,11 +22,11 @@ if [ "${CENTOS_VERSION}" = "7" ]; then
 elif [ "${CENTOS_VERSION}" = "8s" ]; then
   yum install -y ${BASE_PACKAGES} libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build libgfapi-devel xfsprogs-devel
   yum install --enablerepo=powertools -y ${BUILDREQUIRES_EXTRA}
-  yum -y install selinux-policy-devel sqlite
+  yum -y install selinux-policy-devel sqlite libcephfs-devel
 elif [ "${CENTOS_VERSION}" = "9s" ]; then
   yum install -y ${BASE_PACKAGES} libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build libgfapi-devel xfsprogs-devel
   yum install --enablerepo=crb -y ${BUILDREQUIRES_EXTRA}
-  yum -y install selinux-policy-devel sqlite
+  yum -y install selinux-policy-devel sqlite libcephfs-devel
 fi
 
 git clone --depth=1 ${GIT_REPO}
