@@ -39,4 +39,5 @@
     - cleanup-ws
 
     publishers:
+    - archive_artifacts
     - post_build_task_return-node

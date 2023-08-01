@@ -15,9 +15,9 @@ function server_run()
   scp ${SSH_OPTIONS} ${2} root@${1}:./$(basename ${2})
 
   ssh -t ${SSH_OPTIONS} root@${1} "GERRIT_HOST='${GERRIT_HOST}' GERRIT_PROJECT='${GERRIT_PROJECT}' GERRIT_REFSPEC='${GERRIT_REFSPEC}' CENTOS_VERSION='${CENTOS_VERSION}' CENTOS_ARCH='${CENTOS_ARCH}' ${VOLUME_TYPE}_VOLUME='${EXPORT}' YUM_REPO='${YUM_REPO}' ${INCLUDE_TEMPLATE_URL} ${INCLUDE_ACL_PARAM} bash ./$(basename ${2})"
-  RETURN_CODE=$?
+  #RETURN_CODE=$?
 
-  return $RETURN_CODE
+  #return $RETURN_CODE
 }
 
 function client_run()
@@ -52,11 +52,15 @@ elif [ "${SERVER_TEST_SCRIPT}" ] && [ "${CLIENT_TEST_SCRIPT}" ]; then
   CLIENT_IP=$(cat $WORKSPACE/hosts | sed -n '2p')
   server_run ${SERVER_IP} ${SERVER_TEST_SCRIPT}
   SERVER_SCRIPT_RESULT=$?
+  echo "SERVER_SCRIPT_RESULT = $SERVER_SCRIPT_RESULT"
   if [ "${SERVER_SCRIPT_RESULT}" == "0" ]; then
     echo "Server script success!"
     client_run ${CLIENT_IP} ${CLIENT_TEST_SCRIPT} ${SERVER_IP}
     FINAL_RESULT=$?
   else
+    scp root@${SERVER_IP}:/root/rpmbuild/BUILD/nfs-ganesha-5.4/CMakeFiles/CMakeOutput.log $WORKSPACE
+    scp root@${SERVER_IP}:/root/rpmbuild/BUILD/nfs-ganesha-5.4/CMakeFiles/CMakeError.log $WORKSPACE
+    ls -ltr $WORKSPACE
     FINAL_RESULT=${SERVER_SCRIPT_RESULT}
   fi
 fi

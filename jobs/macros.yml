@@ -152,3 +152,13 @@
               operator: OR
           script:
             !include-raw: ../build_scripts/common/return-node.sh
+
+- publisher:
+    name: archive_artifacts
+    publishers:
+    - archive:
+        artifacts: '*.log'
+        allow-empty: true
+        only-if-success: false 
+        fingerprint: true
+        excludes: path
