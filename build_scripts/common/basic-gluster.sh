@@ -68,7 +68,7 @@ else
 	GIT_REPO=$(basename "${GERRIT_PROJECT}")
 	GIT_URL="https://${GERRIT_HOST}/${GERRIT_PROJECT}"
 
-        BASE_PACKAGES="git bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel rpm-build redhat-rpm-config gdb"
+        BASE_PACKAGES="git bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel rpm-build redhat-rpm-config"
         BUILDREQUIRES_EXTRA="libnsl2-devel libnfsidmap-devel libwbclient-devel libcephfs-devel userspace-rcu-devel"
         if [ "${CENTOS_VERSION}" = "7" ]; then
             yum -y install libgfapi-devel
@@ -76,26 +76,19 @@ else
         elif [ "${CENTOS_VERSION}" = "8s" ]; then
             yum install -y ${BASE_PACKAGES} libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build libgfapi-devel xfsprogs-devel
             yum install --enablerepo=powertools -y ${BUILDREQUIRES_EXTRA}
-            yum -y install selinux-policy-devel sqlite samba-winbind
+            yum -y install selinux-policy-devel sqlite
         elif [ "${CENTOS_VERSION}" = "9s" ]; then
             yum install -y ${BASE_PACKAGES} libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build libgfapi-devel xfsprogs-devel
             yum install --enablerepo=crb -y ${BUILDREQUIRES_EXTRA}
-            yum -y install selinux-policy-devel sqlite samba-winbind
+            yum -y install selinux-policy-devel sqlite
         fi
 
 	git init "${GIT_REPO}"
 	pushd "${GIT_REPO}"
 
         #Its observed that fetch is failing so this little hack is added! Will delete in future if it turns out useless!
-	git fetch --depth=1 "${GIT_URL}" "${GERRIT_REFSPEC}" > /dev/null
-        if [ $? = 0 ]; then
-            echo "Fetch succeeded"
-        else
-            sleep 2
-            git fetch "${GIT_URL}" "${GERRIT_REFSPEC}"
-        fi       
-
-	git checkout -b "${GERRIT_REFSPEC}" FETCH_HEAD
+	git fetch --depth=1 "${GIT_URL}" ac2ec85d57cb6f0686f68dc29e07d3ebe1aaa12d > /dev/null
+        git checkout -b refs/heads/next FETCH_HEAD
 
 	# update libntirpc
 	git submodule update --init || git submodule sync
@@ -103,7 +96,7 @@ else
 	mkdir build
 	pushd build
 
-	cmake -DCMAKE_BUILD_TYPE=Maintainer -DUSE_FSAL_GLUSTER=ON -DUSE_DBUS=ON ../src
+	cmake -DCMAKE_BUILD_TYPE=Maintainer -DUSE_FSAL_GLUSTER=ON ../src
 	make dist
 	rpmbuild -ta --define "_srcrpmdir $PWD" --define "_rpmdir $PWD" *.tar.gz
 	rpm_arch=$(rpm -E '%{_arch}')
