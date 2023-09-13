@@ -21,7 +21,7 @@
             unstable-threshold: never
             failure-threshold: never
           predefined-parameters: |
-            CENTOS_VERSION=7
+            CENTOS_VERSION=8s
             CENTOS_ARCH=x86_64
             GERRIT_HOST=${GERRIT_HOST}
             GERRIT_PROJECT=${GERRIT_PROJECT}
