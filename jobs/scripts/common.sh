@@ -6,6 +6,11 @@ export GERRIT_REFSPEC=${GERRIT_REFSPEC}
 export LAST_TRIGGERED_JOB_NAME=$JOB_NAME
 export BUILD_NUMBER=${BUILD_NUMBER}
 
+if [ "$JOB_NAME" == "storage-scale" ]; then
+  export AWS_ACCESS_KEY=${ACCESS_KEY}
+  export AWS_SECRET_KEY=${SECRET_KEY}
+fi
+
 bash $WORKSPACE/ci-tests/build_scripts/common/basic-server-client.sh
 RET=$?
 

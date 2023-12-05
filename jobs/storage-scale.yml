@@ -1,0 +1,40 @@
+- job:
+    name: storage-scale 
+    display-name: "Storage Scale"
+    node: cico-workspace
+    description: 'Run Storage Scale CI test'
+    project-type: freestyle
+    concurrent: false
+    allow-manual-triggers: true
+
+    scm:
+    - ci-tests
+
+    properties:
+    - discarder
+
+    parameters:
+    - string:
+        default: "$WORKSPACE/ci-tests/build_scripts/common/basic-storage-scale.sh"
+        description: Test script to execute on the reserved machine acting as a server.
+        name: SERVER_TEST_SCRIPT
+    - string:
+        default: "$WORKSPACE/ci-tests/build_scripts/storage-scale/client.sh"
+        description: Test script to execute on the reserved machine acting as a client.
+        name: CLIENT_TEST_SCRIPT
+    - nfs_variables:
+        export_var: 'storage_scale'
+    - gerrit_variables
+    - centos_variables
+
+    builders:
+    - get-node
+    - shell: !include-raw: scripts/common.sh
+
+    wrappers:
+    - cleanup-ws
+    - gerrithub_key
+    - aws_credentials
+
+    publishers:
+    - post_build_task_return-node

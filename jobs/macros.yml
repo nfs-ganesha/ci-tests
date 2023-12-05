@@ -129,6 +129,17 @@
             credential-id: GERRITHUB_PRIVATE_KEY
             variable: GERRITHUB_KEY
 
+- wrapper:
+    name: aws_credentials
+    wrappers:
+    - credentials-binding:
+         - text:
+            credential-id: AWS_ACCESS_KEY
+            variable: ACCESS_KEY
+         - text:
+            credential-id: AWS_SECRET_KEY
+            variable: SECRET_KEY
+
 #Enable this to over-ride the configuration under Manage Jenkins > Configure System >  Global Build Time Out 
 #This one is meant for pynfs jobs, setting the value to 4 hours as a part of my testing!
 - wrapper:
