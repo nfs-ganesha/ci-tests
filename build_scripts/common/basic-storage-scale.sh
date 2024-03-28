@@ -36,10 +36,10 @@ chmod +x ./aws/*
 aws --version
 aws configure set aws_access_key_id ${AWS_ACCESS_KEY}
 aws configure set aws_secret_access_key ${AWS_SECRET_KEY}
-aws s3api get-object --bucket nfsganesha-ci --key "version_to_use.txt" "version_to_use.txt"
+aws s3api get-object --bucket centos-ci --key "version_to_use.txt" "version_to_use.txt"
 VERSION_TO_USE=$(cat version_to_use.txt)
 echo ${VERSION_TO_USE}
-aws s3api get-object --bucket nfsganesha-ci --key "${VERSION_TO_USE}" "Storage_Scale_Developer-5.1.9.0-x86_64-Linux-install.zip"
+aws s3api get-object --bucket centos-ci --key "${VERSION_TO_USE}" "Storage_Scale_Developer-5.1.9.0-x86_64-Linux-install.zip"
 unzip Storage_Scale_Developer-5.1.9.0-x86_64-Linux-install.zip
 
 ssh-keygen -b 2048 -t rsa -f ~/.ssh/id_rsa -q -N ""

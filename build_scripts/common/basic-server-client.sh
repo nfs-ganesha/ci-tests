@@ -69,6 +69,7 @@ elif [ "${SERVER_TEST_SCRIPT}" ] && [ "${CLIENT_TEST_SCRIPT}" ]; then
     echo "Server script success!"
     client_run ${CLIENT_IP} ${CLIENT_TEST_SCRIPT} ${SERVER_IP}
     FINAL_RESULT=$?
+    echo "Client script status = $FINAL_RESULT"
   else
     scp root@${SERVER_IP}:/root/rpmbuild/BUILD/nfs-ganesha-5.4/CMakeFiles/CMakeOutput.log $WORKSPACE
     scp root@${SERVER_IP}:/root/rpmbuild/BUILD/nfs-ganesha-5.4/CMakeFiles/CMakeError.log $WORKSPACE

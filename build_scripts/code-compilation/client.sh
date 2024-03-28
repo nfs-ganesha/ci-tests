@@ -45,8 +45,9 @@ do
           yum -y install bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel libcap-devel libblkid-devel rpm-build redhat-rpm-config glusterfs-api
           yum -y --enablerepo=crb install libnfsidmap-devel libwbclient-devel userspace-rcu-devel userspace-rcu libnsl2-devel libcephfs-devel libuuid libuuid-devel
         fi
-        timeout -s SIGKILL 240s git clone --depth=1 https://review.gerrithub.io/ffilz/nfs-ganesha
+        timeout -s SIGKILL 600s git clone --depth=1 https://review.gerrithub.io/ffilz/nfs-ganesha
         TIMED_OUT=$?
+        echo $TIMED_OUT
         #Return code will be 124 if it ends the process by using SIGTERM for not getting any response. 137 when used SIGKILL to kill the process
         if [ $TIMED_OUT == 137 ]; then
           echo -e "The process timed out after 1 minute!\nChecking the Server process to see if it has crashed!"

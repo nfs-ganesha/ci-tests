@@ -32,7 +32,7 @@
         name: GERRIT_USER 
 
     builders:
-    - shell: !include-raw: scripts/checkpatch.sh
+    - shell: !include-raw-verbatim: scripts/checkpatch.sh
 
     triggers:
       - gerrit:

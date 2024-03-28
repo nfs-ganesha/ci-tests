@@ -33,11 +33,11 @@
 
     builders:
 
-    - shell: !include-raw-escape: scripts/fsal-build.sh
+    - shell: !include-raw-verbatim: scripts/fsal-build.sh
 
     builders:
     - get-node
-    - shell: !include-raw-escape: scripts/fsal-build.sh
+    - shell: !include-raw-verbatim: scripts/fsal-build.sh
 
     triggers:
     -  gerrithub-trigger:

@@ -13,7 +13,7 @@
 - builder:
     name: get-node
     builders:
-    - shell: !include-raw: ../build_scripts/common/get-node.sh
+    - shell: !include-raw-verbatim: ../../build_scripts/common/get-node.sh
 
 - property:
     name: nfs-github
@@ -56,7 +56,7 @@
                 exclude-drafts: true
                 exclude-no-code-change: true
             - comment-added-contains-event:
-                comment-contains-value: 'recheck {option}'
+                comment-contains-value: 'recheck all'
           projects:
             - project-compare-type: PLAIN
               project-pattern: 'ffilz/nfs-ganesha'
@@ -162,7 +162,7 @@
             - log-text: Build was aborted
               operator: OR
           script:
-            !include-raw: ../build_scripts/common/return-node.sh
+            !include-raw-verbatim: ../../build_scripts/common/return-node.sh
 
 - publisher:
     name: archive_artifacts

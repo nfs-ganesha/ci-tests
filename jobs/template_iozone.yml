@@ -44,7 +44,7 @@
 
     builders:
     - get-node
-    - shell: !include-raw-escape: scripts/common.sh  
+    - shell: !include-raw-verbatim: scripts/common.sh  
 
     triggers:
     - gerrithub-trigger:

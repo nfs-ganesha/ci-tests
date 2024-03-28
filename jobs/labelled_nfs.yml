@@ -25,6 +25,7 @@
 
     triggers:
     - gerrithub-trigger:
+        option: 'labelled_nfs'
 
     builders:
     - get-node

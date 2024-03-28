@@ -22,7 +22,7 @@
 
     builders:
     - get-node
-    - shell: !include-raw: scripts/tests.sh
+    - shell: !include-raw-verbatim: scripts/tests.sh
 
     triggers:
     - gerrithub-trigger:
