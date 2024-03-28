@@ -35,7 +35,7 @@
 
     builders:
     - get-node
-    - shell: !include-raw: scripts/posix_compliance.sh
+    - shell: !include-raw-verbatim: scripts/posix_compliance.sh
 
     wrappers:
     - gerrithub_key
