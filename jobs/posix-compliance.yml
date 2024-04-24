@@ -4,6 +4,7 @@
     description: "Run posix compliance testsuite (NFSv4.0) against the latest build of Ganesha with FSAL_GLUSTER.\n\nposix compliance test suite cloned from, https://github.com/ffilz/ntfs-3g-pjd-fstest.git"
     project-type: freestyle
     concurrent: false
+    disabled: true
     allow-manual-triggers: true
 
     scm:

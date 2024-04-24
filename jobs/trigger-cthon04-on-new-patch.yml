@@ -23,9 +23,9 @@
           predefined-parameters: |
             CENTOS_VERSION=8s
             CENTOS_ARCH=x86_64
-            GERRIT_HOST=${GERRIT_HOST}
-            GERRIT_PROJECT=${GERRIT_PROJECT}
-            GERRIT_REFSPEC=${GERRIT_REFSPEC}
+            GERRIT_HOST=$GERRIT_HOST
+            GERRIT_PROJECT=$GERRIT_PROJECT
+            GERRIT_REFSPEC=$GERRIT_REFSPEC
       - shell: |
           bash $WORKSPACE/ci-tests/build_scripts/common/add-gerrit-comment.sh
 
