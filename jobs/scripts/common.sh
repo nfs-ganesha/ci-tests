@@ -1,3 +1,9 @@
+# no need for verbose output
+set +x
+
+# do not immediately fail on an error
+set +e
+
 export CENTOS_VERSION=${CENTOS_VERSION}
 export CENTOS_ARCH=${CENTOS_ARCH}
 export GERRIT_HOST=${GERRIT_HOST}
@@ -58,3 +64,5 @@ then
             ${NOTIFY} \
             ${GERRIT_PATCHSET_REVISION}
 fi
+
+exit ${EXIT}

@@ -3,6 +3,7 @@
     node: cico-workspace
     project-type: freestyle
     concurrent: false
+    disabled: true
     allow-manual-triggers: true
 
     scm:

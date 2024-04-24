@@ -4,6 +4,7 @@
     description: 'Run code compilation for nfs-ganesha against the latest build of Ganesha with FSAL_GLUSTER.'
     project-type: freestyle
     concurrent: true
+    disabled: true
     allow-manual-triggers: true
 
     scm:

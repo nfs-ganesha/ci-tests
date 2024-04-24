@@ -23,7 +23,8 @@ set -x
 
 #THE FOLLOWING LINES OF CODE DOWNLOADS STORAGE SCALE, INSTALLS IT AND CREATES A CLUSTER
 #----------------------------------------------------------------------------------------------
-WORKING_DIR="DOWNLOAD_STORAGE_SCALE"
+WORKSPACE_PATH=$(pwd)
+WORKING_DIR="$WORKSPACE_PATH/DOWNLOAD_STORAGE_SCALE"
 mkdir -p $WORKING_DIR
 cd $WORKING_DIR
 echo $PWD
@@ -39,8 +40,9 @@ aws configure set aws_secret_access_key ${AWS_SECRET_KEY}
 aws s3api get-object --bucket centos-ci --key "version_to_use.txt" "version_to_use.txt"
 VERSION_TO_USE=$(cat version_to_use.txt)
 echo ${VERSION_TO_USE}
-aws s3api get-object --bucket centos-ci --key "${VERSION_TO_USE}" "Storage_Scale_Developer-5.1.9.0-x86_64-Linux-install.zip"
-unzip Storage_Scale_Developer-5.1.9.0-x86_64-Linux-install.zip
+aws s3api get-object --bucket centos-ci --key "${VERSION_TO_USE}" "${VERSION_TO_USE}"
+mkdir "$WORKING_DIR/INSTALL_PATH"
+unzip ${VERSION_TO_USE} -d INSTALLER_PATH/
 
 ssh-keygen -b 2048 -t rsa -f ~/.ssh/id_rsa -q -N ""
 cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
@@ -56,31 +58,35 @@ for new_ip in $(echo $ip_address | awk -F '.' '{for(i=$4+1;i<=255;i++){print $1"
 
 echo "$USABLE_IP    cesip1" >> /etc/hosts
 
-INSTALLER_VERSION=$(echo ${VERSION_TO_USE/.zip/})
-chmod +x $INSTALLER_VERSION
-./$INSTALLER_VERSION --silent
+INSTALLER_VERSION=$(ls INSTALLER_PATH/  --ignore="*.md5" --ignore="*.README" --ignore="*.pgp")
+INSTALLER=$(readlink -f INSTALLER_PATH/${INSTALLER_VERSION})
+chmod +x $INSTALLER
+$INSTALLER --silent
 
-/usr/lpp/mmfs/5.1.9.0/ansible-toolkit/spectrumscale setup -s 127.0.0.1 --storesecret;
-/usr/lpp/mmfs/5.1.9.0/ansible-toolkit/spectrumscale node add $(hostname) -n;
-/usr/lpp/mmfs/5.1.9.0/ansible-toolkit/spectrumscale node add $(hostname) -p;
-/usr/lpp/mmfs/5.1.9.0/ansible-toolkit/spectrumscale config protocols -e $USABLE_IP;
-/usr/lpp/mmfs/5.1.9.0/ansible-toolkit/spectrumscale node add -a $(hostname);
-/usr/lpp/mmfs/5.1.9.0/ansible-toolkit/spectrumscale config gpfs -c $(hostname)_cluster;
+export PATH="$PATH:$(readlink -f /usr/lpp/mmfs/*/ansible-toolkit/)"
+
+spectrumscale setup -s 127.0.0.1 --storesecret;
+spectrumscale node add $(hostname) -n;
+spectrumscale node add $(hostname) -p;
+spectrumscale config protocols -e $USABLE_IP;
+spectrumscale node add -a $(hostname);
+spectrumscale config gpfs -c $(hostname)_cluster;
 dd if=/dev/zero of=/home/nsd1_c84f2u09-rhel88a1 bs=1M count=8192;
-/usr/lpp/mmfs/5.1.9.0/ansible-toolkit/spectrumscale nsd add -p $(hostname) -u dataAndMetadata -fs ${STORAGE_SCALE_VOLUME} -fg 1 /home/nsd1_c84f2u09-rhel88a1;
-/usr/lpp/mmfs/5.1.9.0/ansible-toolkit/spectrumscale config protocols -f ${STORAGE_SCALE_VOLUME} -m /ibm/${STORAGE_SCALE_VOLUME};
-/usr/lpp/mmfs/5.1.9.0/ansible-toolkit/spectrumscale enable nfs;
-/usr/lpp/mmfs/5.1.9.0/ansible-toolkit/spectrumscale enable smb;
-/usr/lpp/mmfs/5.1.9.0/ansible-toolkit/spectrumscale callhome disable;
-/usr/lpp/mmfs/5.1.9.0/ansible-toolkit/spectrumscale config perfmon -r off;
-/usr/lpp/mmfs/5.1.9.0/ansible-toolkit/spectrumscale node list;
-/usr/lpp/mmfs/5.1.9.0/ansible-toolkit/spectrumscale install --precheck;
-/usr/lpp/mmfs/5.1.9.0/ansible-toolkit/spectrumscale install;
-/usr/lpp/mmfs/5.1.9.0/ansible-toolkit/spectrumscale deploy --precheck;
-/usr/lpp/mmfs/5.1.9.0/ansible-toolkit/spectrumscale deploy;
+spectrumscale nsd add -p $(hostname) -u dataAndMetadata -fs ${STORAGE_SCALE_VOLUME} -fg 1 /home/nsd1_c84f2u09-rhel88a1;
+spectrumscale config protocols -f ${STORAGE_SCALE_VOLUME} -m /ibm/${STORAGE_SCALE_VOLUME};
+spectrumscale enable nfs;
+spectrumscale enable smb;
+spectrumscale callhome disable;
+spectrumscale config perfmon -r off;
+spectrumscale node list;
+spectrumscale install --precheck;
+spectrumscale install;
+spectrumscale deploy --precheck;
+spectrumscale deploy;
 
-/usr/lpp/mmfs/5.1.9.0/ansible-toolkit/spectrumscale nsd list
-/usr/lpp/mmfs/5.1.9.0/ansible-toolkit/spectrumscale filesystem list
+spectrumscale nsd list
+spectrumscale filesystem list
+
 #----------------------------------------------------------------------------------------------
 
 #THE FOLLOWING LINES OF CODE CLONES THE SOURCE CODE, RPMBUILD AND INSTALLS THE RPMS

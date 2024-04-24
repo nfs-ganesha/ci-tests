@@ -1,7 +1,7 @@
-FROM quay.io/centos/centos:stream
+FROM quay.io/centos/centos:stream9
 
 RUN true \
- && dnf -y install python3.8 \
+ && dnf -y install python3-pip \
  && pip3 install jenkins-job-builder \
  && dnf -y clean all \
  && true
