@@ -5,6 +5,7 @@
     description: 'Run Storage Scale CI test'
     project-type: freestyle
     concurrent: false
+    disabled: true
     allow-manual-triggers: true
 
     scm:

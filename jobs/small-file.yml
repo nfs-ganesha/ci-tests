@@ -4,6 +4,7 @@
     description: 'Start Small_File test when a new patch is posted to GerritHub.'
     project-type: freestyle
     concurrent: flase
+    disabled: true
     allow-manual-triggers: false
 
     scm:
