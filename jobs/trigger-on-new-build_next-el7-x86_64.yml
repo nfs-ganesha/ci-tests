@@ -4,6 +4,7 @@
     decription: '[next/el7/x86_64] Trigger tests whenever a new automated build is available in the YUM repository.'
     project-type: freestyle
     concurrent: false
+    disabled: true
     allow-manual-triggers: false 
 
     properties:

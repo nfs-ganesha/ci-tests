@@ -4,6 +4,7 @@
     description: 'Start labelled_nfs test when a new patch is posted to GerritHub.'
     project-type: freestyle
     concurrent: false 
+    disabled: true
     allow-manual-triggers: false
 
     properties:

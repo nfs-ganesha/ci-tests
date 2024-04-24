@@ -4,6 +4,7 @@
     description: 'Run dbench test suite against the latest build of Ganesha with FSAL_GLUSTER.'
     project-type: freestyle
     concurrent: false 
+    disabled: true
     allow-manual-triggers: true
 
     scm:
