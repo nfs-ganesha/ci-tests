@@ -68,7 +68,7 @@ else
 	GIT_REPO=$(basename "${GERRIT_PROJECT}")
 	GIT_URL="https://${GERRIT_HOST}/${GERRIT_PROJECT}"
 
-        BASE_PACKAGES="git bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel rpm-build redhat-rpm-config gdb"
+        BASE_PACKAGES="git bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel rpm-build redhat-rpm-config gdb rdma-core-devel"
         BUILDREQUIRES_EXTRA="libnsl2-devel libnfsidmap-devel libwbclient-devel userspace-rcu-devel libcephfs-devel"
         if [ "${CENTOS_VERSION}" = "7" ]; then
             yum -y install libgfapi-devel
