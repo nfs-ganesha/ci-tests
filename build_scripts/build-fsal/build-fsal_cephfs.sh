@@ -13,7 +13,7 @@ GIT_REPO="https://${GERRIT_HOST}/${GERRIT_PROJECT}"
 # enable the Storage SIG Gluster and Ceph repositories
 dnf -y install centos-release-ceph epel-release
 
-BUILDREQUIRES="git bison cmake dbus-devel flex gcc-c++ krb5-devel libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build xfsprogs-devel"
+BUILDREQUIRES="git bison cmake dbus-devel flex gcc-c++ krb5-devel libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build xfsprogs-devel rdma-core-devel"
 
 #BUILDREQUIRES_EXTRA="libnsl2-devel libnfsidmap-devel libwbclient-devel libcephfs-devel userspace-rcu-devel"
 BUILDREQUIRES_EXTRA="libnsl2-devel libnfsidmap-devel libwbclient-devel userspace-rcu-devel"

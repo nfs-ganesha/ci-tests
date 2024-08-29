@@ -40,6 +40,7 @@ lttng-tools-devel
 lttng-ust-devel
 gperftools-devel
 gtest-devel
+rdma-core-devel
 "
 
 git clone ${GIT_REPO}

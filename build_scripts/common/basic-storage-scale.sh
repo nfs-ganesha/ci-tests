@@ -48,7 +48,7 @@ ssh-keygen -b 2048 -t rsa -f ~/.ssh/id_rsa -q -N ""
 cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
 chmod og-wx ~/.ssh/authorized_keys
 
-yum -y install kernel-devel-$(uname -r) kernel-headers-$(uname -r) cpp gcc gcc-c++ binutils numactl jre make elfutils elfutils-devel rpcbind sssd-tools openldap-clients bind-utils net-tools krb5-workstation python3
+yum -y install kernel-devel-$(uname -r) kernel-headers-$(uname -r) cpp gcc gcc-c++ binutils numactl jre make elfutils elfutils-devel rpcbind sssd-tools openldap-clients bind-utils net-tools krb5-workstation python3 rdma-core-devel
 python3 -m pip install --user ansible
 
 #Add CES IP to /etc/hosts
@@ -130,7 +130,7 @@ else
 	GIT_REPO=$(basename "${GERRIT_PROJECT}")
 	GIT_URL="https://${GERRIT_HOST}/${GERRIT_PROJECT}"
 
-        BASE_PACKAGES="git bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel rpm-build redhat-rpm-config gdb"
+        BASE_PACKAGES="git bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel rpm-build redhat-rpm-config gdb rdma-core-devel"
         BUILDREQUIRES_EXTRA="libnsl2-devel libnfsidmap-devel libwbclient-devel userspace-rcu-devel libcephfs-devel"
         if [ "${CENTOS_VERSION}" = "7" ]; then
             yum -y install libgfapi-devel
