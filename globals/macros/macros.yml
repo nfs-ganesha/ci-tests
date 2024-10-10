@@ -110,8 +110,6 @@
     - choice:
         choices:
         - "9s"
-        - "8s"
-        - "7"
         description: 'CentOS version to run the tests on (server + client)'
         name: CENTOS_VERSION
     - choice:
