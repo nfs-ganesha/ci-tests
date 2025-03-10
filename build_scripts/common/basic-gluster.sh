@@ -98,7 +98,7 @@ else
 	git checkout -b "${GERRIT_REFSPEC}" FETCH_HEAD
 
 	# update libntirpc
-	git submodule update --init || git submodule sync
+	git submodule update --recursive --init || git submodule sync
 
 	mkdir build
 	pushd build

@@ -43,7 +43,7 @@ cd $(basename "${GERRIT_PROJECT}")
 git fetch origin ${GERRIT_REFSPEC} && git checkout FETCH_HEAD
 
 # update libntirpc
-git submodule update --init || git submodule sync
+git submodule update --recursive --init || git submodule sync
 
 # cleanup old build dir
 [ -d build ] && rm -rf build

@@ -58,7 +58,7 @@ do
     git checkout next
     if [ $once -eq 0 ]
     then
-        git submodule update --init || git submodule sync
+        git submodule update --recursive --init || git submodule sync
         once=1
     fi
     cd ..
