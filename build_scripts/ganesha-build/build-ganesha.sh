@@ -44,6 +44,9 @@ fi
 git clone --depth=1 https://github.com/nfs-ganesha/nfs-ganesha.git
 pushd nfs-ganesha
 
+# update libntirpc
+git submodule update --recursive --init || git submodule sync
+
 # switch to the branch we want to build
 # git checkout ${GERRIT_BRANCH}
 #
