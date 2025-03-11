@@ -9,7 +9,7 @@ jobs:
     name: Verify Jenkins jobs
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3 
+      - uses: actions/checkout@v4
       - name: build JJB container image
         run: docker build -t nfs-ganesha-ci-tests -f tests/Containerfile .
       - name: update Jenkins Jobs
