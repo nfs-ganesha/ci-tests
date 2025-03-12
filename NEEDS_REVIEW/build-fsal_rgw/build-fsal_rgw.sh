@@ -35,6 +35,7 @@ librgw-devel
 xfsprogs-devel
 python2-devel
 userspace-rcu-devel
+rdma-core-devel
 "
 
 git clone ${GIT_REPO}

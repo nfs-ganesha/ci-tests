@@ -27,7 +27,7 @@ yum-config-manager --add-repo=https://artifacts.ci.centos.org/nfs-ganesha/nightl
 # enable the glusterfs repository (latest released version)
 yum -y install centos-release-gluster epel-release centos-release-ceph
 
-BASE_PACKAGES="git bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel rpm-build redhat-rpm-config createrepo_c python3 cmake"
+BASE_PACKAGES="git bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel rpm-build redhat-rpm-config createrepo_c python3 cmake rdma-core-devel"
 BUILDREQUIRES_EXTRA="libnsl2-devel libnfsidmap-devel libwbclient-devel libcephfs-devel userspace-rcu-devel"
 if [ "${CENTOS_VERSION}" = "7" ]; then
   yum -y install libgfapi-devel mock

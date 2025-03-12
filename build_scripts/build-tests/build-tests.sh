@@ -13,7 +13,7 @@ GIT_REPO="https://${GERRIT_HOST}/${GERRIT_PROJECT}"
 # enable the Storage SIG for lttng-{tools,ust}-devel
 yum -y install centos-release-gluster yum-utils centos-release-ceph epel-release 
 
-BASE_PACKAGES="git bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel rpm-build redhat-rpm-config libacl-devel libblkid-devel libcap-devel gperftools-devel gtest-devel"
+BASE_PACKAGES="git bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel rpm-build redhat-rpm-config libacl-devel libblkid-devel libcap-devel gperftools-devel gtest-devel rdma-core-devel"
 BUILDREQUIRES_EXTRA="libnsl2-devel libnfsidmap-devel libwbclient-devel userspace-rcu-devel  boost-devel doxygen xfsprogs-devel lttng-tools-devel lttng-ust-devel"
 
 if [ "${CENTOS_VERSION}" = "7" ]; then

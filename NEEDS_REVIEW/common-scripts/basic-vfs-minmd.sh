@@ -68,7 +68,8 @@ else
 	# install NFS-Ganesha build dependencies
 	yum -y install git bison flex cmake gcc-c++ libacl-devel krb5-devel \
 		dbus-devel libnfsidmap-devel libwbclient-devel libcap-devel \
-		libblkid-devel rpm-build redhat-rpm-config userspace-rcu-devel
+		libblkid-devel rpm-build redhat-rpm-config \
+		userspace-rcu-devel rdma-core-devel
 
 	git init "${GIT_REPO}"
 	pushd "${GIT_REPO}"

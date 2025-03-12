@@ -66,7 +66,7 @@ else
 	GIT_URL="https://${GERRIT_HOST}/${GERRIT_PROJECT}"
 
         #Packages required for Centos-7 and Centos8 Stream
-        BUILDREQUIRES="git bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel rpm-build redhat-rpm-config libblkid-devel libcap-devel libgfapi-devel xfsprogs-devel"
+        BUILDREQUIRES="git bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel rpm-build redhat-rpm-config libblkid-devel libcap-devel libgfapi-devel xfsprogs-devel rdma-core-devel"
         BUILDREQUIRES_EXTRA="libnsl2-devel libnfsidmap-devel libwbclient-devel libcephfs-devel userspace-rcu-devel"
         if [ "${CENTOS_VERSION}" = "7" ]; then
             yum -y install ${BUILDREQUIRES} libnsl2-devel libnfsidmap-devel libwbclient-devel libcephfs-devel userspace-rcu-devel python2-devel
