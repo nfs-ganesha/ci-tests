@@ -25,7 +25,7 @@ fi
 job_url="${JENKINS_URL}/job/checkpatch/${BUILD_NUMBER}/console"
 
 # Install git-clang-format
-sudo dnf -qy git-clang-format
+yum -y install git-clang-format
 
 pushd nfs-ganesha
 git clang-format -v \
