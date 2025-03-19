@@ -68,56 +68,83 @@ else
 	GIT_REPO=$(basename "${GERRIT_PROJECT}")
 	GIT_URL="https://${GERRIT_HOST}/${GERRIT_PROJECT}"
 
-        BASE_PACKAGES="git bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel rpm-build redhat-rpm-config gdb"
-        BUILDREQUIRES_EXTRA="libnsl2-devel libnfsidmap-devel libwbclient-devel userspace-rcu-devel libcephfs-devel"
-        if [ "${CENTOS_VERSION}" = "7" ]; then
-            yum -y install libgfapi-devel
-            yum -y install ${BASE_PACKAGES} libnfsidmap-devel libwbclient-devel libcap-devel libblkid-devel userspace-rcu-devel userspace-rcu python2-devel
-        elif [ "${CENTOS_VERSION}" = "8s" ]; then
-            yum install -y ${BASE_PACKAGES} libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build libgfapi-devel xfsprogs-devel
-            yum install --enablerepo=powertools -y ${BUILDREQUIRES_EXTRA}
-            yum -y install selinux-policy-devel sqlite samba-winbind 
-        elif [ "${CENTOS_VERSION}" = "9s" ]; then
-            yum install -y ${BASE_PACKAGES} libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build libgfapi-devel xfsprogs-devel
-            yum install --enablerepo=crb -y ${BUILDREQUIRES_EXTRA}
-            yum -y install selinux-policy-devel sqlite samba-winbind 
-        fi
+	BASE_PACKAGES="git bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel rpm-build redhat-rpm-config gdb"
+	BUILDREQUIRES_EXTRA="libnsl2-devel libnfsidmap-devel libwbclient-devel userspace-rcu-devel libcephfs-devel"
+
+	if [ "${CENTOS_VERSION}" = "7" ]; then
+		yum -y install libgfapi-devel
+		yum -y install ${BASE_PACKAGES} libnfsidmap-devel libwbclient-devel libcap-devel libblkid-devel userspace-rcu-devel userspace-rcu python2-devel
+	elif [ "${CENTOS_VERSION}" = "8s" ]; then
+		yum install -y ${BASE_PACKAGES} libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build libgfapi-devel xfsprogs-devel
+		yum install --enablerepo=powertools -y ${BUILDREQUIRES_EXTRA}
+		yum -y install selinux-policy-devel sqlite samba-winbind 
+	elif [ "${CENTOS_VERSION}" = "9s" ]; then
+		yum install -y ${BASE_PACKAGES} \
+		    libacl-devel \
+			libblkid-devel \
+			libcap-devel \
+			redhat-rpm-config \
+			rpm-build \
+			libgfapi-devel \
+			xfsprogs-devel \
+			python3-devel
+		yum install --enablerepo=crb -y ${BUILDREQUIRES_EXTRA}
+		yum -y install selinux-policy-devel sqlite samba-winbind 
+	fi
 
 	git init "${GIT_REPO}"
 	pushd "${GIT_REPO}"
 
-        #Its observed that fetch is failing so this little hack is added! Will delete in future if it turns out useless!
+    #Its observed that fetch is failing so this little hack is added! Will delete in future if it turns out useless!
 	git fetch --depth=1 "${GIT_URL}" "${GERRIT_REFSPEC}" > /dev/null
-        if [ $? = 0 ]; then
-            echo "Fetch succeeded"
-        else
-            sleep 2
-            git fetch "${GIT_URL}" "${GERRIT_REFSPEC}"
-        fi       
+
+	if [ $? = 0 ]; then
+		echo "Fetch succeeded"
+	else
+		sleep 2
+		git fetch "${GIT_URL}" "${GERRIT_REFSPEC}"
+	fi       
 
 	git checkout -b "${GERRIT_REFSPEC}" FETCH_HEAD
 
 	# update libntirpc
-	git submodule update --recursive --init || git submodule sync
+	git submodule update --recursive --init || git submodule sync --recursive
 
 	mkdir build
 	pushd build
 
-	cmake -DCMAKE_BUILD_TYPE=Maintainer -DUSE_FSAL_GLUSTER=ON -DUSE_DBUS=ON -D_MSPAC_SUPPORT=OFF ../src
+    cmake ../src \
+	    -DCMAKE_BUILD_TYPE=Maintainer \
+		-DUSE_FSAL_GLUSTER=ON \
+		-DUSE_FSAL_CEPH=OFF \
+		-DUSE_FSAL_RGW=OFF \
+		-DUSE_DBUS=ON \
+		-DUSE_ADMIN_TOOLS=ON
+
+    # We have noticed issues with bcond_with missing for some variables
+	# unwind_enriched_bt
+	sed -i 's/^ unwind_enriched_bt$/%bcond_with unwind_enriched_bt/g' ../src/nfs-ganesha.spec
+
+    # monitoring
+	sed -i 's/^ monitoring$/%bcond_with monitoring/g' ../src/nfs-ganesha.spec
+
 	make dist
 	rpmbuild -ta --define "_srcrpmdir $PWD" --define "_rpmdir $PWD" *.tar.gz
+
 	rpm_arch=$(rpm -E '%{_arch}')
 	ganesha_version=$(rpm -q --qf '%{VERSION}-%{RELEASE}' -p *.src.rpm)
+
 	if [ -e ${rpm_arch}/libntirpc-devel*.rpm ]; then
 		ntirpc_version=$(rpm -q --qf '%{VERSION}-%{RELEASE}' -p ${rpm_arch}/libntirpc-devel*.rpm)
 		ntirpc_rpm=${rpm_arch}/libntirpc-${ntirpc_version}.${rpm_arch}.rpm
 	fi
+
 	yum -y install {x86_64,noarch}/*.rpm
 
-        #Test block
-        ulimit -a
-        ulimit -c unlimited
-        ulimit -a
+	#Test block
+	ulimit -a
+	ulimit -c unlimited
+	ulimit -a
 
 	# start nfs-ganesha service with an empty configuration
 	echo "NFSv4 { Graceless = true; }" > /etc/ganesha/ganesha.conf
@@ -206,27 +233,39 @@ then
 fi
 
 #Enabling ACL for the volume if ENABLE_ACL param is set to True
-if [ "${ENABLE_ACL}" == "True" ]
-then
-  conf_file="/etc/ganesha/exports/export."${GLUSTER_VOLUME}".conf"
-  sed -i s/'Disable_ACL = .*'/'Disable_ACL = false;'/g ${conf_file}
-  cat ${conf_file}
+if [ "${ENABLE_ACL}" == "True" ]; then
+    conf_file="/etc/ganesha/exports/export."${GLUSTER_VOLUME}".conf"
+    sed -i s/'Disable_ACL = .*'/'Disable_ACL = false;'/g ${conf_file}
+    cat ${conf_file}
 
-  #Parsing export id from volume export conf file
-  export_id=$(grep 'Export_Id' ${conf_file} | sed 's/^[[:space:]]*Export_Id.*=[[:space:]]*\([0-9]*\).*/\1/')
+    #Parsing export id from volume export conf file
+    export_id=$(grep 'Export_Id' ${conf_file} | \
+	    sed 's/^[[:space:]]*Export_Id.*=[[:space:]]*\([0-9]*\).*/\1/')
 
-  dbus-send --type=method_call --print-reply --system  --dest=org.ganesha.nfsd /org/ganesha/nfsd/ExportMgr  org.ganesha.nfsd.exportmgr.UpdateExport string:${conf_file} string:"EXPORT(Export_Id = ${export_id})"
+    dbus-send --type=method_call \
+	    --print-reply \
+		--system \
+		--dest=org.ganesha.nfsd \
+		/org/ganesha/nfsd/ExportMgr  \
+		org.ganesha.nfsd.exportmgr.UpdateExport \
+		string:${conf_file} string:"EXPORT(Export_Id = ${export_id})"
 fi
 
 #Enabling Security_Label for the volume if SECURITY_LABEL param is set to True
-if [ "${SECURITY_LABEL}" == "True" ]
-then
-  conf_file="/etc/ganesha/exports/export."${GLUSTER_VOLUME}".conf"
-  sed -i s/'Security_Label = .*'/'Security_Label = True;'/g ${conf_file}
-  cat ${conf_file}
+if [ "${SECURITY_LABEL}" == "True" ]; then
+    conf_file="/etc/ganesha/exports/export."${GLUSTER_VOLUME}".conf"
+    sed -i s/'Security_Label = .*'/'Security_Label = True;'/g ${conf_file}
+    cat ${conf_file}
 
-  #Parsing export id from volume export conf file
-  export_id=$(grep 'Export_Id' ${conf_file} | sed 's/^[[:space:]]*Export_Id.*=[[:space:]]*\([0-9]*\).*/\1/')
+    # Parsing export id from volume export conf file
+    export_id=$(grep 'Export_Id' ${conf_file} | \
+	    sed 's/^[[:space:]]*Export_Id.*=[[:space:]]*\([0-9]*\).*/\1/')
 
-  dbus-send --type=method_call --print-reply --system  --dest=org.ganesha.nfsd /org/ganesha/nfsd/ExportMgr  org.ganesha.nfsd.exportmgr.UpdateExport string:${conf_file} string:"EXPORT(Export_Id = ${export_id})"
+    dbus-send --type=method_call \
+	    --print-reply \
+		--system  \
+		--dest=org.ganesha.nfsd \
+		/org/ganesha/nfsd/ExportMgr  \
+		org.ganesha.nfsd.exportmgr.UpdateExport \
+		string:${conf_file} string:"EXPORT(Export_Id = ${export_id})"
 fi
