@@ -96,7 +96,7 @@ yum -y install rpcbind
 systemctl start rpcbind
 
 echo 'TODO: this is BAD, needs a fix in the selinux-policy'
-sudo etenforce 0
+sudo setenforce 0
 
 systemctl stop firewalld || true
 
