@@ -119,14 +119,14 @@ else
 		-DUSE_FSAL_CEPH=OFF \
 		-DUSE_FSAL_RGW=OFF \
 		-DUSE_DBUS=ON \
-		-DUSE_ADMIN_TOOLS=ON
+		-DMONITORING=ON
 
     # We have noticed issues with bcond_with missing for some variables
 	# unwind_enriched_bt
 	sed -i 's/^ unwind_enriched_bt$/%bcond_with unwind_enriched_bt/g' ../src/nfs-ganesha.spec
 
     # monitoring
-	sed -i 's/^ monitoring$/%bcond_with monitoring/g' ../src/nfs-ganesha.spec
+	sed -i 's/^ monitoring$/%bcond_without monitoring/g' ../src/nfs-ganesha.spec
 
 	make dist
 	rpmbuild -ta --define "_srcrpmdir $PWD" --define "_rpmdir $PWD" *.tar.gz
