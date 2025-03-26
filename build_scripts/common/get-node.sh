@@ -22,7 +22,11 @@ do
         fi
 done
 
-if [[ $JOB_NAME =~ fsal-* ]] || [ "$JOB_NAME" == "pylint" ] || [ "$JOB_NAME" == "ganesha-build" ] || [ "$JOB_NAME" == "libntirpc-build" ]; then
+if [[ $JOB_NAME =~ fsal-* ]] || \
+   [ "$JOB_NAME" == "pylint" ] || \
+   [ "$JOB_NAME" == "ganesha-build" ] || \
+   [ "$JOB_NAME" == "libntirpc-build" ] || \
+   [ "${JOB_NAME}" == "checkpatch" ]; then
     node_count=1
 else
     node_count=2
