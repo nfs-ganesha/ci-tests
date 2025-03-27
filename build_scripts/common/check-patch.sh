@@ -22,6 +22,9 @@ GERRIT_HOST=${GERRIT_HOST:-"review.gerrithub.io"}
 GERRIT_PORT=${GERRIT_PORT:-"29418"}
 GERRIT_PROJECT=${GERRIT_PROJECT:-"ffilz/nfs-ganesha"}
 
+# Install the required pre-requisites
+dnf -yq install git git-clang-format python3
+
 # Checkout the patch
 if [ ! -d nfs-ganesha ]; then
     git_project=$(basename "${GERRIT_PROJECT}")
@@ -31,9 +34,6 @@ if [ ! -d nfs-ganesha ]; then
     git fetch --depth=1 "${git_url}" "${GERRIT_REFSPEC}"
     popd
 fi
-
-# Install git-clang-format
-yum -y install git-clang-format
 
 pushd nfs-ganesha
 git checkout -b "${GERRIT_REFSPEC}" FETCH_HEAD
@@ -102,6 +102,6 @@ pushd nfs-ganesha/src/scripts
 # cd to ~/checkpatch for checkpatch.pl as a hack to get config without modifying $HOME
 GIT_DIR=~/nfs-ganesha/.git git show --format=email  | \
     ./checkpatch.pl -q - | \
-    python ~/checkpatch-to-gerrit-json.py | \
+    python3 ~/checkpatch-to-gerrit-json.py | \
     publish_checkpatch
 popd
