@@ -10,7 +10,7 @@ SERVER_IP=$(cat ${WORKSPACE}/hosts | sed -n '1p')
 
 # Copy checkpatch-to-gerrit-json file and check-patch
 scp ${SSH_OPTIONS} \
-    ${WORKSPACE}/ci-tests/build_scripts/common/checkpatch-to-gerrit-json.py \
+    ${WORKSPACE}/ci-tests/build_scripts/checkpatch/checkpatch-to-gerrit-json.py \
     root@${SERVER_IP}:checkpatch-to-gerrit-json.py
 scp ${SSH_OPTIONS} ${WORKSPACE}/ci-tests/build_scripts/common/check-patch.sh \
     root@${SERVER_IP}:check-patch.sh
