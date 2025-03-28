@@ -25,13 +25,17 @@ GERRIT_PROJECT=${GERRIT_PROJECT:-"ffilz/nfs-ganesha"}
 # Install the required pre-requisites
 dnf -yq install git git-clang-format python3
 
+if [[ -n "$GERRIT_REFSPEC" ]]; then
+    GERRIT_PUBLISH=true
+fi
+
 # Checkout the patch
 if [ ! -d nfs-ganesha ]; then
     git_project=$(basename "${GERRIT_PROJECT}")
     git_url="https://${GERRIT_HOST}/${GERRIT_PROJECT}"
     git init ${git_project}
     pushd ${git_project}
-    git fetch --depth=1 "${git_url}" "${GERRIT_REFSPEC}"
+    git fetch --depth=2 "${git_url}" "${GERRIT_REFSPEC}"
     popd
 fi
 
@@ -89,12 +93,12 @@ publish_checkpatch() {
 
     if [[ "$GERRIT_PUBLISH" == "true" ]]; then
         tee /proc/$$/fd/1 | \
-        $SSH_GERRIT "gerrit review --json --project ffilz/nfs-ganesha $REVISION"
+        $SSH_GERRIT "gerrit review --json --project ffilz/nfs-ganesha $GERRIT_PATCHSET_REVISION"
     else
         echo "Would have submit:"
         echo -n "echo '"
         cat
-        echo "' | $SSH_GERRIT \"gerrit review --json --project ffilz/nfs-ganesha $REVISION\""
+        echo "' | $SSH_GERRIT \"gerrit review --json --project ffilz/nfs-ganesha $GERRIT_PATCHSET_REVISION\""
   fi 
 }
 
