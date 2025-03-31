@@ -17,18 +17,18 @@ set -x
 
 # install build and runtime dependencies
 echo "Install runtime dependencies"
-yum -y install nfs-utils
+dnf -y install nfs-utils
 
 # dbench is available from the testing repositories in the CentOS Storage SIG
 if [ "$CENTOS_VERSION" == "7" ]; then
-  yum -y install centos-release-gluster
-  yum --enablerepo=centos-gluster*-test -y install dbench
+    yum -y install centos-release-gluster
+    yum --enablerepo=centos-gluster*-test -y install dbench
 elif [ "$CENTOS_VERSION" == "8s" ]; then
-  yum -y install epel-release
-  yum -y install dbench
+    yum -y install epel-release
+    yum -y install dbench
 elif [ "${CENTOS_VERSION}" == "9s" ]; then
-  yum -y install epel-release
-  yum -y install dbench
+    dnf -y install epel-release
+    dnf -y install dbench
 fi
 
 # place all used files in ${WORKDIR}
@@ -58,14 +58,13 @@ dbench --directory=/mnt/nfsv3/v3 --loadfile=${WORKDIR}/client.txt 2 > ${WORKDIR}
 tail -1 ${WORKDIR}/dbenchTestLog.txt | grep "Throughput"
 
 status=$?
-if [ $status -eq 0 ]
-then
-      tail -21 ${WORKDIR}/dbenchTestLog.txt
-      echo "dbench Test: SUCCESS"
+if [ $status -eq 0 ]; then
+    tail -21 ${WORKDIR}/dbenchTestLog.txt
+    echo "dbench Test: SUCCESS"
 else
-      tail -5 ${WORKDIR}/dbenchTestLog.txt
-      echo "dbench Test: FAILURE"
-      exit $status
+    tail -5 ${WORKDIR}/dbenchTestLog.txt
+    echo "dbench Test: FAILURE"
+    exit $status
 fi
 umount -l /mnt/nfsv3
       
@@ -79,26 +78,25 @@ mkdir /mnt/nfsv4/v4
 echo "---------------------------------------"
 echo "dbench Test Running for v4.0 Mount..."
 echo "---------------------------------------"
-#timeout --preserve-status -s SIGKILL 240s dbench --directory=/mnt/nfsv4/v4 --loadfile=${WORKDIR}/client.txt 2 > ${WORKDIR}/dbenchTestLog.txt
-#TIMED_OUT=$?
-#Return code will be 124 if it ends the process by using SIGTERM for not getting any response. 137 when used SIGKILL to kill the process
-#if [ $TIMED_OUT == 137 ]; then
-#  echo -e "The process timed out after 4 minute!\nLooks like the Server process to see if it has crashed!"
-#  exit 1
-#fi
+# timeout --preserve-status -s SIGKILL 240s dbench --directory=/mnt/nfsv4/v4 --loadfile=${WORKDIR}/client.txt 2 > ${WORKDIR}/dbenchTestLog.txt
+# TIMED_OUT=$?
+# Return code will be 124 if it ends the process by using SIGTERM for not getting any response. 137 when used SIGKILL to kill the process
+# if [ $TIMED_OUT == 137 ]; then
+#     echo -e "The process timed out after 4 minute!\nLooks like the Server process to see if it has crashed!"
+#     exit 1
+# fi
 
 dbench --directory=/mnt/nfsv4/v4 --loadfile=${WORKDIR}/client.txt 2 > ${WORKDIR}/dbenchTestLog.txt
 tail -1 ${WORKDIR}/dbenchTestLog.txt | grep "Throughput"
 
 status=$?
-if [ $status -eq 0 ]
-then
-      tail -21 ${WORKDIR}/dbenchTestLog.txt
-      echo "dbench Test: SUCCESS"
+if [ $status -eq 0 ]; then
+    tail -21 ${WORKDIR}/dbenchTestLog.txt
+    echo "dbench Test: SUCCESS"
 else
-      tail -5 ${WORKDIR}/dbenchTestLog.txt
-      echo "dbench Test: FAILURE"
-      exit $status
+    tail -5 ${WORKDIR}/dbenchTestLog.txt
+    echo "dbench Test: FAILURE"
+    exit $status
 fi
 umount -l /mnt/nfsv4
 
@@ -115,13 +113,12 @@ echo "---------------------------------------"
 dbench --directory=/mnt/nfsv4_1/v41 --loadfile=${WORKDIR}/client.txt 2 > ${WORKDIR}/dbenchTestLog.txt
 tail -1 ${WORKDIR}/dbenchTestLog.txt | grep "Throughput"
 status=$?
-if [ $status -eq 0 ]
-then
-      tail -21 ${WORKDIR}/dbenchTestLog.txt
-      echo "dbench Test: SUCCESS"
+if [ $status -eq 0 ] ; then
+    tail -21 ${WORKDIR}/dbenchTestLog.txt
+    echo "dbench Test: SUCCESS"
 else
-      tail -5 ${WORKDIR}/dbenchTestLog.txt
-      echo "dbench Test: FAILURE"
-      exit $status
+    tail -5 ${WORKDIR}/dbenchTestLog.txt
+    echo "dbench Test: FAILURE"
+    exit $status
 fi
 umount -l /mnt/nfsv4_1

@@ -29,10 +29,10 @@ set -e
 set -x
 
 # enable repositories (gluster for liburcu)
-yum -y install centos-release-gluster yum-utils centos-release-ceph epel-release
+dnf -y install centos-release-gluster yum-utils centos-release-ceph epel-release
 
 # make sure rpcbind is running
-yum -y install rpcbind
+dnf -y install rpcbind
 systemctl start rpcbind
 
 # CentOS 7.4.1708 has an SELinux issue that prevents NFS-Ganesha from creating
@@ -65,20 +65,20 @@ else
 	GIT_REPO=$(basename "${GERRIT_PROJECT}")
 	GIT_URL="https://${GERRIT_HOST}/${GERRIT_PROJECT}"
 
-        #Packages required for Centos-7 and Centos8 Stream
-        BUILDREQUIRES="git bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel rpm-build redhat-rpm-config libblkid-devel libcap-devel libgfapi-devel xfsprogs-devel"
-        BUILDREQUIRES_EXTRA="libnsl2-devel libnfsidmap-devel libwbclient-devel libcephfs-devel userspace-rcu-devel"
-        if [ "${CENTOS_VERSION}" = "7" ]; then
-            yum -y install ${BUILDREQUIRES} libnsl2-devel libnfsidmap-devel libwbclient-devel libcephfs-devel userspace-rcu-devel python2-devel
-        elif [ "${CENTOS_VERSION}" = "8s" ]; then
-            yum install -y ${BUILDREQUIRES}
-            yum install --enablerepo=powertools -y ${BUILDREQUIRES_EXTRA}
-            yum install -y selinux-policy-devel
-        elif [ "${CENTOS_VERSION}" = "9s" ]; then
-            yum install -y ${BUILDREQUIRES} libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build libgfapi-devel xfsprogs-devel
-            yum install --enablerepo=crb -y ${BUILDREQUIRES_EXTRA}
-            yum -y install selinux-policy-devel sqlite
-        fi
+	# Packages required for Centos-7 and Centos8 Stream
+	BUILDREQUIRES="git bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel rpm-build redhat-rpm-config libblkid-devel libcap-devel libgfapi-devel xfsprogs-devel"
+	BUILDREQUIRES_EXTRA="libnsl2-devel libnfsidmap-devel libwbclient-devel libcephfs-devel userspace-rcu-devel"
+	if [ "${CENTOS_VERSION}" = "7" ]; then
+		yum -y install ${BUILDREQUIRES} libnsl2-devel libnfsidmap-devel libwbclient-devel libcephfs-devel userspace-rcu-devel python2-devel
+	elif [ "${CENTOS_VERSION}" = "8s" ]; then
+		yum install -y ${BUILDREQUIRES}
+		yum install --enablerepo=powertools -y ${BUILDREQUIRES_EXTRA}
+		yum install -y selinux-policy-devel
+	elif [ "${CENTOS_VERSION}" = "9s" ]; then
+		dnf install -y ${BUILDREQUIRES} libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build libgfapi-devel xfsprogs-devel
+		dnf install --enablerepo=crb -y ${BUILDREQUIRES_EXTRA}
+		dnf -y install selinux-policy-devel sqlite
+	fi
 
 	git init "${GIT_REPO}"
 	pushd "${GIT_REPO}"
@@ -87,7 +87,7 @@ else
 	git checkout -b "${GERRIT_REFSPEC}" FETCH_HEAD
 
 	# update libntirpc
-	git submodule update --recursive --init || git submodule sync
+	git submodule update --recursive --init || git submodule sync --recursive
 
 	mkdir build
 	pushd build
@@ -101,7 +101,8 @@ else
 		ntirpc_version=$(rpm -q --qf '%{VERSION}-%{RELEASE}' -p ${rpm_arch}/libntirpc-devel*.rpm)
 		ntirpc_rpm=${rpm_arch}/libntirpc-${ntirpc_version}.${rpm_arch}.rpm
 	fi
-        yum -y install {x86_64,noarch}/*.rpm
+	
+	dnf -y install {x86_64,noarch}/*.rpm
 
 	# start nfs-ganesha service with an empty configuration
 	cat <<EOF > /etc/ganesha/ganesha.conf
@@ -125,7 +126,7 @@ systemctl stop firewalld || service iptables stop || true
 # Export the volume
 mkdir -p /usr/libexec/ganesha
 cd /usr/libexec/ganesha
-yum -y install wget
+dnf -y install wget
 wget https://raw.githubusercontent.com/gluster/glusterfs/release-3.10/extras/ganesha/scripts/dbus-send.sh
 chmod 755 dbus-send.sh
 
@@ -172,9 +173,8 @@ then
 	exit 1
 fi
 
-#Enabling ACL for the volume if ENABLE_ACL param is set to True
-if [ "${ENABLE_ACL}" == "True" ]
-then
+# Enabling ACL for the volume if ENABLE_ACL param is set to True
+if [ "${ENABLE_ACL}" == "True" ]; then
   conf_file="/etc/ganesha/exports/export."${VFS_VOLUME}".conf"
   sed -i s/'Disable_ACL = .*'/'Disable_ACL = false;'/g ${conf_file}
   cat ${conf_file}
@@ -186,8 +186,7 @@ then
 fi
 
 #Enabling Security_Label for the volume if SECURITY_LABEL param is set to True
-if [ "${SECURITY_LABEL}" == "True" ]
-then
+if [ "${SECURITY_LABEL}" == "True" ]; then
   conf_file="/etc/ganesha/exports/export."${VFS_VOLUME}".conf"
   sed -i s/'Security_Label = .*'/'Security_Label = True;'/g ${conf_file}
   cat ${conf_file}
@@ -197,4 +196,3 @@ then
 
   dbus-send --type=method_call --print-reply --system  --dest=org.ganesha.nfsd /org/ganesha/nfsd/ExportMgr  org.ganesha.nfsd.exportmgr.UpdateExport string:${conf_file} string:"EXPORT(Export_Id = ${export_id})"
 fi
-

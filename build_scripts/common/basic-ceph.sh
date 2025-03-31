@@ -29,10 +29,10 @@ set -e
 set -x
 
 # enable repositories
-yum -y install centos-release-gluster yum-utils centos-release-ceph
+dnf -y install centos-release-gluster yum-utils centos-release-ceph
 
 # make sure rpcbind is running
-yum -y install rpcbind
+dnf -y install rpcbind
 systemctl start rpcbind
 
 # CentOS 7.4.1708 has an SELinux issue that prevents NFS-Ganesha from creating
@@ -49,7 +49,7 @@ then
 	yum-config-manager --add-repo=${YUM_REPO}
 
 	# install the latest version of gluster
-	yum -y install nfs-ganesha nfs-ganesha-gluster glusterfs-ganesha
+	dnf -y install nfs-ganesha nfs-ganesha-gluster glusterfs-ganesha
 
 	# start nfs-ganesha service
 	if ! systemctl start nfs-ganesha
@@ -78,9 +78,9 @@ else
             yum install --enablerepo=powertools -y ${BUILDREQUIRES_EXTRA}
             yum -y install selinux-policy-devel sqlite
         elif [ "${CENTOS_VERSION}" = "9s" ]; then
-            yum install -y ${BASE_PACKAGES} libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build libgfapi-devel xfsprogs-devel
-            yum install --enablerepo=crb -y ${BUILDREQUIRES_EXTRA}
-            yum -y install selinux-policy-devel sqlite
+            dnf install -y ${BASE_PACKAGES} libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build libgfapi-devel xfsprogs-devel
+            dnf install --enablerepo=crb -y ${BUILDREQUIRES_EXTRA}
+            dnf -y install selinux-policy-devel sqlite
         fi
 
 	git init "${GIT_REPO}"
@@ -98,12 +98,13 @@ else
 	git checkout -b "${GERRIT_REFSPEC}" FETCH_HEAD
 
 	# update libntirpc
-	git submodule update --recursive --init || git submodule sync
+	git submodule update --recursive --init || git submodule sync --recursive
 
 	mkdir build
 	pushd build
 
-        sleep 30000
+	# FixMe: [psathyan] Not sure why we have a large sleep here.
+    sleep 30000
 
 	cmake -DCMAKE_BUILD_TYPE=Maintainer -DUSE_FSAL_GLUSTER=ON ../src
 	make dist
@@ -114,7 +115,7 @@ else
 		ntirpc_version=$(rpm -q --qf '%{VERSION}-%{RELEASE}' -p ${rpm_arch}/libntirpc-devel*.rpm)
 		ntirpc_rpm=${rpm_arch}/libntirpc-${ntirpc_version}.${rpm_arch}.rpm
 	fi
-	yum -y install {x86_64,noarch}/*.rpm
+	dnf -y install {x86_64,noarch}/*.rpm
 
 	# start nfs-ganesha service with an empty configuration
 	echo "NFSv4 { Graceless = true; }" > /etc/ganesha/ganesha.conf
@@ -130,11 +131,11 @@ fi
 
 # create and start gluster volume
 if [ "${CENTOS_VERSION}" = "7" ]; then
-  yum -y install glusterfs-server
+    yum -y install glusterfs-server
 elif [ "${CENTOS_VERSION}" = "8s" ]; then
-  yum -y install --enablerepo=powertools glusterfs-server
+    yum -y install --enablerepo=powertools glusterfs-server
 elif [ "${CENTOS_VERSION}" = "9s" ]; then
-  yum -y install --enablerepo=crb glusterfs-server
+    dnf -y install --enablerepo=crb glusterfs-server
 fi
 
 systemctl start glusterd
@@ -165,7 +166,7 @@ umount /mnt
 # Export the volume
 mkdir -p /usr/libexec/ganesha
 cd /usr/libexec/ganesha
-yum -y install wget
+dnf -y install wget
 wget https://raw.githubusercontent.com/gluster/glusterfs/release-3.10/extras/ganesha/scripts/create-export-ganesha.sh
 wget https://raw.githubusercontent.com/gluster/glusterfs/release-3.10/extras/ganesha/scripts/dbus-send.sh
 chmod 755 create-export-ganesha.sh dbus-send.sh

@@ -6,7 +6,7 @@ WORKING_DIR="DOWNLOAD_STORAGE_SCALE"
 mkdir -p $WORKING_DIR
 cd $WORKING_DIR
 echo $PWD
-yum install -y unzip
+dnf install -y unzip
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 ls -ltr
 unzip -qq awscliv2.zip
@@ -29,14 +29,20 @@ ssh-keygen -b 2048 -t rsa -f ~/.ssh/id_rsa -q -N ""
 cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
 chmod og-wx ~/.ssh/authorized_keys
 
-yum -y install kernel-devel cpp gcc gcc-c++ binutils numactl jre make elfutils elfutils-devel rpcbind sssd-tools openldap-clients bind-utils net-tools krb5-workstation python3
+dnf -y install kernel-devel cpp gcc gcc-c++ binutils numactl jre make elfutils elfutils-devel rpcbind sssd-tools openldap-clients bind-utils net-tools krb5-workstation python3
 python3 -m pip install --user ansible
-yum install -y kernel-devel-4.18.0-499.el8.x86_64 kernel-headers-4.18.0-499.el8.x86_64
+dnf install -y kernel-devel-4.18.0-499.el8.x86_64 kernel-headers-4.18.0-499.el8.x86_64
 
-#Add CES IP to /etc/hosts
+# Add CES IP to /etc/hosts
 ip_address=$(/sbin/ip -o -4 addr list eth0 | awk '{print $4}' | cut -d/ -f1)
 
-for new_ip in $(echo $ip_address | awk -F '.' '{for(i=$4+1;i<=255;i++){print $1"."$2"."$3"."i}}'); do ping -c 2 $new_ip; if [ "$?" == "1" ]; then USABLE_IP=$new_ip; break; fi; done
+for new_ip in $(echo $ip_address | awk -F '.' '{for(i=$4+1;i<=255;i++){print $1"."$2"."$3"."i}}'); do 
+    ping -c 2 $new_ip
+    if [ "$?" == "1" ]; then 
+        USABLE_IP=$new_ip
+        break
+    fi
+done
 
 echo "$USABLE_IP    cesip1" >> /etc/hosts
 

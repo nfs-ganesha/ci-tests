@@ -139,7 +139,7 @@ else
 		ntirpc_rpm=${rpm_arch}/libntirpc-${ntirpc_version}.${rpm_arch}.rpm
 	fi
 
-	yum -y install {x86_64,noarch}/*.rpm
+	dnf -y install {x86_64,noarch}/*.rpm
 
 	#Test block
 	ulimit -a
@@ -164,7 +164,7 @@ if [ "${CENTOS_VERSION}" = "7" ]; then
 elif [ "${CENTOS_VERSION}" = "8s" ]; then
   yum -y install --enablerepo=powertools glusterfs-server
 elif [ "${CENTOS_VERSION}" = "9s" ]; then
-  yum -y install --enablerepo=crb glusterfs-server
+  dnf -y install --enablerepo=crb glusterfs-server
 fi
 
 systemctl start glusterd
@@ -195,7 +195,7 @@ umount /mnt
 # Export the volume
 mkdir -p /usr/libexec/ganesha
 cd /usr/libexec/ganesha
-yum -y install wget
+dnf -y install wget
 wget https://raw.githubusercontent.com/gluster/glusterfs/release-3.10/extras/ganesha/scripts/create-export-ganesha.sh
 wget https://raw.githubusercontent.com/gluster/glusterfs/release-3.10/extras/ganesha/scripts/dbus-send.sh
 chmod 755 create-export-ganesha.sh dbus-send.sh

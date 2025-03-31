@@ -11,18 +11,18 @@ set -x
 [ -n "${EXPORT}" ]
 
 # install build and runtime dependencies
-yum -y install nfs-utils time centos-release-gluster
+dnf -y install nfs-utils time centos-release-gluster
 
 mkdir -p /mnt/ganesha
 
 if [ "$CENTOS_VERSION" == "7" ]; then
-  yum --enablerepo=centos-gluster*test -y install iozone
+    yum --enablerepo=centos-gluster*test -y install iozone
 elif [ "$CENTOS_VERSION" == "8s" ]; then
-  curl -o /etc/yum.repos.d/iozone.repo https://copr.fedorainfracloud.org/coprs/aflyhorse/iozone/repo/centos-stream-8/aflyhorse-iozone-centos-stream-8.repo
-  yum install -y iozone
+    curl -o /etc/yum.repos.d/iozone.repo https://copr.fedorainfracloud.org/coprs/aflyhorse/iozone/repo/centos-stream-8/aflyhorse-iozone-centos-stream-8.repo
+    yum install -y iozone
 elif [ "$CENTOS_VERSION" == "9s" ]; then
-  curl -o /etc/yum.repos.d/iozone.repo https://copr.fedorainfracloud.org/coprs/aflyhorse/iozone/repo/centos-stream-9/aflyhorse-iozone-centos-stream-9.repo
-  yum install -y iozone
+    curl -o /etc/yum.repos.d/iozone.repo https://copr.fedorainfracloud.org/coprs/aflyhorse/iozone/repo/centos-stream-9/aflyhorse-iozone-centos-stream-9.repo
+    dnf install -y iozone
 fi
 
 mount -t nfs -o vers=3 ${SERVER}:${EXPORT} /mnt/ganesha
@@ -45,13 +45,12 @@ grep "iozone test complete" ../ioZoneLog.txt;
 
 ret=$?
 
-if [ $ret -eq 0 ]
-then
-        echo "IOZone Test Is Completed And Successful On v3";
+if [ $ret -eq 0 ] ; then
+    echo "IOZone Test Is Completed And Successful On v3";
 else
-        echo "IOZone Test Failed On NFSv3...";
-        tail -3 ../ioZoneLog.txt;
-        exit $ret;
+    echo "IOZone Test Failed On NFSv3...";
+    tail -3 ../ioZoneLog.txt;
+    exit $ret;
 fi
 
 cd / && umount /mnt/ganesha
@@ -69,13 +68,12 @@ grep "iozone test complete" ../ioZoneLog.txt;
 
 ret=$?
 
-if [ $ret -eq 0 ]
-then
-        echo "IOZone Test Is Completed And Successful On v4.0";
+if [ $ret -eq 0 ] ; then
+    echo "IOZone Test Is Completed And Successful On v4.0";
 else
-        echo "IOZone Test Failed On NFSv4.0...";
-        tail -3 ../ioZoneLog.txt;
-        exit $ret;
+    echo "IOZone Test Failed On NFSv4.0...";
+    tail -3 ../ioZoneLog.txt;
+    exit $ret;
 fi
 
 cd / && umount /mnt/ganesha
@@ -93,14 +91,12 @@ grep "iozone test complete" ../ioZoneLog.txt;
 
 ret=$?
 
-if [ $ret -eq 0 ]
-then
-        echo "IOZone Test Is Completed And Successful On v4.1";
+if [ $ret -eq 0 ] ; then
+    echo "IOZone Test Is Completed And Successful On v4.1";
 else
-        echo "IOZone Test Failed On NFSv4.1...";
-        tail -3 ../ioZoneLog.txt;
-        exit $ret;
+    echo "IOZone Test Failed On NFSv4.1...";
+    tail -3 ../ioZoneLog.txt;
+    exit $ret;
 fi
 
 cd / && umount /mnt/ganesha
-

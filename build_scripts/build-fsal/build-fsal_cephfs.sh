@@ -29,9 +29,9 @@ case "${CENTOS_VERSION}" in
         yum install -y libcephfs-devel
     ;;
     9s)
-       yum install -y ${BUILDREQUIRES}
-       yum install --enablerepo=crb -y ${BUILDREQUIRES_EXTRA} 
-       yum install -y libcephfs-devel
+       dnf install -y ${BUILDREQUIRES}
+       dnf install --enablerepo=crb -y ${BUILDREQUIRES_EXTRA} 
+       dnf install -y libcephfs-devel
     ;;
 esac
 
@@ -40,7 +40,7 @@ cd $(basename "${GERRIT_PROJECT}")
 git fetch origin ${GERRIT_REFSPEC} && git checkout FETCH_HEAD
 
 # update libntirpc
-git submodule update --recursive --init || git submodule sync
+git submodule update --recursive --init || git submodule sync --recursive
 
 # cleanup old build dir
 [ -d build ] && rm -rf build

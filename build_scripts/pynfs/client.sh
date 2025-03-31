@@ -14,7 +14,7 @@ set -x
 [ -n "${TEST_PARAMETERS}" ]
 
 # install build and runtime dependencies
-yum -y install git gcc nfs-utils redhat-rpm-config krb5-devel python3-devel python3-gssapi python3-ply
+dnf -y install git gcc nfs-utils redhat-rpm-config krb5-devel python3-devel python3-gssapi python3-ply
 
 rm -rf /root/pynfs && git clone git://linux-nfs.org/~bfields/pynfs.git
 

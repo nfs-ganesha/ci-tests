@@ -18,11 +18,11 @@ set -x
 POSIX_HOME="/root/ntfs-3g-pjd-fstest"
 POSIX_TEST_REPO="https://github.com/ffilz/ntfs-3g-pjd-fstest.git"
 
-#Install required packages for posix compliance test suite
+# Install required packages for posix compliance test suite
 echo "Install required packages for posix compliance test suite"
-yum -y install git gcc nfs-utils redhat-rpm-config krb5-devel perl-Test-Harness libacl-devel bc cmake
+dnf -y install git gcc nfs-utils redhat-rpm-config krb5-devel perl-Test-Harness libacl-devel bc cmake
 
-#Cloning nfs ganesha specific posix compliance test suite
+# Cloning nfs ganesha specific posix compliance test suite
 echo "Cloning nfs ganesha specific posix compliance test suite"
 rm -rf ${POSIX_HOME} && git clone --depth=1 ${POSIX_TEST_REPO}
 
@@ -38,71 +38,77 @@ cd ${POSIX_HOME} && make >> /tmp/output_tempfile.txt
 echo "Mount the export ${EXPORT} with nfsv3"
 MOUNT_POINT="/mnt/test_posix_mnt_nfsv3"
 if [ ! -d ${MOUNT_POINT} ]; then
-  rm -rf 
-  mkdir -p ${MOUNT_POINT}
-  mount -t nfs -o vers=3 ${SERVER}:${EXPORT} ${MOUNT_POINT}
+    rm -rf 
+    mkdir -p ${MOUNT_POINT}
+    mount -t nfs -o vers=3 ${SERVER}:${EXPORT} ${MOUNT_POINT}
 fi
 
 set +e
-#Run posix compliance test suite for nfsv3
+# Run posix compliance test suite for nfsv3
 echo "Run posix compliance test suite for nfsv3"
 LOG_FILE_NFSV3="/tmp/posix_nfsv3"$(date +%s)".log"
 timeout -s SIGKILL 240s cd ${MOUNT_POINT} && prove -rf ${POSIX_HOME}/tests > ${LOG_FILE_NFSV3} 
 TIMED_OUT=$?
-#Return code will be 124 if it ends the process by using SIGTERM for not getting any response. 137 when used SIGKILL to kill the process
+
+# Return code will be 124 if it ends the process by using SIGTERM for not getting any response. 137 when used SIGKILL to kill the process
 if [ $TIMED_OUT == 137 ]; then
-  echo -e "The process timed out after 4 minute!\nLooks like the Server process to see if it has crashed!"
-  exit 1
+    echo -e "The process timed out after 4 minute!\nLooks like the Server process to see if it has crashed!"
+    exit 1
 fi
-#cd ${MOUNT_POINT} && prove -rf ${POSIX_HOME}/tests > ${LOG_FILE_NFSV3}
+
+# cd ${MOUNT_POINT} && prove -rf ${POSIX_HOME}/tests > ${LOG_FILE_NFSV3}
 RETURN_CODE_NFSV3=$?
 
 echo -e "posix compliance test output for nfsv3:\n---------------------------------------"
 cat ${LOG_FILE_NFSV3}
 
-#Mount the export with nfsv4
+# Mount the export with nfsv4
 echo "Mount the export ${EXPORT} with nfsv4"
 MOUNT_POINT="/mnt/test_posix_mnt_nfsv4"
 if [ ! -d ${MOUNT_POINT} ]; then
-  mkdir -p ${MOUNT_POINT}
-  mount -t nfs -o vers=4 ${SERVER}:${EXPORT} ${MOUNT_POINT}
+    mkdir -p ${MOUNT_POINT}
+    mount -t nfs -o vers=4 ${SERVER}:${EXPORT} ${MOUNT_POINT}
 fi
 
-#Run posix compliance test suite for nfsv4
+# Run posix compliance test suite for nfsv4
 echo "Run posix compliance test suite for nfsv4"
 LOG_FILE_NFSV4="/tmp/posix_nfsv4"$(date +%s)".log"
 timeout -s SIGKILL 240s cd ${MOUNT_POINT} && prove -rf ${POSIX_HOME}/tests > ${LOG_FILE_NFSV4} 
 TIMED_OUT=$?
-#Return code will be 124 if it ends the process by using SIGTERM for not getting any response. 137 when used SIGKILL to kill the process
+
+# Return code will be 124 if it ends the process by using SIGTERM for not getting any response. 137 when used SIGKILL to kill the process
 if [ $TIMED_OUT == 137 ]; then
-  echo -e "The process timed out after 4 minute!\nLooks like the Server process to see if it has crashed!"
-  exit 1
+    echo -e "The process timed out after 4 minute!\nLooks like the Server process to see if it has crashed!"
+    exit 1
 fi
-#cd ${MOUNT_POINT} && prove -rf ${POSIX_HOME}/tests > ${LOG_FILE_NFSV4}
+
+# cd ${MOUNT_POINT} && prove -rf ${POSIX_HOME}/tests > ${LOG_FILE_NFSV4}
 RETURN_CODE_NFSV4=$?
 
 echo -e "posix compliance test output for nfsv4:\n---------------------------------------"
 cat ${LOG_FILE_NFSV4}
 
-#Mount the export with nfsv4.1
+# Mount the export with nfsv4.1
 echo "Mount the export ${EXPORT} with nfsv4.1"
 MOUNT_POINT="/mnt/test_posix_mnt_nfsv41"
 if [ ! -d ${MOUNT_POINT} ]; then
-  mkdir -p ${MOUNT_POINT}
-  mount -t nfs -o vers=4.1 ${SERVER}:${EXPORT} ${MOUNT_POINT}
+    mkdir -p ${MOUNT_POINT}
+    mount -t nfs -o vers=4.1 ${SERVER}:${EXPORT} ${MOUNT_POINT}
 fi
 
-#Run posix compliance test suite for nfsv4.1
+# Run posix compliance test suite for nfsv4.1
 echo "Run posix compliance test suite for nfsv4.1"
 LOG_FILE_NFSV41="/tmp/posix_nfsv41"$(date +%s)".log"
 timeout -s SIGKILL 240 cd ${MOUNT_POINT} && prove -rf ${POSIX_HOME}/tests > ${LOG_FILE_NFSV41}s
 TIMED_OUT=$?
-#Return code will be 124 if it ends the process by using SIGTERM for not getting any response. 137 when used SIGKILL to kill the process
+
+# Return code will be 124 if it ends the process by using SIGTERM for not getting any response. 137 when used SIGKILL to kill the process
 if [ $TIMED_OUT == 137 ]; then
-  echo -e "The process timed out after 4 minute!\nLooks like the Server process to see if it has crashed!"
-  exit 1
+    echo -e "The process timed out after 4 minute!\nLooks like the Server process to see if it has crashed!"
+    exit 1
 fi
-#cd ${MOUNT_POINT} && prove -rf ${POSIX_HOME}/tests > ${LOG_FILE_NFSV41}
+
+# cd ${MOUNT_POINT} && prove -rf ${POSIX_HOME}/tests > ${LOG_FILE_NFSV41}
 RETURN_CODE_NFSV41=$?
 
 echo -e "posix compliance test output for nfsv4.1:\n---------------------------------------"
@@ -110,30 +116,30 @@ cat ${LOG_FILE_NFSV41}
 
 echo -e "posix compliance test results for nfsv3, nfsv4, and nfsv4.1\n-------------------------------------------------"
 if [ $RETURN_CODE_NFSV3 == 0 ]; then
-  echo "All tests passed in posix compliance test suite for nfsv3"
+    echo "All tests passed in posix compliance test suite for nfsv3"
 else
-  echo -e "posix compliance test suite failures on nfsv3:\n----------------------------------------------"
-  cat ${LOG_FILE_NFSV3} | grep Failed
+    echo -e "posix compliance test suite failures on nfsv3:\n----------------------------------------------"
+    cat ${LOG_FILE_NFSV3} | grep Failed
 fi
 
 if [ $RETURN_CODE_NFSV4 == 0 ]; then
-  echo "All tests passed in posix compliance test suite for nfsv4"
+    echo "All tests passed in posix compliance test suite for nfsv4"
 else
-  echo -e "posix compliance test suite failures on nfsv4:\n----------------------------------------------"
-  cat ${LOG_FILE_NFSV4} | grep Failed
+    echo -e "posix compliance test suite failures on nfsv4:\n----------------------------------------------"
+    cat ${LOG_FILE_NFSV4} | grep Failed
 fi
 
 if [ $RETURN_CODE_NFSV41 == 0 ]; then
-  echo "All tests passed in posix compliance test suite for nfsv4.1"
+    echo "All tests passed in posix compliance test suite for nfsv4.1"
 else
-  echo -e "posix compliance test suite failures on nfsv4.1:\n----------------------------------------------"
-  cat ${LOG_FILE_NFSV41} | grep Failed
+    echo -e "posix compliance test suite failures on nfsv4.1:\n----------------------------------------------"
+    cat ${LOG_FILE_NFSV41} | grep Failed
 fi
 
 if [ $RETURN_CODE_NFSV3 != 0 ] || [ $RETURN_CODE_NFSV4 != 0 ] || [ $RETURN_CODE_NFSV41 != 0 ]; then
-  EXIT_CODE=1
+    EXIT_CODE=1
 else
-  EXIT_CODE=0
+    EXIT_CODE=0
 fi
 
 exit $EXIT_CODE
