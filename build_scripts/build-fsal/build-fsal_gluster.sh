@@ -11,7 +11,7 @@ set -e
 GIT_REPO="https://${GERRIT_HOST}/${GERRIT_PROJECT}"
 
 # enable the Storage SIG Gluster and Ceph repositories
-yum -y install centos-release-gluster
+dnf -y install centos-release-gluster
 
 BUILDREQUIRES="git bison cmake dbus-devel flex gcc-c++ krb5-devel libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build libgfapi-devel xfsprogs-devel"
 
@@ -27,8 +27,8 @@ case "${CENTOS_VERSION}" in
         yum install --enablerepo=powertools -y ${BUILDREQUIRES_EXTRA}
     ;;
     9s)
-        yum install -y ${BUILDREQUIRES}
-        yum install --enablerepo=crb -y ${BUILDREQUIRES_EXTRA}
+        dnf install -y ${BUILDREQUIRES}
+        dnf install --enablerepo=crb -y ${BUILDREQUIRES_EXTRA}
     ;;
 esac
 
@@ -37,7 +37,7 @@ cd $(basename "${GERRIT_PROJECT}")
 git fetch origin ${GERRIT_REFSPEC} && git checkout FETCH_HEAD
 
 # update libntirpc
-git submodule update --recursive --init || git submodule sync
+git submodule update --recursive --init || git submodule sync --recursive
 
 # cleanup old build dir
 [ -d build ] && rm -rf build

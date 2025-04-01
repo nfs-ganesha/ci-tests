@@ -50,8 +50,7 @@ esac
 echo "${MESSAGE}"
 
 # Update Gerrit with the success/failure status
-if [ -n "${GERRIT_PATCHSET_REVISION}" ]
-then
+if [ -n "${GERRIT_PATCHSET_REVISION}" ]; then
     ssh \
         -l jenkins-glusterorg \
         -i $GERRITHUB_KEY \

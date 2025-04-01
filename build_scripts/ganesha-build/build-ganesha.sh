@@ -19,25 +19,25 @@ set -x
 [ -n "${CENTOS_ARCH}" ]
 
 # weĺl need yum-utils for yum-config-manager
-yum -y install yum-utils
+dnf -y install yum-utils
 
 # enable the libntirpc repository (latest builds)
 yum-config-manager --add-repo=https://artifacts.ci.centos.org/nfs-ganesha/nightly/libntirpc/libntirpc-latest.repo
 
 # enable the glusterfs repository (latest released version)
-yum -y install centos-release-gluster epel-release centos-release-ceph
+dnf -y install centos-release-gluster epel-release centos-release-ceph
 
 BASE_PACKAGES="git bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel rpm-build redhat-rpm-config createrepo_c python3 cmake"
 BUILDREQUIRES_EXTRA="libnsl2-devel libnfsidmap-devel libwbclient-devel libcephfs-devel userspace-rcu-devel"
 if [ "${CENTOS_VERSION}" = "7" ]; then
-  yum -y install libgfapi-devel mock
-  yum -y install ${BASE_PACKAGES} libnfsidmap-devel libwbclient-devel libcap-devel libblkid-devel userspace-rcu-devel userspace-rcu librgw2-devel
+    yum -y install libgfapi-devel mock
+    yum -y install ${BASE_PACKAGES} libnfsidmap-devel libwbclient-devel libcap-devel libblkid-devel userspace-rcu-devel userspace-rcu librgw2-devel
 elif [ "${CENTOS_VERSION}" = "8s" ]; then
-  yum install -y ${BASE_PACKAGES} libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build libgfapi-devel xfsprogs-devel python2-devel selinux-policy-devel 
-  yum install --enablerepo=powertools -y ${BUILDREQUIRES_EXTRA} mock python3-sphinx python3-qt5-devel librgw2-devel librados-devel
+    yum install -y ${BASE_PACKAGES} libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build libgfapi-devel xfsprogs-devel python2-devel selinux-policy-devel 
+    yum install --enablerepo=powertools -y ${BUILDREQUIRES_EXTRA} mock python3-sphinx python3-qt5-devel librgw2-devel librados-devel
 elif [ "${CENTOS_VERSION}" = "9s" ]; then
-  yum install -y ${BASE_PACKAGES} libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build libgfapi-devel xfsprogs-devel selinux-policy-devel python3-rpm-macros python-rpm-macros
-  yum install --enablerepo=crb -y ${BUILDREQUIRES_EXTRA} mock python3-sphinx python3-qt5-devel librgw2-devel librados-devel
+    dnf install -y ${BASE_PACKAGES} libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build libgfapi-devel xfsprogs-devel selinux-policy-devel python3-rpm-macros python-rpm-macros
+    dnf install --enablerepo=crb -y ${BUILDREQUIRES_EXTRA} mock python3-sphinx python3-qt5-devel librgw2-devel librados-devel
 fi
 
 # clone the repository, github is faster than our Gerrit
@@ -45,7 +45,7 @@ git clone --depth=1 https://github.com/nfs-ganesha/nfs-ganesha.git
 pushd nfs-ganesha
 
 # update libntirpc
-git submodule update --recursive --init || git submodule sync
+git submodule update --recursive --init || git submodule sync --recursive
 
 # switch to the branch we want to build
 # git checkout ${GERRIT_BRANCH}

@@ -59,7 +59,7 @@ case ${RETURN_VALUE} in
         ;;
     1)
         MESSAGE="${JOB_URL}: Failed"
-        VERIFIED=''
+        VERIFIED='--verified -1'
         NOTIFY="--notify all"
         EXIT=1
         ;;

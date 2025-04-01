@@ -15,11 +15,10 @@ EOF
 readarray -t POOLS < <(duffy client list-pools | jq -r '.pools[].name')
 
 LIST_POOLS=()
-for i in "${POOLS[@]}"
-do
-        if [[ $i =~ ${CENTOS_VERSION}(s)*-x86_64 ]]; then
-                LIST_POOLS+=($i)
-        fi
+for i in "${POOLS[@]}" ; do
+    if [[ $i =~ ${CENTOS_VERSION}(s)*-x86_64 ]]; then
+        LIST_POOLS+=($i)
+    fi
 done
 
 if [[ $JOB_NAME =~ fsal-* ]] || \
@@ -35,20 +34,20 @@ fi
 retry=0
 
 while [ $retry == 0 ]; do
-    for my_pool in ${LIST_POOLS[@]};
-    do
+    for my_pool in ${LIST_POOLS[@]}; do
         if [[ $(duffy client show-pool $my_pool | jq -r '.pool.levels.ready') -ge $node_count ]]; then
-                SESSION=$(duffy client request-session pool="${my_pool}",quantity=$node_count)
-                CHECK_ERR=$(echo ${SESSION} | jq -r '.error.detail')
-                echo $CHECK_ERR
-                if [ "${CHECK_ERR}" == "null" ]; then
-                  echo "${SESSION}" | jq -r '.session.nodes[].ipaddr' > "${WORKSPACE}"/hosts
-                  echo "${SESSION}" | jq -r '.session.id' > "${WORKSPACE}"/session_id
-                  retry=1
-                  break
-                else
-                  echo -e "Failed to reserve node for the following reasons!\n-------------------------------------------------\n${CHECK_ERR}"
-                fi
+            SESSION=$(duffy client request-session pool="${my_pool}",quantity=$node_count)
+            CHECK_ERR=$(echo ${SESSION} | jq -r '.error.detail')
+            echo $CHECK_ERR
+                
+            if [ "${CHECK_ERR}" == "null" ]; then
+                echo "${SESSION}" | jq -r '.session.nodes[].ipaddr' > "${WORKSPACE}"/hosts
+                echo "${SESSION}" | jq -r '.session.id' > "${WORKSPACE}"/session_id
+                retry=1
+                break
+            else
+                echo -e "Failed to reserve node for the following reasons!\n-------------------------------------------------\n${CHECK_ERR}"
+            fi
         fi
         sleep 60
         echo -n "."

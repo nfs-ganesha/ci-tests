@@ -19,22 +19,22 @@ set -x
 [ -n "${CENTOS_VERSION}" ]
 [ -n "${CENTOS_ARCH}" ]
 
-yum -y install yum-utils
-yum -y install centos-release-gluster epel-release centos-release-ceph
+dnf -y install yum-utils
+dnf -y install centos-release-gluster epel-release centos-release-ceph
 
 BASE_PACKAGES="git bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel rpm-build redhat-rpm-config createrepo_c python3 cmake"
 BUILDREQUIRES_EXTRA="libnsl2-devel libnfsidmap-devel libwbclient-devel libcephfs-devel userspace-rcu-devel"
 if [ "${CENTOS_VERSION}" = "7" ]; then
-  yum -y install libgfapi-devel mock
-  yum -y install ${BASE_PACKAGES} libnfsidmap-devel libwbclient-devel libcap-devel libblkid-devel userspace-rcu-devel userspace-rcu
+    yum -y install libgfapi-devel mock
+    yum -y install ${BASE_PACKAGES} libnfsidmap-devel libwbclient-devel libcap-devel libblkid-devel userspace-rcu-devel userspace-rcu
 elif [ "${CENTOS_VERSION}" = "8s" ]; then
-  yum install -y ${BASE_PACKAGES} libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build libgfapi-devel xfsprogs-devel python2-devel
-  yum install --enablerepo=powertools -y ${BUILDREQUIRES_EXTRA} mock
-  yum -y install selinux-policy-devel sqlite
+    yum install -y ${BASE_PACKAGES} libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build libgfapi-devel xfsprogs-devel python2-devel
+    yum install --enablerepo=powertools -y ${BUILDREQUIRES_EXTRA} mock
+    yum -y install selinux-policy-devel sqlite
 elif [ "${CENTOS_VERSION}" = "9s" ]; then
-  yum install -y ${BASE_PACKAGES} libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build libgfapi-devel xfsprogs-devel
-  yum install --enablerepo=crb -y ${BUILDREQUIRES_EXTRA} mock
-  yum -y install selinux-policy-devel sqlite
+    dnf install -y ${BASE_PACKAGES} libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build libgfapi-devel xfsprogs-devel
+    dnf install --enablerepo=crb -y ${BUILDREQUIRES_EXTRA} mock
+    dnf -y install selinux-policy-devel sqlite
 fi
 
 # clone the repository
@@ -52,9 +52,9 @@ VERSION="${GIT_VERSION}.$(date +%Y%m%d).${GIT_HASH}"
 
 # generate the tar.gz archive
 if [ "${CENTOS_VERSION}" == "7" ]; then
-  sed s/XXVERSIONXX/${VERSION}/ ${TEMPLATES_URL}/libntirpc_centos7.spec.in > libntirpc.spec
+    sed s/XXVERSIONXX/${VERSION}/ ${TEMPLATES_URL}/libntirpc_centos7.spec.in > libntirpc.spec
 else
-  sed s/XXVERSIONXX/${VERSION}/ ${TEMPLATES_URL}/libntirpc.spec.in > libntirpc.spec
+    sed s/XXVERSIONXX/${VERSION}/ ${TEMPLATES_URL}/libntirpc.spec.in > libntirpc.spec
 fi
 tar czf ../ntirpc-${VERSION}.tar.gz --exclude-vcs ../ntirpc
 popd
@@ -62,9 +62,9 @@ popd
 # build the SRPM
 rm -f *.src.rpm
 SRPM=$(rpmbuild --define 'dist .autobuild' --define "_srcrpmdir ${PWD}" \
-	--define '_source_payload w9.gzdio' \
-	--define '_source_filedigest_algorithm 1' \
-	-ts ntirpc-${VERSION}.tar.gz | cut -d' ' -f 2)
+    --define '_source_payload w9.gzdio' \
+	  --define '_source_filedigest_algorithm 1' \
+	  -ts ntirpc-${VERSION}.tar.gz | cut -d' ' -f 2)
 
 # do the actual RPM build in mock
 # TODO: use a CentOS Storage SIG buildroot

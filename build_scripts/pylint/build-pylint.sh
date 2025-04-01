@@ -12,9 +12,9 @@ GIT_REPO="https://${GERRIT_HOST}/${GERRIT_PROJECT}"
 
 # enable the Storage SIG for pylint
 if [ "$CENTOS_VERSION" == "7" ]; then
-  yum -y install centos-release-nfs-ganesha28
+    yum -y install centos-release-nfs-ganesha28
 elif [ "$CENTOS_VERSION" == "8s" ] || [ "$CENTOS_VERSION" == "9s" ]; then
-  yum -y install epel-release
+    dnf -y install epel-release
 fi
 
 # basic packages to install

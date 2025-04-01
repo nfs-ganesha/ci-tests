@@ -28,7 +28,7 @@ WORKING_DIR="$WORKSPACE_PATH/DOWNLOAD_STORAGE_SCALE"
 mkdir -p $WORKING_DIR
 cd $WORKING_DIR
 echo $PWD
-yum install -y unzip
+dnf install -y unzip
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 ls -ltr
 unzip -qq awscliv2.zip
@@ -92,7 +92,7 @@ spectrumscale filesystem list
 #THE FOLLOWING LINES OF CODE CLONES THE SOURCE CODE, RPMBUILD AND INSTALLS THE RPMS
 #----------------------------------------------------------------------------------------------
 # make sure rpcbind is running
-yum -y install rpcbind
+dnf -y install rpcbind
 systemctl start rpcbind
 
 echo 'TODO: this is BAD, needs a fix in the selinux-policy'
@@ -101,7 +101,7 @@ sudo setenforce 0
 systemctl stop firewalld || true
 
 # enable repositories
-yum -y install centos-release-gluster yum-utils centos-release-ceph epel-release unzip
+dnf -y install centos-release-gluster yum-utils centos-release-ceph epel-release unzip
 
 if [ -n "${YUM_REPO}" ]
 then
@@ -109,7 +109,7 @@ then
 	yum-config-manager --add-repo=${YUM_REPO}
 
 	# install the latest version of gluster
-	yum -y install nfs-ganesha nfs-ganesha-gluster glusterfs-ganesha
+	dnf -y install nfs-ganesha nfs-ganesha-gluster glusterfs-ganesha
 
 	# start nfs-ganesha service
 	if ! systemctl start nfs-ganesha
@@ -138,9 +138,9 @@ else
             yum install --enablerepo=powertools -y ${BUILDREQUIRES_EXTRA}
             yum -y install selinux-policy-devel sqlite 
         elif [ "${CENTOS_VERSION}" = "9s" ]; then
-            yum install -y ${BASE_PACKAGES} libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build libgfapi-devel xfsprogs-devel
-            yum install --enablerepo=crb -y ${BUILDREQUIRES_EXTRA}
-            yum -y install selinux-policy-devel sqlite
+            dnf install -y ${BASE_PACKAGES} libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build libgfapi-devel xfsprogs-devel
+            dnf install --enablerepo=crb -y ${BUILDREQUIRES_EXTRA}
+            dnf -y install selinux-policy-devel sqlite
         fi
 
 	git init "${GIT_REPO}"
@@ -168,25 +168,27 @@ else
 	rpmbuild -ta --define "_srcrpmdir $PWD" --define "_rpmdir $PWD" *.tar.gz
 	rpm_arch=$(rpm -E '%{_arch}')
 	ganesha_version=$(rpm -q --qf '%{VERSION}-%{RELEASE}' -p *.src.rpm)
+
 	if [ -e ${rpm_arch}/libntirpc-devel*.rpm ]; then
 		ntirpc_version=$(rpm -q --qf '%{VERSION}-%{RELEASE}' -p ${rpm_arch}/libntirpc-devel*.rpm)
 		ntirpc_rpm=${rpm_arch}/libntirpc-${ntirpc_version}.${rpm_arch}.rpm
 	fi
-        rpm -e gpfs.nfs-ganesha gpfs.nfs-ganesha-gpfs --nodeps
-	yum -y install {x86_64,noarch}/*.rpm
 
-        #Test block
-        ulimit -a
-        ulimit -c unlimited
-        ulimit -a
+    rpm -e gpfs.nfs-ganesha gpfs.nfs-ganesha-gpfs --nodeps
+	dnf -y install {x86_64,noarch}/*.rpm
+
+	# Test block
+	ulimit -a
+	ulimit -c unlimited
+	ulimit -a
 
 	# start nfs-ganesha service with an empty configuration
 	echo "NFSv4 { Graceless = true; }" > /etc/ganesha/ganesha.conf
      
-        #This block is introduced as the line creates a ambiguity as the same is used in scale implementation
-        systemctl stop nfs-ganesha
-        sed -i.bak -e 's/^StateDirectory/#&/' /usr/lib/systemd/system/nfs-ganesha.service
-        systemctl daemon-reload
+	# This block is introduced as the line creates a ambiguity as the same is used in scale implementation
+	systemctl stop nfs-ganesha
+	sed -i.bak -e 's/^StateDirectory/#&/' /usr/lib/systemd/system/nfs-ganesha.service
+	systemctl daemon-reload
 
 	if ! systemctl start nfs-ganesha
 	then

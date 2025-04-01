@@ -11,7 +11,7 @@ set -e
 GIT_REPO="https://${GERRIT_HOST}/${GERRIT_PROJECT}"
 
 # enable the Storage SIG Gluster and Ceph repositories
-yum -y install centos-release-ceph epel-release
+dnf -y install centos-release-ceph epel-release
 
 BUILDREQUIRES="git bison cmake dbus-devel flex gcc-c++ krb5-devel libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build xfsprogs-devel"
 
@@ -33,8 +33,8 @@ case "${CENTOS_VERSION}" in
     *)
         ENABLE_REPOS="--enablerepo=powertools"
         BUILDREQUIRES="${BUILDREQUIRES} python3-devel rpcgen libtirpc-devel liburing-devel rsync "
-        yum -y update --skip-broken --nobest
-        yum -y install epel-release
+        dnf -y update --skip-broken --nobest
+        dnf -y install epel-release
     ;;
 esac
 
@@ -43,7 +43,7 @@ cd $(basename "${GERRIT_PROJECT}")
 git fetch origin ${GERRIT_REFSPEC} && git checkout FETCH_HEAD
 
 # update libntirpc
-git submodule update --recursive --init || git submodule sync
+git submodule update --recursive --init || git submodule sync --recursive
 
 # cleanup old build dir
 [ -d build ] && rm -rf build

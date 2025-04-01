@@ -15,15 +15,14 @@ set -x
 
 # install build and runtime dependencies
 echo "Install build and runtime dependencies"
-yum -y install nfs-utils git gcc time centos-release-gluster centos-release-ceph
+dnf -y install nfs-utils git gcc time centos-release-gluster centos-release-ceph
 
 # flag for commands which should run only once
 once=0
 
 #NFS-Ganesha is crashing when installing 4.0, so taking it out to see if 4.1 works
 
-for ver in 3 4.1
-do
+for ver in 3 4.1 ;do
     echo "--------------------------------------------------"
     echo "Running test on Mount Version $ver"
     echo "--------------------------------------------------"
@@ -32,18 +31,17 @@ do
     # mount
     mount -t nfs -o vers=$ver ${SERVER}:${EXPORT} /mnt/nfs
     cd /mnt/nfs
-    if [ $once -eq 0 ]
-    then
+    if [ $once -eq 0 ]; then
         if [ "${CENTOS_VERSION}" == "7" ]; then
-          yum -y install bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel libnfsidmap-devel libwbclient-devel libcap-devel libblkid-devel rpm-build redhat-rpm-config glusterfs-api libnsl2-devel libcephfs-devel
-          yum clean all & yum clean metadata
-          yum -y install userspace-rcu-devel
+            yum -y install bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel libnfsidmap-devel libwbclient-devel libcap-devel libblkid-devel rpm-build redhat-rpm-config glusterfs-api libnsl2-devel libcephfs-devel
+            yum clean all & yum clean metadata
+            yum -y install userspace-rcu-devel
         elif [ "${CENTOS_VERSION}" == "8s" ]; then
-          yum -y install bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel libcap-devel libblkid-devel rpm-build redhat-rpm-config glusterfs-api
-          yum -y --enablerepo=powertools install libnfsidmap-devel libwbclient-devel userspace-rcu-devel userspace-rcu libnsl2-devel libcephfs-devel
+            yum -y install bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel libcap-devel libblkid-devel rpm-build redhat-rpm-config glusterfs-api
+            yum -y --enablerepo=powertools install libnfsidmap-devel libwbclient-devel userspace-rcu-devel userspace-rcu libnsl2-devel libcephfs-devel
         elif [ "${CENTOS_VERSION}" == "9s" ]; then
-          yum -y install bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel libcap-devel libblkid-devel rpm-build redhat-rpm-config glusterfs-api
-          yum -y --enablerepo=crb install libnfsidmap-devel libwbclient-devel userspace-rcu-devel userspace-rcu libnsl2-devel libcephfs-devel libuuid libuuid-devel
+            dnf -y install bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel libcap-devel libblkid-devel rpm-build redhat-rpm-config glusterfs-api
+            dnf -y --enablerepo=crb install libnfsidmap-devel libwbclient-devel userspace-rcu-devel userspace-rcu libnsl2-devel libcephfs-devel libuuid libuuid-devel
         fi
         timeout -s SIGKILL 600s git clone --depth=1 https://review.gerrithub.io/ffilz/nfs-ganesha
         TIMED_OUT=$?
@@ -56,9 +54,8 @@ do
     fi
     cd nfs-ganesha
     git checkout next
-    if [ $once -eq 0 ]
-    then
-        git submodule update --recursive --init || git submodule sync
+    if [ $once -eq 0 ] ; then
+        git submodule update --recursive --init || git submodule sync --recursive
         once=1
     fi
     cd ..
@@ -66,8 +63,7 @@ do
     cd ganeshaBuild
     cmake -DDEBUG_SYMS=ON -DCURSES_LIBRARY=/usr/lib64 -DCURSES_INCLUDE_PATH=/usr/include/ncurses -DCMAKE_BUILD_TYPE=Maintainer -DUSE_DBUS=ON /mnt/nfs/nfs-ganesha/src
     status=$?
-    if [ $status -ne 0 ]
-    then
+    if [ $status -ne 0 ] ; then
         echo "FAILURE: cmake failed"
         exit $status
     fi
