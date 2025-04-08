@@ -86,7 +86,7 @@ fi
 dnf install -y cephadm
 cephadm add-repo --release squid
 dnf install -y ceph
-cephadm bootstrap --mon-ip $(hostname -I | awk '{print $1}') --single-host-defaults
+cephadm bootstrap --mon-ip $(hostname -I | awk '{print $1}') --single-host-defaults --allow-fqdn-hostname
 ceph auth get client.bootstrap-osd -o /var/lib/ceph/bootstrap-osd/ceph.keyring
 
 # Create a virtual disk file (for OSD storage):
