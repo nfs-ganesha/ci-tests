@@ -164,6 +164,13 @@ else
 	pushd build
 
 	cmake -DCMAKE_BUILD_TYPE=Maintainer -DUSE_FSAL_GPFS=ON -DUSE_DBUS=ON -D_MSPAC_SUPPORT=OFF ../src
+  # We have noticed issues with bcond_with missing for some variables
+	# unwind_enriched_bt
+	sed -i 's/^ unwind_enriched_bt$/%bcond_with unwind_enriched_bt/g' ../src/nfs-ganesha.spec
+
+  # monitoring
+	sed -i 's/^ monitoring$/%bcond_without monitoring/g' ../src/nfs-ganesha.spec
+	
 	make dist
 	rpmbuild -ta --define "_srcrpmdir $PWD" --define "_rpmdir $PWD" *.tar.gz
 	rpm_arch=$(rpm -E '%{_arch}')
