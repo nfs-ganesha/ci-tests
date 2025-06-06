@@ -50,6 +50,7 @@ GIT_VERSION="$(git branch | sed 's/^\* //' | sed 's/-//')"
 GIT_HASH="$(git log -1 --format=%h)"
 VERSION="${GIT_VERSION}.$(date +%Y%m%d).${GIT_HASH}"
 
+git submodule update --init
 # generate the tar.gz archive
 if [ "${CENTOS_VERSION}" == "7" ]; then
     sed s/XXVERSIONXX/${VERSION}/ ${TEMPLATES_URL}/libntirpc_centos7.spec.in > libntirpc.spec
