@@ -60,10 +60,12 @@ export VERBOSE=1
 %install
 %cmake_install
 
-ln -s %{name}.so.%{version} %{buildroot}%{_libdir}/%{name}.so.4
+ln -s %{name}.so.%{version} %{buildroot}%{_libdir}/%{name}.so.6
+ln -s %{name}monitoring.so.%{version} %{buildroot}%{_libdir}/%{name}monitoring.so.6
+
 
 %files
-%{_libdir}/libntirpc.so.*
+%{_libdir}/libntirpc*.so.*
 %{!?_licensedir:%global license %%doc}
 %license COPYING
 %doc NEWS README
