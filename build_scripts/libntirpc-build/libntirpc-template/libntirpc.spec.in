@@ -71,7 +71,7 @@ ln -s %{name}monitoring.so.%{version} %{buildroot}%{_libdir}/%{name}monitoring.s
 %doc NEWS README
 
 %files devel
-%{_libdir}/libntirpc.so
+%{_libdir}/libntirpc*.so
 %{_includedir}/ntirpc/
 %{_libdir}/pkgconfig/libntirpc.pc
 
