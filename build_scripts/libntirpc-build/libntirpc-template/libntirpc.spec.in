@@ -15,9 +15,8 @@ Source0:        https://github.com/nfs-ganesha/ntirpc/archive/v%{dev_version}/nt
 BuildRequires:	gcc cmake
 BuildRequires:	krb5-devel
 BuildRequires:  userspace-rcu-devel
-%if ( 0%{?fedora} && 0%{?fedora} > 27 ) || ( 0%{?rhel} && 0%{?rhel} > 7 )
 BuildRequires:  libnsl2-devel
-%endif
+BuildRequires:  gcc-c++
 # libtirpc has /etc/netconfig, most machines probably have it anyway
 # for NFS client
 Requires:	libtirpc
