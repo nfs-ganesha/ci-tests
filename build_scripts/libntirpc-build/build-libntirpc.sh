@@ -91,6 +91,7 @@ esac
 
 RESULTDIR="/srv/nightly/libntirpc/${GIT_VERSION}/${CENTOS_VERSION//s}/${CENTOS_ARCH}"
 /usr/bin/mock \
+    --verbose \
     --root ${MOCK_CHROOT} \
     --resultdir ${RESULTDIR} \
     --rebuild ${SRPM}
