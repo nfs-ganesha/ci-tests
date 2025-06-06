@@ -47,8 +47,11 @@ pushd ntirpc
 
 # generate a version based on branch.date.last-commit-hash
 GIT_VERSION="$(git branch | sed 's/^\* //' | sed 's/-//')"
+echo ${GIT_VERSION}
 GIT_HASH="$(git log -1 --format=%h)"
+echo ${GIT_HASH}
 VERSION="${GIT_VERSION}.$(date +%Y%m%d).${GIT_HASH}"
+echo ${VERSION}
 
 git submodule update --init
 # generate the tar.gz archive
@@ -80,6 +83,9 @@ case "${CENTOS_VERSION}" in
 ;;
 9s)
   MOCK_CHROOT=centos-stream+epel-next-9-x86_64
+;;
+10s)
+  MOCK_CHROOT=centos-stream+epel-10-x86_64
 ;;
 esac
 
