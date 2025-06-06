@@ -51,6 +51,7 @@ Development headers and auxiliary files for developing with %{name}.
     -DCMAKE_COLOR_MAKEFILE:BOOL=OFF \
     -DTIRPC_EPOLL=1 \
     -DUSE_GSS=ON \
+    -DUSE_MONITORING=ON \
     "-GUnix Makefiles"
 
 export GCC_COLORS=
