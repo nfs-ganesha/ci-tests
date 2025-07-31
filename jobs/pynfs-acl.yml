@@ -12,7 +12,7 @@
     properties:
     - discarder
     - github:
-        url: http://git.linux-nfs.org/?p=bfields/pynfs.git;a=summary/
+        url: https://git.linux-nfs.org/?p=cdmackay/pynfs.git;a=summary
 
     parameters:
     - string:
