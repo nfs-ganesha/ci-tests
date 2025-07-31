@@ -16,7 +16,7 @@ set -x
 # install build and runtime dependencies
 dnf -y install git gcc nfs-utils redhat-rpm-config krb5-devel python3-devel python3-gssapi python3-ply
 
-rm -rf /root/pynfs && git clone git://linux-nfs.org/~bfields/pynfs.git
+rm -rf /root/pynfs && git clone git://git.linux-nfs.org/projects/cdmackay/pynfs.git
 
 cd /root/pynfs && yes | python3 setup.py build > /tmp/output_tempfile.txt
 echo $?
