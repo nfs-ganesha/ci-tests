@@ -16,55 +16,29 @@ RET=$?
 
 case ${RET} in
 0)
-	MESSAGE="${BUILD_URL}/console : SUCCESS"
-	VERIFIED='--verified +1'
-	NOTIFY='--notify NONE'
+	MESSAGE="**🟢 $JOB_NAME:** \`SUCCESS\` - ${BUILD_URL}/console"
 	EXIT=0
 	;;
 1)
-	MESSAGE="${BUILD_URL}/console : FAILED"
-	VERIFIED='--verified -1'
-	NOTIFY='--notify ALL'
+	MESSAGE="**🔴 $JOB_NAME:** \`FAILED\` - ${BUILD_URL}/console"
 	EXIT=1
 	;;
 10)
-	MESSAGE="${BUILD_URL}/console : SUCCESS (skipping vote)"
-	VERIFIED=''
-	NOTIFY='--notify NONE'
+	MESSAGE="**🟢 $JOB_NAME:** \`SUCCESS - WIP\` - ${BUILD_URL}/console"
 	EXIT=0
 	;;
 11)
-	MESSAGE="${BUILD_URL}/console : FAILED (skipping vote)"
-	VERIFIED=''
-	NOTIFY='--notify NONE'
+	MESSAGE="**🔴 $JOB_NAME:** \`FAILED - WIP\` - ${BUILD_URL}/console"
 	EXIT=1
 	;;
 *)
-	MESSAGE="${BUILD_URL}/console : unknown return value ${RET}"
-	VERIFIED=''
-	NOTIFY='--notify NONE'
+	MESSAGE="**🔴 $JOB_NAME:** \`FAILED : unknown return value ${RET}\` - ${BUILD_URL}/console"
 	EXIT=1
 	;;
 esac
 
 echo "${MESSAGE}"
-
-# Update Gerrit with the success/failure status
-if [ -n "${GERRIT_PATCHSET_REVISION}" ]
-then
-    ssh \
-        -l jenkins-glusterorg \
-        -i $GERRITHUB_KEY \
-        -o StrictHostKeyChecking=no \
-        -p 29418 \
-        ${GERRIT_HOST} \
-        gerrit review \
-            --message "'${MESSAGE}'" \
-            --project ${GERRIT_PROJECT} \
-            ${VERIFIED} \
-            ${NOTIFY} \
-            ${GERRIT_PATCHSET_REVISION}
-fi
+echo "${MESSAGE}" > result_message.txt
 
 # exit with SUCCESS or FAIL only
 exit ${EXIT}
