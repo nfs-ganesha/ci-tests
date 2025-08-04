@@ -1,3 +1,5 @@
+# DEPRECATED: This workflow is no longer used or maintained.
+# Please use jobs/trigger-fsal-on-new-patch.yml instead.
 - project:
     name: 'fsal'
     product:
