@@ -1,8 +1,8 @@
-- pipeline:
+- job:
     name: trigger-fsal-on-new-patch
     node: cico-workspace
     description: >-
-      Run fsal-cephfs, fsal-gluster, fsal-gpfs, fsal-rgw on nfs-ganesha. This job is triggered by
+      Run fsal-cephfs, fsal-vfs, fsal-gpfs, fsal-rgw on nfs-ganesha. This job is triggered by
       sending a change to
       https://review.gerrithub.io/#/q/project:ffilz/nfs-ganesha for review.
 
@@ -54,7 +54,7 @@
                   string(name: paramName, value: env.getProperty(paramName) ?: '')
                 }
 
-                def jobList = ['fsal-cephfs', 'fsal-gluster', 'fsal-gpfs', 'fsal-rgw']
+                def jobList = ['fsal-cephfs', 'fsal-vfs', 'fsal-gpfs', 'fsal-rgw']
                 def results = [:]
                 def messages = ["**FSAL Job Results:**\\n"]
 
