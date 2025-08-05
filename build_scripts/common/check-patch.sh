@@ -41,36 +41,114 @@ fi
 
 pushd nfs-ganesha
 git checkout -b "${GERRIT_REFSPEC}" FETCH_HEAD
-git clang-format -v \
+CLANG_OUTPUT=$(git clang-format -v \
     --diff \
     --style file:src/.clang-format \
     --extensions c,cc,cpp,h,hpp \
-    HEAD~1
-RETURN_VALUE=$?
+    HEAD~1)
+CLANG_RETURN_VALUE=$?
 popd
 
-# Post message
-case ${RETURN_VALUE} in
+# Generate the Clang-format message based on the return value
+# Here ** in the message is used to format the text in bold in Markdown
+# Here \`\`\` is used to format the text in code block in Markdown
+# EOF is used to end the heredoc to avoid issues with special characters and indentation
+case ${CLANG_RETURN_VALUE} in
     0)
-        MESSAGE="${JOB_URL}: Success."
-        VERIFIED="--verified +1"
-        NOTIFY="--notify NONE"
-        EXIT=0
+        CLANG_MSG="**🟢 Clang-format Check:** \`\`\`Passed\`\`\`"
+        CLANG_FAILED=0
         ;;
     1)
-        MESSAGE="${JOB_URL}: Failed"
-        VERIFIED='--verified -1'
-        NOTIFY="--notify all"
-        EXIT=1
+        CLANG_MSG=$(cat <<EOF
+**🔴 Clang-format Check:** \`\`\`Failed: Issues found\`\`\`
+
+**Clang-failures:**
+\`\`\`
+${CLANG_OUTPUT}
+\`\`\`
+
+EOF
+        )
+        CLANG_FAILED=1
         ;;
     *)
-        MESSAGE="${job_url}: UNKNOWN"
-        VERIFIED=''
-        NOTIFY="--notify NONE"
-        EXIT=1
+        CLANG_MSG=$(cat <<EOF
+**🔴 Clang-format Check:** \`Failed: Unknown state\`
+
+**Clang-failures:**
+\`\`\`
+${CLANG_OUTPUT}
+\`\`\`
+EOF
+        )
+        CLANG_FAILED=1
         ;;
 esac
 
+# -----------------------
+# Run checkpatch and capture its output
+# -----------------------
+pushd nfs-ganesha/src/scripts
+# Making a copy of the checkpatch configuration file with leading dot as it is required by checkpatch.pl
+cp checkpatch.conf .checkpatch.conf
+CHECKPATCH_JSON=$(GIT_DIR=~/nfs-ganesha/.git git show --format=email | ./checkpatch.pl -q - | python3 ~/checkpatch-to-gerrit-json.py)
+echo "Checkpatch JSON output: ${CHECKPATCH_JSON}"
+if echo "$CHECKPATCH_JSON" | grep -q '"Checkpatch OK"'; then
+    CHECKPATCH_FAILED=0
+else
+    echo "$CHECKPATCH_JSON" | jq -r '.comments'
+    CHECKPATCH_FAILED=1
+fi
+popd
+
+if [[ $CHECKPATCH_FAILED -eq 0 ]]; then
+    CHECKPATCH_MSG="**🟢 Checkpatch lint:** \`\`\`Passed\`\`\`"
+else
+    # Generate a summary of checkpatch warnings/errors in a single-line format.
+    # For each comment in the JSON:
+    # - Extract the file name and (if available) the line number.
+    # - Output the first line of the message (ignore multiline content).
+    # - Format: <filename>[:<line>] - <message>
+    # - Remove characters that could interfere with logs or shell scripts: ", `, $, \, '
+    CHECKPATCH_SUMMARY=$(echo "$CHECKPATCH_JSON" | jq -r '
+    .comments | to_entries[] |
+    .key as $file |
+    .value[] |
+    "\($file)\(if .line then ":\(.line)" else "" end) - \(.message | split("\n")[0])"
+    ' | sed 's/["`$\\'\'']//g')
+
+    CHECKPATCH_MSG=$(cat <<EOF
+**🔴 Checkpatch lint:** \`\`\`Failed\`\`\`
+
+**Checkpatch-failure:**
+\`\`\`
+$(echo "$CHECKPATCH_SUMMARY")
+\`\`\`
+EOF
+    )
+fi
+
+# -----------------------
+# Combine messages
+# -----------------------
+FINAL_MESSAGE="${JOB_URL}:
+
+${CLANG_MSG}
+${CHECKPATCH_MSG}
+"
+
+# Determine Notify status
+if [[ $CLANG_FAILED -eq 0 && $CHECKPATCH_FAILED -eq 0 ]]; then
+    NOTIFY="--notify NONE"
+    EXIT=0
+else
+    NOTIFY="--notify ALL"
+    EXIT=1
+fi
+
+# -----------------------
+# Final publish (only once)
+# -----------------------
 if [ "${GERRIT_PUBLISH}" == "true" ]; then
     ssh \
         -l ${GERRIT_USER} \
@@ -79,33 +157,11 @@ if [ "${GERRIT_PUBLISH}" == "true" ]; then
         -p ${GERRIT_PORT} \
         ${GERRIT_HOST} \
         gerrit review \
-            --message "'${MESSAGE}'" \
+            --message "'${FINAL_MESSAGE}'" \
             --project ${GERRIT_PROJECT} \
-            ${VERIFIED} \
             ${NOTIFY} \
             ${GERRIT_PATCHSET_REVISION}
 else
-    echo "Clang format review is not posted"
+    echo "Review is not posted"
+    echo "${FINAL_MESSAGE}"
 fi
-
-publish_checkpatch() {
-    local SSH_GERRIT="ssh -p 29418 -i $GERRITHUB_KEY $GERRIT_USER@review.gerrithub.io"
-
-    if [[ "$GERRIT_PUBLISH" == "true" ]]; then
-        tee /proc/$$/fd/1 | \
-        $SSH_GERRIT "gerrit review --json --project ffilz/nfs-ganesha $GERRIT_PATCHSET_REVISION"
-    else
-        echo "Would have submit:"
-        echo -n "echo '"
-        cat
-        echo "' | $SSH_GERRIT \"gerrit review --json --project ffilz/nfs-ganesha $GERRIT_PATCHSET_REVISION\""
-  fi 
-}
-
-pushd nfs-ganesha/src/scripts
-# cd to ~/checkpatch for checkpatch.pl as a hack to get config without modifying $HOME
-GIT_DIR=~/nfs-ganesha/.git git show --format=email  | \
-    ./checkpatch.pl -q - | \
-    python3 ~/checkpatch-to-gerrit-json.py | \
-    publish_checkpatch
-popd
