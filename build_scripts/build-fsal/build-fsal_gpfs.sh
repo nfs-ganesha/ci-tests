@@ -32,9 +32,11 @@ case "${CENTOS_VERSION}" in
     ;;
 esac
 
-git clone --depth=1 ${GIT_REPO}
+git init $(basename "${GERRIT_PROJECT}")
 cd $(basename "${GERRIT_PROJECT}")
-git fetch origin ${GERRIT_REFSPEC} && git checkout FETCH_HEAD
+git remote add origin ${GIT_REPO}
+git fetch --depth=1 origin ${GERRIT_REFSPEC}
+git checkout FETCH_HEAD
 
 # update libntirpc
 git submodule update --recursive --init || git submodule sync --recursive
