@@ -1,0 +1,356 @@
+// Jenkinsfile for triggering jobs on new patches
+// This Jenkinsfile is designed to run various test jobs in parallel and clean up reserved nodes after execution.
+// It also summarizes the results of the jobs and posts them to Gerrit.
+
+// This function runs a test job with the provided environment variables and shell script.
+// It handles node reservation, result archiving, and node release.
+// The `envVars` parameter is a map of environment variables to be set for the job.
+// The `shellScript` parameter is the shell command to execute the test.
+// The `resultFile` parameter is optional and specifies the file to archive after the job completes
+def runTestJob = { envVars, shellScript, resultFile = null ->
+    stage(envVars.JOB_LABEL) {
+        try {
+            sh """
+                echo "Workspace: $WORKSPACE"
+                ls -la $WORKSPACE
+
+                echo "Exporting Env Variables"
+                ${envVars ? envVars.collect { k, v -> "export ${k}=\"${v}\"" }.join('\n') : ""}
+
+                echo "Getting available nodes..."
+                bash ./ci-tests/build_scripts/common/get-node.sh
+                cat ${WORKSPACE}/session_id > ${WORKSPACE}/session_id_${envVars.TEST_NAME}.txt
+
+                echo "[TEST]: ${envVars.JOB_LABEL}"
+                ${shellScript}
+            """
+        } finally {
+            if (resultFile) {
+                echo "Archiving results"
+                sh "mv -f result_message.txt ${resultFile} || echo 'No result_message.txt found to rename.'"
+                archiveArtifacts artifacts: resultFile, onlyIfSuccessful: false
+            }
+            sh """
+                SESSION_ID=\$(cat "${WORKSPACE}/session_id_${envVars.TEST_NAME}.txt")
+                duffy client retire-session "\${SESSION_ID}" > /dev/null
+                echo "Node released successfully!"
+            """
+        }
+    }
+}
+
+// This function checks the latest patchset in Gerrit and ensures that the current patchset is the latest one.
+// If a newer patchset exists or if the current patchset is not mergeable, it posts a message to Gerrit and aborts the build.
+// The function constructs a message based on the checks and posts it to Gerrit.
+def preCheckGerritPatchset() {
+    withCredentials([file(credentialsId: 'GERRITHUB_PRIVATE_KEY', variable: 'GERRITHUB_KEY_FILE')]) {
+        // Get the latest patchset number from Gerrit
+        def latestPatchset = sh(
+            script: """
+                ssh -i \$GERRITHUB_KEY_FILE -l \$GERRIT_USER -o StrictHostKeyChecking=no -p \$GERRIT_PORT \$GERRIT_HOST \\
+                gerrit query --format=JSON --current-patch-set change:\$GERRIT_CHANGE_ID | jq -r 'select(.currentPatchSet) | .currentPatchSet.number'
+            """,
+            returnStdout: true
+        ).trim()
+
+        def mergeable = sh(
+            script: """
+                ssh -i \$GERRITHUB_KEY_FILE -l \$GERRIT_USER -o StrictHostKeyChecking=no -p \$GERRIT_PORT \$GERRIT_HOST \\
+                gerrit query --format=JSON "is:mergeable change: \$GERRIT_CHANGE_ID" | jq -r 'select(.type=="stats") | .rowCount'
+            """,
+            returnStdout: true
+        ).trim()
+
+        echo "Latest patchset: ${latestPatchset}, Mergeable: ${mergeable}"
+        echo "Current patchset: ${GERRIT_PATCHSET_NUMBER}"
+
+        // Build a consolidated message
+        def MESSAGE = ""
+
+        if (latestPatchset.toInteger() != GERRIT_PATCHSET_NUMBER.toInteger()) {
+            MESSAGE += "Aborting: A newer patchset (${latestPatchset}) exists"
+        }
+
+        if (mergeable == "0") {
+            MESSAGE += "Cannot merge this patchset — merge conflict exists"
+        }
+
+        if (MESSAGE) {
+            sh """
+                ssh -i ${GERRITHUB_KEY_FILE} -l ${GERRIT_USER} -o StrictHostKeyChecking=no -p ${GERRIT_PORT} ${GERRIT_HOST} \\
+                gerrit review \\
+                    --message "${MESSAGE}" \\
+                    --project ${GERRIT_PROJECT} \\
+                    ${GERRIT_PATCHSET_REVISION}
+            """
+            error(MESSAGE)
+        }
+    }
+}
+
+// This function summarizes the results of the test jobs and posts them to Gerrit.
+// It takes a list of file globs to find result files and a job label for the summary.
+// It constructs a message based on the results found in the files and posts it to Gerrit.
+// It checks the content of each result file to determine if the job passed or failed.
+// The final message is written to a file and posted to Gerrit with appropriate flags for notification and verification.
+// The `fileGlobs` parameter is a list of glob patterns to match result files.
+// The `jobLabel` parameter is a label for the job being summarized.
+def summarizeAndPostResults = { fileGlobs, jobLabel ->
+    def messages = []
+    messages << "**${jobLabel}:** ${env.BUILD_URL}console"
+
+    def resultFiles = []
+    fileGlobs.each { glob ->
+        resultFiles.addAll(findFiles(glob: glob))
+    }
+    def notifyFlag = '--notify NONE'
+    def verifiedFlag = ''
+
+    if (resultFiles.length == 0) {
+        messages << "_No result files found._"
+    } else {
+        for (file in resultFiles) {
+            def jobName = file.name.replace('result_', '').replace('.txt', '')
+            def content = readFile(file.path).trim()
+            echo "Content:\n${content}"
+            if (content.contains("Passed")) {
+                messages << "**🟢 ${jobName}:** `Passed`"
+                if (jobName == 'cthon') {
+                    verifiedFlag = '--verified +1'
+                }
+            } else {
+                notifyFlag = '--notify ALL'
+                // To append the failures to Gerrit
+                if (jobName == 'cthon' || jobName.startsWith('pynfs')) {
+                    messages << "**🔴 ${jobName}:** `Failed` - [View Failures](${env.BUILD_URL}artifact/${file.name})"
+                } else {
+                    messages << "**🔴 ${jobName}:** `Failed`"
+                }
+            }
+        }
+    }
+
+    def finalMessage = messages.join("\n")
+    writeFile file: 'gerrit_message.txt', text: finalMessage
+
+    echo "=== Final Gerrit Message ==="
+    echo finalMessage
+
+    withCredentials([file(credentialsId: 'GERRITHUB_PRIVATE_KEY', variable: 'GERRITHUB_KEY_FILE')]) {
+        sh """
+            ssh -i ${GERRITHUB_KEY_FILE} -l ${GERRIT_USER} -o StrictHostKeyChecking=no -p ${GERRIT_PORT} ${GERRIT_HOST} \\
+                gerrit review \\
+                ${notifyFlag} \\
+                ${verifiedFlag} \\
+                --message "'\$(cat gerrit_message.txt)'" \\
+                --project ${GERRIT_PROJECT} \\
+                ${GERRIT_PATCHSET_REVISION}
+        """
+    }
+}
+
+// Main pipeline definition
+pipeline {
+    agent {
+        label 'cico-workspace'
+    }
+
+    options {
+        disableConcurrentBuilds()
+        timestamps()
+    }
+
+    stages {
+        stage('Pre-Check Patchset - Initial') {
+            when {
+                expression { true }
+            }
+            steps {
+                script {
+                    preCheckGerritPatchset()
+                }
+            }
+        }
+
+        stage('Run Clang, Checkpatch and FSAL jobs (Parallel)') {
+            steps {
+                withCredentials([file(credentialsId: 'GERRITHUB_PRIVATE_KEY', variable: 'GERRITHUB_KEY_FILE')]) {
+                    script {
+                        env.GERRITHUB_KEY = GERRITHUB_KEY_FILE
+
+                        catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                            parallel failFast: false,
+
+                                'Checkpatch & Clang Job': {
+                                    runTestJob(
+                                        [
+                                            JOB_LABEL: "Checkpatch_Clang_Job",
+                                            NODE_COUNT: 1,
+                                            TEST_NAME: "checkpatch-clang"
+                                        ],
+                                        "bash ./ci-tests/jobs/scripts/checkpatch.sh"
+                                    )
+                                },
+
+                                'FSAL_CephFS Jobs': {
+                                    runTestJob(
+                                        [
+                                            JOB_LABEL: "FSAL_CephFS_Jobs",
+                                            NODE_COUNT: 1,
+                                            TEST_NAME: "fsal-cephfs",
+                                            TEST_SCRIPT: "${WORKSPACE}/ci-tests/build_scripts/build-fsal/build-fsal_cephfs.sh"
+                                        ],
+                                        "bash ./ci-tests/jobs/scripts/fsal-build.sh",
+                                        'result_fsal_cephfs.txt'
+                                    )                                    
+                                },
+
+                                'FSAL_VFS Jobs': {
+                                    runTestJob(
+                                        [
+                                            JOB_LABEL: "FSAL_VFS_Jobs",
+                                            NODE_COUNT: 1,
+                                            TEST_NAME: "fsal-vfs",
+                                            TEST_SCRIPT: "${WORKSPACE}/ci-tests/build_scripts/build-fsal/build-fsal_vfs.sh"                                                                         
+                                        ],
+                                        "bash ./ci-tests/jobs/scripts/fsal-build.sh",
+                                        'result_fsal_vfs.txt'
+                                    )
+                                },
+
+                                'FSAL_GPFS Jobs': {
+                                    runTestJob(
+                                        [
+                                            JOB_LABEL: "FSAL_GPFS_Jobs",
+                                            NODE_COUNT: 1,
+                                            TEST_NAME: "fsal-gpfs",
+                                            TEST_SCRIPT: "${WORKSPACE}/ci-tests/build_scripts/build-fsal/build-fsal_gpfs.sh"
+                                        ],
+                                        "bash ./ci-tests/jobs/scripts/fsal-build.sh",
+                                        'result_fsal_gpfs.txt'
+                                    )
+                                },
+
+                                'FSAL_RGW Jobs': {
+                                    runTestJob(
+                                        [
+                                            JOB_LABEL: "FSAL_RGW_Jobs",
+                                            NODE_COUNT: 1,
+                                            TEST_NAME: "fsal-rgw",
+                                            TEST_SCRIPT: "${WORKSPACE}/ci-tests/build_scripts/build-fsal/build-fsal_rgw.sh"
+                                        ],
+                                        "bash ./ci-tests/jobs/scripts/fsal-build.sh",
+                                        'result_fsal_rgw.txt'
+                                    )
+                                }
+                            
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Result summary of FSAL Jobs') {
+            when {
+                expression { true }
+            }
+            steps {
+                script {
+                    summarizeAndPostResults(['result_fsal*.txt'], "FSAL Results")
+                }
+            }
+        }
+
+        stage('Pre-Check Patchset - Intermediate') {
+            steps {
+                script {
+                    preCheckGerritPatchset()
+                }
+            }
+        }
+
+        stage('Run PyNFS and Cthon Tests (Parallel)') {
+            steps {
+                script {
+                    catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+
+                        parallel failFast: false,
+
+                            'PyNFS - Ceph': {
+                                runTestJob(
+                                    [
+                                        JOB_LABEL: "PyNFS_with_Ceph",
+                                        NODE_COUNT: 2,
+                                        TEST_NAME: "pynfs-ceph",
+                                        SERVER_TEST_SCRIPT: "${WORKSPACE}/ci-tests/ceph/basic-ceph-pynfs.sh",
+                                        CLIENT_TEST_SCRIPT: "${WORKSPACE}/ci-tests/build_scripts/pynfs/client.sh",
+                                        EXPORT: "nfs/cephfs"
+                                    ],
+                                    "bash ./ci-tests/jobs/scripts/common.sh",
+                                    'result_pynfs_ceph.txt'
+                                )
+                            },
+
+                            'PyNFS ACL - Gluster': {
+                                runTestJob(
+                                    [
+                                        JOB_LABEL: "PyNFS ACL - Gluster",
+                                        NODE_COUNT: 2,
+                                        TEST_NAME: "pynfs-acl-gluster",
+                                        TEST_BACKEND: "gluster",
+                                        SERVER_TEST_SCRIPT: "${WORKSPACE}/ci-tests/build_scripts/common/basic-gluster.sh",
+                                        CLIENT_TEST_SCRIPT: "${WORKSPACE}/ci-tests/build_scripts/pynfs/client.sh",
+                                        EXPORT: "pynfs",
+                                        ENABLE_ACL: "True"
+                                    ],
+                                    "bash ./ci-tests/jobs/scripts/common.sh",
+                                    'result_pynfs_acl_gluster.txt'
+                                )
+                            },
+
+                            'PyNFS ACL - VFS': {
+                                runTestJob(
+                                    [
+                                        JOB_LABEL: "PyNFS ACL - VFS",
+                                        NODE_COUNT: 2,
+                                        TEST_NAME: "pynfs-acl-vfs",
+                                        TEST_BACKEND: "vfs",
+                                        SERVER_TEST_SCRIPT: "${WORKSPACE}/ci-tests/build_scripts/common/basic-vfs.sh",
+                                        CLIENT_TEST_SCRIPT: "${WORKSPACE}/ci-tests/build_scripts/pynfs/client.sh",
+                                        EXPORT: "pynfs",
+                                        ENABLE_ACL: "True"
+                                    ],
+                                    "bash ./ci-tests/jobs/scripts/common.sh",
+                                    'result_pynfs_acl_vfs.txt'
+                                )
+                            },
+
+                            'Cthon - Ceph': {
+                                runTestJob(
+                                    [
+                                        JOB_LABEL: "Cthon - Ceph",
+                                        NODE_COUNT: 1,
+                                        TEST_NAME: "cthon-ceph",
+                                        TEST_SCRIPT: "${WORKSPACE}/ci-tests/ceph/basic-ceph-cthon.sh"
+                                    ],
+                                    "bash ./ci-tests/jobs/scripts/common.sh",
+                                    'result_cthon.txt'
+                                )
+                            }
+                    }
+                }
+            }
+        }
+
+        stage('Result summary of PyNFS + Cthon Jobs') {
+            when {
+                expression { true }
+            }
+            steps {
+                script {
+                    summarizeAndPostResults(['result_pynfs*.txt', 'result_cthon*.txt'], "PyNFS and Cthon Results")
+                }
+            }
+        }
+    }
+}

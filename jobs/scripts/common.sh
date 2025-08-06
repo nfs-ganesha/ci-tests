@@ -20,48 +20,30 @@ fi
 bash $WORKSPACE/ci-tests/build_scripts/common/basic-server-client.sh
 RET=$?
 
-JOB_OUTPUT="${JENKINS_URL}/job/${LAST_TRIGGERED_JOB_NAME}/${BUILD_NUMBER}/console"
-
 case ${RET} in
 0)
-	MESSAGE="${JOB_OUTPUT} : SUCCESS"
-	VERIFIED='--verified +1'
-	NOTIFY='--notify NONE'
+	MESSAGE="**🟢 $TEST_NAME:** \`Passed\`"
 	EXIT=0
 	;;
 1)
-	MESSAGE="${JOB_OUTPUT} : FAILED"
-	# TODO: Enable voting if tests are stable. Env parameter?
-	#VERIFIED='--verified -1'
-	VERIFIED=''
-	NOTIFY='--notify ALL'
+	MESSAGE="**🔴 $TEST_NAME:** \`Failed\`"
 	EXIT=1
 	;;
 *)
-	MESSAGE="${JOB_OUTPUT} : unknown return value ${RET}"
-	VERIFIED=''
-	NOTIFY='--notify NONE'
+	MESSAGE="**🔴 $TEST_NAME:** \`unknown return value\` ${RET}"
 	EXIT=1
 	;;
 esac
 
-# show the message on the console, it helps users looking the output
-echo "${MESSAGE}"
-
-# Update Gerrit with the success/failure status
-if [ -n "${GERRIT_PATCHSET_REVISION}" ]; then
-    ssh \
-        -l jenkins-glusterorg \
-        -i $GERRITHUB_KEY \
-        -o StrictHostKeyChecking=no \
-        -p ${GERRIT_PORT} \
-        ${GERRIT_HOST} \
-        gerrit review \
-            --message "'${MESSAGE}'" \
-            --project ${GERRIT_PROJECT} \
-            ${VERIFIED} \
-            ${NOTIFY} \
-            ${GERRIT_PATCHSET_REVISION}
+# Append failures.txt content if it exists and is non-empty
+FAILURE_LOG=$WORKSPACE/failures.txt
+if [[ -s "$FAILURE_LOG" ]]; then
+    MESSAGE+="\n\`\`\`\n$(cat "$FAILURE_LOG")\n\`\`\`"
 fi
+
+# show the message on the console, it helps users looking the output
+echo -e "${MESSAGE}"
+
+echo -e "${MESSAGE}" >> result_message.txt
 
 exit ${EXIT}

@@ -2,7 +2,7 @@
 
 function server_run()
 {
-  if [ "$JOB_NAME" == "iozone-vfs" ] || [ "$JOB_NAME" == "iozone-vfs-minmdcache" ]; then
+  if [ "$TEST_BACKEND" == "vfs" ]; then
     VOLUME_TYPE="VFS"
   elif [ "$JOB_NAME" == "storage-scale" ]; then
     VOLUME_TYPE="STORAGE_SCALE"
@@ -10,7 +10,7 @@ function server_run()
     VOLUME_TYPE="GLUSTER"
   fi
 
-  if [ "$JOB_NAME" == "pynfs-acl" ]; then
+  if [[ "$TEST_NAME" == pynfs-acl* ]]; then
     INCLUDE_ACL_PARAM=" ENABLE_ACL='${ENABLE_ACL}'"
   fi
 
@@ -31,7 +31,7 @@ function client_run()
 {
   scp ${SSH_OPTIONS} ${2} root@${1}:./$(basename ${2})
 
-  if [ "${JOB_NAME}" == "pynfs" ] || [ "${JOB_NAME}" == "pynfs-acl" ]; then
+  if [[ ${TEST_NAME} == pynfs* ]]; then
     INCLUDE_TEST_PARAMS="TEST_PARAMETERS='${TEST_PARAMETERS}'"
   fi
 
@@ -70,6 +70,8 @@ elif [ "${SERVER_TEST_SCRIPT}" ] && [ "${CLIENT_TEST_SCRIPT}" ]; then
     client_run ${CLIENT_IP} ${CLIENT_TEST_SCRIPT} ${SERVER_IP}
     FINAL_RESULT=$?
     echo "Client script status = $FINAL_RESULT"
+    # Copy failures.txt if it exists
+    scp root@${CLIENT_IP}:/root/failures.txt $WORKSPACE || true
   else
     scp root@${SERVER_IP}:/root/rpmbuild/BUILD/nfs-ganesha-5.4/CMakeFiles/CMakeOutput.log $WORKSPACE
     scp root@${SERVER_IP}:/root/rpmbuild/BUILD/nfs-ganesha-5.4/CMakeFiles/CMakeError.log $WORKSPACE

@@ -31,6 +31,12 @@ else
     node_count=2
 fi
 
+if [ -n "$NODE_COUNT" ]; then
+  echo "NODE_COUNT is overridden since user defined NODE_COUNT env variable"
+  node_count=$NODE_COUNT
+  echo "New node_count is: $node_count"
+fi
+
 retry=0
 
 while [ $retry == 0 ]; do
@@ -44,6 +50,8 @@ while [ $retry == 0 ]; do
                 echo "${SESSION}" | jq -r '.session.nodes[].ipaddr' > "${WORKSPACE}"/hosts
                 echo "${SESSION}" | jq -r '.session.id' > "${WORKSPACE}"/session_id
                 retry=1
+                echo "Session ID: $(cat "${WORKSPACE}"/session_id)"
+                echo "Node reserved successfully!"
                 break
             else
                 echo -e "Failed to reserve node for the following reasons!\n-------------------------------------------------\n${CHECK_ERR}"

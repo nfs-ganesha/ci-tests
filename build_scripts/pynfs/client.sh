@@ -37,21 +37,32 @@ RETURN_CODE41=$?
 echo "pynfs 4.1 test output:"
 cat $LOG_FILE41
 
-if [ $RETURN_CODE40 == 0 ]; then
-    echo "All tests passed in pynfs 4.0 test suite"
+FAILURE_LOG="/root/failures.txt"
+> "$FAILURE_LOG"  # Clear file
+
+FAIL_FOUND=0
+
+# pynfs 4.0
+if grep -q ": FAILURE" "$LOG_FILE40"; then
+    {
+        echo "pynfs 4.0 test suite failures:"
+        echo "------------------------------"
+        grep ": FAILURE" "$LOG_FILE40"
+        echo
+    } >> "$FAILURE_LOG"
+    FAIL_FOUND=1
 fi
 
-if [ $RETURN_CODE41 == 0 ]; then
-    echo "All tests passed in pynfs 4.1 test suite"
+# pynfs 4.1
+if grep -q ": FAILURE" "$LOG_FILE41"; then
+    {
+        echo "pynfs 4.1 test suite failures:"
+        echo "------------------------------"
+        grep ": FAILURE" "$LOG_FILE41"
+        echo
+    } >> "$FAILURE_LOG"
+    FAIL_FOUND=1
 fi
+echo -e "$(<"$FAILURE_LOG")"
 
-if [ $RETURN_CODE40 != 0 ] || [ $RETURN_CODE40 != 0 ]; then
-    echo "pynfs 4.0 test suite failures:"
-    echo "--------------------------"
-    cat $LOG_FILE40 | grep FAILURE
-
-    echo "pynfs 4.1 test suite failures:"
-    echo "--------------------------"
-    cat $LOG_FILE41 | grep FAILURE
-    exit 1
-fi
+exit $FAIL_FOUND

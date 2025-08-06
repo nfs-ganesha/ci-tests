@@ -1,6 +1,6 @@
 # no need for verbose output
 set +x
-
+set -x
 # do not immediately fail on an error
 set +e
 
@@ -16,29 +16,29 @@ RET=$?
 
 case ${RET} in
 0)
-	MESSAGE="**🟢 $JOB_NAME:** \`SUCCESS\` - ${BUILD_URL}/console"
+	MESSAGE="**🟢 $JOB_NAME:** \`Passed\` - ${BUILD_URL}/console"
 	EXIT=0
 	;;
 1)
-	MESSAGE="**🔴 $JOB_NAME:** \`FAILED\` - ${BUILD_URL}/console"
+	MESSAGE="**🔴 $JOB_NAME:** \`Failed\` - ${BUILD_URL}/console"
 	EXIT=1
 	;;
 10)
-	MESSAGE="**🟢 $JOB_NAME:** \`SUCCESS - WIP\` - ${BUILD_URL}/console"
+	MESSAGE="**🟢 $JOB_NAME:** \`Passed - WIP\` - ${BUILD_URL}/console"
 	EXIT=0
 	;;
 11)
-	MESSAGE="**🔴 $JOB_NAME:** \`FAILED - WIP\` - ${BUILD_URL}/console"
+	MESSAGE="**🔴 $JOB_NAME:** \`Failed - WIP\` - ${BUILD_URL}/console"
 	EXIT=1
 	;;
 *)
-	MESSAGE="**🔴 $JOB_NAME:** \`FAILED : unknown return value ${RET}\` - ${BUILD_URL}/console"
+	MESSAGE="**🔴 $JOB_NAME:** \`Failed : unknown return value ${RET}\` - ${BUILD_URL}/console"
 	EXIT=1
 	;;
 esac
 
 echo "${MESSAGE}"
-echo "${MESSAGE}" > result_message.txt
+echo "${MESSAGE}" >> result_message.txt
 
 # exit with SUCCESS or FAIL only
 exit ${EXIT}
