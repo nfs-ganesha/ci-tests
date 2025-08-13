@@ -16,9 +16,10 @@ function server_run()
 
   scp ${SSH_OPTIONS} ${2} root@${1}:./$(basename ${2})
 
-  if [ "$JOB_NAME" == "storage-scale" ]; then
+  if [ "$JOB_NAME" == "storage-scale" ] || [ "${JOB_NAME}" == "gpfs_cthon" ] || [ "${JOB_NAME}" == "gpfs_pynfs" ] ; then
     ssh -t ${SSH_OPTIONS} root@${1} "AWS_ACCESS_KEY='${AWS_ACCESS_KEY}' AWS_SECRET_KEY='${AWS_SECRET_KEY}' GERRIT_HOST='${GERRIT_HOST}' GERRIT_PROJECT='${GERRIT_PROJECT}' GERRIT_REFSPEC='${GERRIT_REFSPEC}' CENTOS_VERSION='${CENTOS_VERSION}' CENTOS_ARCH='${CENTOS_ARCH}' ${VOLUME_TYPE}_VOLUME='${EXPORT}' YUM_REPO='${YUM_REPO}' ${INCLUDE_TEMPLATE_URL} ${INCLUDE_ACL_PARAM} bash ./$(basename ${2})"
   else
+    echo "Non-Scale JOB"
     ssh -t ${SSH_OPTIONS} root@${1} "GERRIT_HOST='${GERRIT_HOST}' GERRIT_PROJECT='${GERRIT_PROJECT}' GERRIT_REFSPEC='${GERRIT_REFSPEC}' CENTOS_VERSION='${CENTOS_VERSION}' CENTOS_ARCH='${CENTOS_ARCH}' ${VOLUME_TYPE}_VOLUME='${EXPORT}' YUM_REPO='${YUM_REPO}' ${INCLUDE_TEMPLATE_URL} ${INCLUDE_ACL_PARAM} bash ./$(basename ${2})"
   fi
 
