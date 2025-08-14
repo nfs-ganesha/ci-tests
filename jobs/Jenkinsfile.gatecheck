@@ -1,0 +1,316 @@
+// Common helper to post message to Gerrit
+def postToGerrit(messageFile, notifyFlag, verifiedFlag, postCheckpatchFailure=false, checkpatchJsonFile='') {
+    if (fileExists(messageFile)) {
+        withCredentials([file(credentialsId: 'GERRITHUB_PRIVATE_KEY', variable: 'GERRITHUB_KEY_FILE')]) {
+            if (postCheckpatchFailure)  {
+                // JSON inline comments mode
+                sh """
+                    # Start with a fresh file
+                    : > gerrit_message.txt
+
+                    if grep -q "Failed" ${messageFile}; then
+                        echo -e "\\nFailure Logs: ${env.BUILD_URL}artifact/failures/ \\n" >> gerrit_message.txt
+                    fi
+
+                    cat ${messageFile} >> gerrit_message.txt
+                    echo -e "\\nJenkins Build URL: ${env.BUILD_URL}console\\n" >> gerrit_message.txt
+
+                    msg=\$(cat gerrit_message.txt)
+                    jq --arg msg "\$msg" '.message = \$msg' ${checkpatchJsonFile} > review_payload.json
+
+                    cat review_payload.json
+
+                    ssh -i ${GERRITHUB_KEY_FILE} -l ${GERRIT_USER} -o StrictHostKeyChecking=no -p ${GERRIT_PORT} ${GERRIT_HOST} \\
+                        gerrit review \\
+                        ${notifyFlag} \\
+                        ${verifiedFlag} \\
+                        --json < review_payload.json \\
+                        --project ${GERRIT_PROJECT} \\
+                        ${GERRIT_PATCHSET_REVISION}
+                """
+            } else {
+                sh """
+                    # Start with a fresh file
+                    : > gerrit_message.txt
+
+                    if grep -q "Failed" ${messageFile}; then
+                        echo -e "\\nFailure Logs: ${env.BUILD_URL}artifact/failures/ \\n" >> gerrit_message.txt
+                    fi
+
+                    cat ${messageFile} >> gerrit_message.txt
+                    echo -e "\\nJenkins Build URL: ${env.BUILD_URL}console\\n" >> gerrit_message.txt
+                    
+                    ssh -i ${GERRITHUB_KEY_FILE} -l ${GERRIT_USER} -o StrictHostKeyChecking=no -p ${GERRIT_PORT} ${GERRIT_HOST} \\
+                        gerrit review \\
+                        ${notifyFlag} \\
+                        ${verifiedFlag} \\
+                        --message "'\$(cat gerrit_message.txt)'" \\
+                        --project ${GERRIT_PROJECT} \\
+                        ${GERRIT_PATCHSET_REVISION}
+                """
+            }
+        }
+    } else {
+        echo "File ${messageFile} not found, skipping Gerrit message."
+    }
+}
+
+// This function checks the latest patchset in Gerrit and ensures that the current patchset is the latest one.
+// If a newer patchset exists or if the current patchset is not mergeable, it posts a message to Gerrit and aborts the build.
+// The function constructs a message based on the checks and posts it to Gerrit.
+def preCheckGerritPatchset() {
+    withCredentials([file(credentialsId: 'GERRITHUB_PRIVATE_KEY', variable: 'GERRITHUB_KEY_FILE')]) {
+        // Get the latest patchset number from Gerrit
+        def latestPatchset = sh(
+            script: """
+                ssh -i \$GERRITHUB_KEY_FILE -l \$GERRIT_USER -o StrictHostKeyChecking=no -p \$GERRIT_PORT \$GERRIT_HOST \\
+                gerrit query --format=JSON --current-patch-set change:\$GERRIT_CHANGE_ID | jq -r 'select(.currentPatchSet) | .currentPatchSet.number'
+            """,
+            returnStdout: true
+        ).trim()
+
+        def mergeable = sh(
+            script: """
+                ssh -i \$GERRITHUB_KEY_FILE -l \$GERRIT_USER -o StrictHostKeyChecking=no -p \$GERRIT_PORT \$GERRIT_HOST \\
+                gerrit query --format=JSON "is:mergeable change: \$GERRIT_CHANGE_ID" | jq -r 'select(.type=="stats") | .rowCount'
+            """,
+            returnStdout: true
+        ).trim()
+
+        echo "Latest patchset: ${latestPatchset}, Mergeable: ${mergeable}"
+        echo "Current patchset: ${GERRIT_PATCHSET_NUMBER}"
+
+        // Build a consolidated message
+        def MESSAGE = ""
+
+        if (latestPatchset.toInteger() != GERRIT_PATCHSET_NUMBER.toInteger()) {
+            MESSAGE += "Aborting: A newer patchset (${latestPatchset}) exists"
+        }
+
+        if (mergeable == "0") {
+            MESSAGE += "Cannot merge this patchset — merge conflict exists"
+        }
+
+        if (MESSAGE) {
+            sh """
+                ssh -i ${GERRITHUB_KEY_FILE} -l ${GERRIT_USER} -o StrictHostKeyChecking=no -p ${GERRIT_PORT} ${GERRIT_HOST} \\
+                gerrit review \\
+                    --message "${MESSAGE}" \\
+                    --project ${GERRIT_PROJECT} \\
+                    ${GERRIT_PATCHSET_REVISION}
+            """
+            error(MESSAGE)
+        }
+    }
+}
+
+pipeline {
+    agent {
+        label 'cico-workspace'
+    }
+
+    options {
+        disableConcurrentBuilds()
+        timestamps()
+    }
+
+    environment {
+        PATH = "$HOME/.local/bin:$PATH"
+        PYTHONPATH="ci-tests"
+    }
+
+    stages {
+        stage('Install Dependencies') {
+            steps {
+                sh '''
+                    python3 -m pip install --user --upgrade pip setuptools wheel
+                    python3 -m pip install --user -r ./ci-tests/ci_utils/requirements.txt
+                '''
+            }
+        }
+
+        stage('Pre-Check Patchset - Initial') {
+            steps {
+                script {
+                    preCheckGerritPatchset()
+                }
+            }
+        }
+
+        stage('Run Checkpatch, Clang and FSAL Tests') {
+            steps {
+                sh """
+                    export GIT_CLONE_DEPTH=2
+                    export NODE_COUNT=1
+
+                    echo "[PIPELINE]: Reserving nodes for tests..."
+                    pytest -v -s ci-tests/tests/test_reserve_nodes.py
+
+                    echo "[PIPELINE]: Setting up common test environment..."
+                    pytest -c ci-tests/ci_utils/pytest.ini -v -s -m checkpatch_fsal ci-tests/tests/test_ci_pre_req.py
+
+                    echo "[PIPELINE]: Running tests..."
+                    pytest -v -n 6 --capture=no --junitxml=report-checkpatch-fsal.xml ci-tests/tests/test_checkpatch_fsal.py
+                """
+            }
+            
+            post {
+                always {
+                    echo "Deleting reserved nodes..."
+                    sh 'pytest -v -s ci-tests/tests/test_delete_nodes.py'
+                    
+                    script {
+                        def filesToCat = [
+                            "${WORKSPACE}/failures/checkpatch_logs.json",
+                            "${WORKSPACE}/failures/clang_logs.txt",
+                            "${WORKSPACE}/summary_checkpatch_fsal.txt",
+                            "${WORKSPACE}/summary_status.txt"
+                        ]
+
+                        filesToCat.each { file ->
+                            if (fileExists(file)) {
+                                sh "cat ${file}"
+                            }
+                        }
+
+
+                        def notifyFlag = '--notify NONE'
+                        def verifiedFlag = ''
+                        def postCheckpatchFailure = false
+                        def statusFile = "${WORKSPACE}/summary_status.txt"
+                        def checkpatchJSONFile = "${WORKSPACE}/failures/checkpatch_logs.json"
+
+                        if (fileExists(statusFile)) {
+                            def content = readFile(statusFile).trim()
+                            echo "Summary status: ${content}"
+
+                            if (content.contains('Failed')) {
+                                notifyFlag = '--notify ALL'
+                                echo "Test failed → setting notifyFlag=${notifyFlag}"
+                            }
+                        } else {
+                            echo "summary_status.txt not found, using default flags"
+                        }
+
+                        // Check for Clang-format failures in the JSON file to post to gerrit as inline comments
+                        if (fileExists(checkpatchJSONFile)) {
+                            def checkpatch_content = readFile(checkpatchJSONFile).trim()
+                            echo "Checkpatch JSON content: ${checkpatch_content}"
+                            
+                            if (!checkpatch_content.contains("Checkpatch OK")) {
+                                postCheckpatchFailure = true
+                                echo "Clang-format failure detected → setting postCheckpatchFailure=${postCheckpatchFailure}"
+                            }
+                        }
+ 
+                        postToGerrit("${WORKSPACE}/summary_checkpatch_fsal.txt", notifyFlag, verifiedFlag, postCheckpatchFailure, "${WORKSPACE}/failures/checkpatch_logs.json")
+
+                        def failuresFolder = "${WORKSPACE}/failures"
+                        def failuresFiles = findFiles(glob: 'failures/**')
+
+                        if (fileExists("${WORKSPACE}/failures")) {
+                            archiveArtifacts artifacts: 'failures/**', allowEmptyArchive: true
+                        } else {
+                            echo "No failures folder found, skipping artifact archive."
+                        }
+                    }
+                    // Publish test results
+                    junit 'report-checkpatch-fsal.xml'
+                }
+            }
+        }
+
+        stage('Pre-Check Patchset - Intermediate') {
+            steps {
+                script {
+                    preCheckGerritPatchset()
+                }
+            }
+        }
+
+        stage('Run Pynfs and Cthon Tests') {
+            steps {
+                withCredentials([
+                    string(credentialsId: 'AWS_SECRET_KEY', variable: 'SECRET_KEY'),
+                    string(credentialsId: 'AWS_ACCESS_KEY', variable: 'ACCESS_KEY')
+                ])  {
+                    sh '''
+                        export NODE_COUNT=4
+                        echo "[PIPELINE]: Reserving nodes for tests..."
+                        pytest -v -s ci-tests/tests/test_reserve_nodes.py
+
+                        export NODE_COUNT=1
+                        export BAREMETAL_NODES=True
+                        echo "[PIPELINE]: Reserving nodes for barmetal test..."
+                        pytest -v -s ci-tests/tests/test_reserve_nodes.py
+
+                        echo "[PIPELINE]:Setting up common test environment..."
+                        pytest -v -s -c ci-tests/ci_utils/pytest.ini -m pynfs_cthon ci-tests/tests/test_ci_pre_req.py
+
+
+                        echo "[PIPELINE]:Running tests..."
+                        pytest -v -n 4 --capture=no --junitxml=report-pynfs-cthon.xml ci-tests/tests/test_pynfs_cthon.py
+                    '''
+                }
+            }
+            post {
+                always {
+                    echo "[PIPELINE]: Deleting reserved nodes..."
+                    sh '''
+                    pytest -v -s ci-tests/tests/test_delete_nodes.py
+
+                    export BAREMETAL_NODES=True
+                    pytest -v -s ci-tests/tests/test_delete_nodes.py
+                    '''
+
+                    script {
+                        def filesToCat = [
+                            "${WORKSPACE}/failures/cthon_logs.txt",
+                            "${WORKSPACE}/failures/pynfs_cephs_failures.txt",
+                            "${WORKSPACE}/failures/pynfs_acl_vfs_failures.txt",
+                            "${WORKSPACE}/summary_cthon_pynfs.txt",
+                            "${WORKSPACE}/summary_status.txt"
+                        ]
+
+                        filesToCat.each { file ->
+                            if (fileExists(file)) {
+                                sh "cat ${file}"
+                            }
+                        }
+
+
+                        def notifyFlag = '--notify NONE'
+                        def verifiedFlag = ''
+                        def statusFile = "${WORKSPACE}/summary_status.txt"
+
+                        if (fileExists(statusFile)) {
+                            def content = readFile(statusFile).trim()
+                            echo "Summary status: ${content}"
+
+                            if (content.contains('Failed')) {
+                                notifyFlag = '--notify ALL'
+                                echo "Test failed → setting notifyFlag=${notifyFlag}"
+                            } else {
+                                verifiedFlag = '--verified +1'
+                                echo "Test passed → setting verifiedFlag=${verifiedFlag}"
+                            }
+                        } else {
+                            echo "summary_status.txt not found, using default flags"
+                        }
+
+                        postToGerrit("${WORKSPACE}/summary_cthon_pynfs.txt", notifyFlag, verifiedFlag)
+                        
+                        if (fileExists("${WORKSPACE}/failures")) {
+                            archiveArtifacts artifacts: 'failures/**', allowEmptyArchive: true
+                        } else {
+                            echo "No failures folder found, skipping artifact archive."
+                        }
+                    }
+
+                    // Publish test results
+                    junit 'report-pynfs-cthon.xml'
+                }
+            }
+        }
+    }
+}
