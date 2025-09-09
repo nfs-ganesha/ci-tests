@@ -271,7 +271,12 @@ else
     exit 1
 fi
 # Run Cthon
-./server -a -p /nfs/cephfs -m /mnt/nfs_ceph_v4 $(hostname -I | awk '{print $1}')
+if [ "${CONCURRENT_JOBS}" == "True" ]; then
+  ./server -c 100000 /nfs/cephfs -m /mnt/nfs_ceph_v4 $(hostname -I | awk '{print $1}')
+else
+  ./server -a -p /nfs/cephfs -m /mnt/nfs_ceph_v4 $(hostname -I | awk '{print $1}')
+fi
+
 
 
 # Run CTHON for v4.1
@@ -293,7 +298,10 @@ else
     exit 1
 fi
 # Run Cthon
-./server -a -p /nfs/cephfs -m /mnt/nfs_ceph_v41 $(hostname -I | awk '{print $1}')
-
+if [ "${CONCURRENT_JOBS}" == "True" ]; then
+  ./server -c 100000 /nfs/cephfs -m /mnt/nfs_ceph_v4 $(hostname -I | awk '{print $1}')
+else
+  ./server -a -p /nfs/cephfs -m /mnt/nfs_ceph_v4 $(hostname -I | awk '{print $1}')
+fi
 exit 0
 
