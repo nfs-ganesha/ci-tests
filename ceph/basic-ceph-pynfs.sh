@@ -6,205 +6,68 @@ set -e
 # enable some more output
 set -x
 
-# these variables need to be set
-[ -n "${GERRIT_HOST}" ]
-[ -n "${GERRIT_PROJECT}" ]
-[ -n "${GERRIT_REFSPEC}" ]
+[ -n "${SERVER}" ]
+[ -n "${EXPORT}" ]
+[ -n "${TEST_PARAMETERS}" ]
 
-# only use https for now
-GIT_REPO="https://${GERRIT_HOST}/${GERRIT_PROJECT}"
+# install build and runtime dependencies
+dnf -y install git gcc nfs-utils redhat-rpm-config krb5-devel python3-devel python3-gssapi python3-ply
 
-# enable the Storage SIG Gluster and Ceph repositories
-dnf -y install centos-release-ceph epel-release
+rm -rf /root/pynfs && git clone git://git.linux-nfs.org/projects/cdmackay/pynfs.git
 
-BUILDREQUIRES="git bison cmake dbus-devel flex gcc-c++ krb5-devel libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build xfsprogs-devel lvm2"
+cd /root/pynfs && yes | python3 setup.py build > /tmp/output_tempfile.txt
+echo $?
 
-BUILDREQUIRES_EXTRA="libnsl2-devel libnfsidmap-devel libwbclient-devel userspace-rcu-devel"
+LOG_FILE40="/tmp/pynfs"$(date +%s)".log"
+cd /root/pynfs/nfs4.0
+COMMAND='./testserver.py ${SERVER}:${EXPORT} --verbose --maketree --showomit --rundeps all ganesha ${TEST_PARAMETERS} >> "${LOG_FILE40}"'
+TARGET_USER="testuser"
 
-# basic packages to install
-case "${CENTOS_VERSION}" in
-    7)
-        yum install -y ${BUILDREQUIRES} ${BUILDREQUIRES_EXTRA} python2-devel
-    ;;
-    8s)
-        yum install -y ${BUILDREQUIRES}
-        yum install --enablerepo=powertools -y ${BUILDREQUIRES_EXTRA}
-        yum install -y libcephfs-devel
-    ;;
-    9s)
-       yum install -y ${BUILDREQUIRES}
-       yum install --enablerepo=crb -y ${BUILDREQUIRES_EXTRA}
-       yum install -y libcephfs-devel
-    ;;
-esac
-
-git clone --depth=1 ${GIT_REPO}
-cd $(basename "${GERRIT_PROJECT}")
-git fetch origin ${GERRIT_REFSPEC} && git checkout FETCH_HEAD
-
-# update libntirpc
-git submodule update --recursive --init || git submodule sync
-
-# cleanup old build dir
-[ -d build ] && rm -rf build
-
-mkdir build
-cd build
-
-( cmake ../src -DCMAKE_BUILD_TYPE=Maintainer -DUSE_FSAL_GLUSTER=OFF -DUSE_FSAL_CEPH=ON -DUSE_FSAL_RGW=OFF -DUSE_DBUS=ON -DUSE_ADMIN_TOOLS=ON && make) || touch FAILED
-make install
-
-# dont vote if the subject of the last change includes the word "WIP"
-if ( git log --oneline -1 | grep -q -i -w 'WIP' )
-then
-    echo "Change marked as WIP, not posting result to GerritHub."
-    touch WIP
+# Create user if not exists
+if id "$TARGET_USER" &>/dev/null; then
+    echo "User $TARGET_USER already exists."
+else
+    echo "Creating user $TARGET_USER ..."
+    useradd -m "$TARGET_USER"
 fi
 
-# If failure found during build, return the status and skip proceeding
-# to ceph configuration
+# Run the command as non-root user
+echo "Running command as $TARGET_USER ..."
+sudo -u "$TARGET_USER" bash -c "$COMMAND"
+RETURN_CODE40=$?
 
+echo "pynfs 4.0 test output:"
+cat $LOG_FILE40
 
-# we accept different return values
-# 0 - SUCCESS + VOTE
-# 1 - FAILED + VOTE
-# 10 - SUCCESS + REPORT ONLY (NO VOTE)
-# 11 - FAILED + REPORT ONLY (NO VOTE)
-RET=0
-if [ -e FAILED ]
-then
-	exit ${RET}
+LOG_FILE41="/tmp/pynfs"$(date +%s)".log"
+cd /root/pynfs/nfs4.1
+COMMAND='./testserver.py ${SERVER}:${EXPORT} all ganesha --verbose --maketree --showomit --rundeps >> "${LOG_FILE41}"'
+
+# Run the command as non-root user
+echo "Running command as $TARGET_USER ..."
+sudo -u "$TARGET_USER" bash -c "$COMMAND"
+RETURN_CODE41=$?
+
+echo "pynfs 4.1 test output:"
+cat $LOG_FILE41
+
+if [ $RETURN_CODE40 == 0 ]; then
+    echo "All tests passed in pynfs 4.0 test suite"
 fi
-if [ -e WIP ]
-then
-	RET=$[RET + 10]
-	exit ${RET}
+
+if [ $RETURN_CODE41 == 0 ]; then
+    echo "All tests passed in pynfs 4.1 test suite"
 fi
 
-# Create a virtual disk file (for OSD storage):
-truncate -s 35G /tmp/ceph-disk.img
-losetup -f /tmp/ceph-disk.img  # Attaches as a loop device (e.g., /dev/loop0)
+if [ $RETURN_CODE40 != 0 ] || [ $RETURN_CODE40 != 0 ]; then
+    echo "pynfs 4.0 test suite failures:"
+    echo "--------------------------"
+    cat $LOG_FILE40 | grep FAILURE
 
-pvcreate /dev/loop0
-vgcreate ceph-vg /dev/loop0
-lvcreate -L 10G -n osd1 ceph-vg
-lvcreate -L 10G -n osd2 ceph-vg
-lvcreate -L 10G -n osd3 ceph-vg
-
-# Install and configure ceph cluster
-dnf install -y cephadm
-cephadm add-repo --release squid
-dnf install -y ceph
-cephadm bootstrap --mon-ip $(hostname -I | awk '{print $1}') --single-host-defaults --allow-fqdn-hostname
-ceph auth get client.bootstrap-osd -o /var/lib/ceph/bootstrap-osd/ceph.keyring
-
-# Attach the virtual disks
-ceph-volume lvm create --data /dev/ceph-vg/osd1
-ceph-volume lvm create --data /dev/ceph-vg/osd2
-ceph-volume lvm create --data /dev/ceph-vg/osd3
-
-# Verifying the disks
-lvdisplay
-lsblk
-ceph orch device ls
-
-# Now auto assign these lvms to the osd's
-ceph orch apply osd --all-available-devices
-
-# Wait for the osd's to be added
-
-echo "Waiting for at least one OSD to be ready..."
-TIMEOUT=300
-START_TIME=$(date +%s)
-while true; do
-    # Check if any OSD service exists and has at least one running OSD
-    OSD_STATUS=$(ceph orch ls --service-type osd --format json 2>/dev/null | \
-                 jq -r '.[0].status | select(.running != null) | .running >= 1')
-
-    # Check if the command succeeded and we got "true"
-    if [ "$OSD_STATUS" = "true" ]; then
-        echo "OSD is ready!"
-        break
-    fi
-
-    # Check timeout if set
-    if [ "$TIMEOUT" -gt 0 ]; then
-        CURRENT_TIME=$(date +%s)
-        ELAPSED=$((CURRENT_TIME - START_TIME))
-        if [ "$ELAPSED" -ge "$TIMEOUT" ]; then
-            echo "Timeout reached while waiting for OSD to be ready"
-            exit 1
-        fi
-    fi
-
-    sleep 5
-done
-
-# view the osd's
-ceph osd tree
-# Create a cephfs volume
-ceph fs volume create cephfs
-
-# Create subvolumegroup
-ceph fs subvolumegroup create cephfs ganeshagroup
-
-# Create subvolume
-ceph fs subvolume create cephfs nfs_subvol --group_name ganeshagroup --namespace-isolated
-
-# Get subvolume path
-CEPHFS_NAME="cephfs"
-SUBVOLUME_NAME="nfs_subvol"
-GROUP_NAME="ganeshagroup"
-SUBVOL_PATH=$(ceph fs subvolume getpath "$CEPHFS_NAME" "$SUBVOLUME_NAME" --group_name "$GROUP_NAME" 2>/dev/null)
-
-# Verify path was obtained
-if [ -z "$SUBVOL_PATH" ]; then
-    echo "ERROR: Failed to get subvolume path."
+    echo "pynfs 4.1 test suite failures:"
+    echo "--------------------------"
+    cat $LOG_FILE41 | grep FAILURE
     exit 1
 fi
-echo "Subvolume path: $SUBVOL_PATH"
 
-# create ganesha.conf file
-echo "NFS_CORE_PARAM {
-    Enable_NLM = false;
-    Enable_RQUOTA = false;
-    Protocols = 4;
-}
-
-EXPORT_DEFAULTS {
-    Access_Type = RW;
-}
-EXPORT {
-    Export_ID = 101;
-    Path = \"$SUBVOL_PATH\";
-    Pseudo = \"/nfs/cephfs\";
-    Protocols = 4;
-    Transports = TCP;
-    Access_Type = RW;
-    Squash = None;
-    FSAL {
-        Name = \"CEPH\";
-    }
-}" > /etc/ganesha/ganesha.conf
-
-# View the ganesha conf file
-cat /etc/ganesha/ganesha.conf
-
-mkdir -p /var/run/ganesha
-chmod 755 /var/run/ganesha
-chown root:root /var/run/ganesha
-
-# Creating backend recovery dir for nfs ganesha
-mkdir -p /var/lib/nfs/ganesha
-chmod 755 /var/lib/nfs/ganesha
-chown root:root /var/lib/nfs/ganesha
-
-ganesha.nfsd -f /etc/ganesha/ganesha.conf -L /var/log/ganesha.log
-if pgrep ganesha >/dev/null; then
-        echo "[OK] Service ganesha is running"
-        echo $(pgrep ganesha)
-    else
-        echo "[ERROR] Service ganesha is NOT running" >&2
-        exit 1
-fi
-
+exit 0
