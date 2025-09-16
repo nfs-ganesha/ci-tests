@@ -12,7 +12,15 @@ def postToGerrit(messageFile, notifyFlag, verifiedFlag, postCheckpatchFailure=fa
                         echo -e "\\nFailure Logs: ${env.BUILD_URL}artifact/failures/ \\n" >> gerrit_message.txt
                     fi
 
-                    cat ${messageFile} >> gerrit_message.txt
+                    # Append message but trim to ~15KB max
+                    # head -c 15000 ensures Gerrits 16KB limit wont be exceeded
+                    head -c 15000 ${messageFile} >> gerrit_message.txt
+
+                    # Indicate truncation if trimmed
+                    if [ \$(wc -c <${messageFile}) -gt 15000 ]; then
+                        echo -e "\\n... (output truncated, see failure logs for details)\\n" >> gerrit_message.txt
+                    fi
+
                     echo -e "\\nJenkins Build URL: ${env.BUILD_URL}console\\n" >> gerrit_message.txt
 
                     msg=\$(cat gerrit_message.txt)
@@ -37,7 +45,15 @@ def postToGerrit(messageFile, notifyFlag, verifiedFlag, postCheckpatchFailure=fa
                         echo -e "\\nFailure Logs: ${env.BUILD_URL}artifact/failures/ \\n" >> gerrit_message.txt
                     fi
 
-                    cat ${messageFile} >> gerrit_message.txt
+                    # Append message but trim to ~15KB max
+                    # head -c 15000 ensures Gerrits 16KB limit wont be exceeded
+                    head -c 15000 ${messageFile} >> gerrit_message.txt
+
+                    # Indicate truncation if trimmed
+                    if [ \$(wc -c <${messageFile}) -gt 15000 ]; then
+                        echo -e "\\n... (output truncated, see failure logs for details)\\n" >> gerrit_message.txt
+                    fi
+
                     echo -e "\\nJenkins Build URL: ${env.BUILD_URL}console\\n" >> gerrit_message.txt
                     
                     ssh -i ${GERRITHUB_KEY_FILE} -l ${GERRIT_USER} -o StrictHostKeyChecking=no -p ${GERRIT_PORT} ${GERRIT_HOST} \\
