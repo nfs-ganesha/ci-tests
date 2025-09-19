@@ -16,6 +16,8 @@ GIT_REPO="https://${GERRIT_HOST}/${GERRIT_PROJECT}"
 
 # enable the Storage SIG Gluster and Ceph repositories
 dnf -y install centos-release-ceph epel-release
+dnf install dnf-plugins-core -y
+dnf config-manager --set-enabled crb
 
 BUILDREQUIRES="git bison cmake dbus-devel flex gcc-c++ krb5-devel libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build xfsprogs-devel lvm2"
 
@@ -62,6 +64,7 @@ lvcreate -L 10G -n osd3 ceph-vg
 
 # Install and configure ceph cluster
 dnf install -y cephadm
+dnf install -y lua-devel
 cephadm add-repo --release squid
 dnf install -y ceph
 cephadm bootstrap --mon-ip $(hostname -I | awk '{print $1}') --single-host-defaults --allow-fqdn-hostname
