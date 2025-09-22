@@ -132,14 +132,14 @@ def setup_node_pynfs_cthon(server_node):
     session = RemoteSession(node_ip=server_node, user="root")
     
     logger.info("Installing dependencies on remote node for PyNFS & Cthon: %s", server_node)
-    _, code = run_cmd(session, "dnf -y install centos-release-ceph epel-release")
+    _, code = run_cmd(session, "dnf -y install centos-release-ceph epel-release dnf-plugins-core")
     assert code == 0, f"Failed to install dependencies for PyNFS & Cthon"
 
     duffy_session = DuffySession()
     version = duffy_session.centos_version
 
     build_requires_cthon = "git bison cmake dbus-devel flex gcc-c++ krb5-devel libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build xfsprogs-devel lvm2"
-    build_requires_extra_cthon = "libnsl2-devel libnfsidmap-devel libwbclient-devel userspace-rcu-devel libcephfs-devel"
+    build_requires_extra_cthon = "libnsl2-devel libnfsidmap-devel libwbclient-devel userspace-rcu-devel libcephfs-devel lua-devel"
 
     if version.startswith("9"):
         logger.info("Install packages for CentOS 9")
