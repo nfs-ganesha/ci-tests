@@ -8,7 +8,7 @@ logger = get_logger(__name__)
 # Remote Session Connectivity
 # -----------------------
 class RemoteSession:
-    def __init__(self, node_ip, user="root", key_file=None, port=22, default_dir=None):
+    def __init__(self, node_ip, user="root", key_file=None, port=22, default_dir=None, password=None):
         """
         Manage a persistent SSH session to a remote node.
         Args:
@@ -20,6 +20,7 @@ class RemoteSession:
         """
         self.node_ip = node_ip
         self.user = user
+        self.password = password
         self.key_file = key_file
         self.port = port
         test_name = os.path.basename(default_dir) if default_dir else "default"
@@ -45,6 +46,10 @@ class RemoteSession:
         if self.key_file:
             ssh_cmd.extend(["-i", self.key_file])
 
+        if self.password:
+            # prepend sshpass
+            ssh_cmd = ["sshpass", "-p", self.password] + ssh_cmd
+
         ssh_cmd.append(f"{self.user}@{self.node_ip}")
 
         logger.info("Opening persistent SSH connection: %s", " ".join(ssh_cmd))
@@ -67,6 +72,11 @@ class RemoteSession:
                 f"{self.user}@{self.node_ip}",
                 full_cmd,
             ]
+
+            # if password is provided, prepend sshpass
+            if self.password:
+                ssh_cmd = ["sshpass", "-p", self.password] + ssh_cmd
+
             logger.info(f"[INFO] Complete SSH command: {' '.join(ssh_cmd)}")
             logger.info("Running on %s: %s", self.node_ip, full_cmd)
             proc = subprocess.Popen(
