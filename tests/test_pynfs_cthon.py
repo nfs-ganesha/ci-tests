@@ -425,7 +425,12 @@ local-hostname: {vm_name}
         # GPFS Setup
         # -----------------------
         logger.info("Spectrum Scale setup inside VM: %s", vm_ip)
-        gpfs_installer = SpectrumScaleInstaller(vm_session, username="root", vm_ip=vm_ip, path_version_to_use=f"{default_vm_dir}/{verion_to_use}", workspace=default_vm_dir, ssh_key=ssh_key)
+        nodes = {"admin": [vm_ip], "servers": [vm_ip], "clients": [vm_ip]}
+        node_sessions_info = {vm_ip: vm_session}
+        logger.debug("Node sessions info: %s", node_sessions_info)
+        logger.debug("Nodes info: %s", nodes)
+        gpfs_installer = SpectrumScaleInstaller(node_sessions_info, username="root", vm_ip=vm_ip, path_version_to_use=f"{default_vm_dir}/{verion_to_use}", workspace=default_vm_dir, ssh_key=ssh_key, nodes=nodes)
+        logger.debug("GPFS Installer info: %s", gpfs_installer)
         gpfs_installer.run()
 
         # -----------------------
@@ -447,7 +452,7 @@ local-hostname: {vm_name}
         # -----------------------
         logger.info("Running PyNFS tests on barmetal node: %s", server_node)
         pynfs = PyNFSManager(session=server_session, server_ip=vm_ip)
-        fail_found, failure_summary, code = pynfs.run_all_tests(export="/ibm/scale_volume")
+        fail_found, failure_summary, code = pynfs.run_all_tests(export="/ibm/fs1")
         
         logger.info("Value %s: Type of rc: %s", fail_found, type(fail_found))
         logger.info("Value %s: Type of code: %s", code, type(code))

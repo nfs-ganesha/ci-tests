@@ -8,13 +8,14 @@ logger = get_logger(__name__)
 
 
 class GPFSGaneshaManager:
-    def __init__(self, session):
+    def __init__(self, session, export="/ibm/fs1", system_type="centos"):
         """Handles GPFS and NFS-Ganesha installation and setup on a VM.
         Args:
             session (RemoteSession): Remote session to the VM.
         """
         self.session = session
-        self.export = "/ibm/scale_volume"
+        self.export = export
+        self.system_type = system_type
 
     # -------------------------------
     # Helpers
@@ -73,7 +74,23 @@ class GPFSGaneshaManager:
         BASE_PACKAGES="git bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel rpm-build redhat-rpm-config gdb"
         BUILDREQUIRES_EXTRA="libnsl2-devel libnfsidmap-devel libwbclient-devel userspace-rcu-devel libcephfs-devel"
     
-        run_cmd(self.session, f"dnf install --enablerepo=crb -y {BASE_PACKAGES} {BUILDREQUIRES_EXTRA} libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build libgfapi-devel xfsprogs-devel selinux-policy-devel sqlite --skip-broken")
+        if self.system_type == "centos":
+            repo_name = "crb"
+        elif self.system_type == "baremetal" or self.system_type == "openstack":
+            # Detect RHEL version and arch
+            release_out, _ = run_cmd(self.session, "cat /etc/redhat-release")
+            arch, _ = run_cmd(self.session, "arch")
+
+            match = re.search(r"release\s+(\d+)", release_out)
+            if not match:
+                raise RuntimeError("Unable to detect RHEL version")
+            rhel_major = match.group(1)
+
+            # Build repo name dynamically
+            repo_name = f"codeready-builder-for-rhel-{rhel_major}-{arch.strip()}-rpms"
+            run_cmd(self.session, f"subscription-manager repos --enable={repo_name}")
+
+        run_cmd(self.session, f"dnf install --enablerepo={repo_name} -y {BASE_PACKAGES} {BUILDREQUIRES_EXTRA} libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build libgfapi-devel xfsprogs-devel selinux-policy-devel sqlite --skip-broken")
         cmake_binary, _ = run_cmd(self.session, "which cmake")
         build_dir = f"{test_workspace}/nfs-ganesha/build"
         src_dir = f"{test_workspace}/nfs-ganesha"
@@ -127,7 +144,7 @@ class GPFSGaneshaManager:
             logger.info("NTIRPC Version: %s", ntirpc_version)
             logger.info("NTIRPC RPM: %s", ntirpc_rpm)
 
-        run_cmd(self.session, f"bash -c 'cd {build_dir} && rpm -e gpfs.nfs-ganesha gpfs.nfs-ganesha-gpfs --nodeps'")
+        run_cmd(self.session, f"bash -c 'cd {build_dir} && rpm -e gpfs.nfs-ganesha gpfs.nfs-ganesha-gpfs --nodeps'", check=False)
         out, _ = run_cmd(self.session, f"ls {build_dir}/x86_64/*.rpm")
         rpm_files_x86 = out.strip().splitlines()
 
@@ -154,7 +171,11 @@ class GPFSGaneshaManager:
         run_cmd(self.session, "cat /etc/ganesha/ganesha.conf")
 
         run_cmd(self.session, "systemctl stop nfs-ganesha")
-        run_cmd(self.session, "sed -i.bak -e \"'s/^StateDirectory/#&/'\" /usr/lib/systemd/system/nfs-ganesha.service")
+        if self.system_type == "centos":
+            # Enclosed with  double quotes to handle special chars in bash since for centos this runs on vm from barmetal
+            run_cmd(self.session, "sed -i.bak -e \"'s/^StateDirectory/#&/'\" /usr/lib/systemd/system/nfs-ganesha.service")
+        else:
+            run_cmd(self.session, "sed -i.bak -e 's/^StateDirectory/#&/' /usr/lib/systemd/system/nfs-ganesha.service")
         run_cmd(self.session, "systemctl daemon-reload")
 
         logger.info("NFS-Ganesha build, install, and minimal config complete.")
@@ -179,11 +200,17 @@ class GPFSGaneshaManager:
     def export_nfs_volume(self):
         logger.info("[STEP]: Exporting NFS volume...")
         run_cmd(self.session, "/usr/lpp/mmfs/bin/mmuserauth service create --data-access-method file --type userdefined")
-        run_cmd(
-            self.session,
-            f"/usr/lpp/mmfs/bin/mmnfs export add {self.export} -c \"'*(Access_Type=RW,Squash=none)'\"",
-        )
-
+        if self.system_type == "centos":
+            # Enclosed with  double quotes to handle special chars in bash since for centos this runs on vm from barmetal
+            run_cmd(
+                self.session,
+                f"/usr/lpp/mmfs/bin/mmnfs export add {self.export} -c \"'*(Access_Type=RW,Squash=none)'\"",
+            )
+        else:
+            run_cmd(
+                self.session,
+                f"/usr/lpp/mmfs/bin/mmnfs export add {self.export} -c '*(Access_Type=RW,Squash=none)'",
+            )
         run_cmd(self.session, "/usr/lpp/mmfs/bin/mmnfs export list")
 
         logger.info("Restarting NFS-Ganesha to apply changes for Minor versions")
