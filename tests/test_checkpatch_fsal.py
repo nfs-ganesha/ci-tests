@@ -98,17 +98,40 @@ def test_checkpatch(create_session, server_node):
     logger.info("Checkpatch command: %s", cmd)
     out, _ = run_cmd(remote_session, cmd, check=False)
 
-    code = 0 if "Checkpatch OK" in out else 1
+    # Exclusions for files that don't impact code quality
+    exclusions = ["/COMMIT_MSG"]
+
+    code = 1 
+    # Condition 1: "Checkpatch OK" found
+    if "Checkpatch OK" in out:
+        code = 0
+    else:
+        try:
+            data = json.loads(out)
+        except json.JSONDecodeError:
+            logger.error("Failed to parse checkpatch output as JSON")
+            data = None
+
+        if data and "comments" in data:
+            comments = data["comments"]
+
+            # Remove all keys present in exclusions
+            for exc in exclusions:
+                comments.pop(exc, None)
+
+            logger.info("Comments after exclusions: %s", comments)
+            # Condition 2: If comments is empty after exclusions → success
+            if not comments:
+                code = 0
 
     if code != 0:
         checkpatch_log_file = os.path.join(FAILURE_FILE, "checkpatch_logs.json")
         with open(checkpatch_log_file, "w", encoding="utf-8") as f:
-            f.write(out)
+            f.write(json.dumps(data, indent=2))
         logger.info("Checkpatch logs written to %s", checkpatch_log_file)
 
         # Try to parse JSON output for cleaner logging to gerrit
         try:
-            data = json.loads(out)
             formatted_out = []
             for file, issues in data.get("comments", {}).items():
                 for issue in issues:
@@ -128,28 +151,65 @@ def test_checkpatch(create_session, server_node):
 # TEST 2: Clang format validation
 # Required Node: 1
 # -----------------------
-def test_clang_format(create_session):
+def test_clang_format(create_session, server_node):
     logger.info("[TEST] Running Clang format test")
     remote_session, test_workspace = create_session 
     
     logger.info("TEST WORKSPACE: %s", test_workspace)
+    files_to_copy = [
+        f"{WORKSPACE}/ci-tests/build_scripts/clang/clangformat_to_gerrit_json.py"
+    ]
+    scp_copy(server_node, files_to_copy, remote_dir=test_workspace)
 
-    out, code = run_cmd(
+    out, _ = run_cmd(
         remote_session,
         f"cd {test_workspace}/nfs-ganesha && "
         "git clang-format -v "
         "--diff "
         "--style file:src/.clang-format "
         "--extensions c,cc,cpp,h,hpp "
-        "HEAD~1", check=False
+        "HEAD~1 "
+        f"| python3 {test_workspace}/clangformat_to_gerrit_json.py", check=False
     )
+    
+    code = 0 if "clang-format OK" in out else 1
 
-    gerrit_custom_message(code, "Clang-format Check", out)
-    if code:
-        clang_log_file = os.path.join(FAILURE_FILE, "clang_logs.txt")
+    if code != 0:
+        clang_log_file = os.path.join(FAILURE_FILE, "clang_logs.json")
         with open(clang_log_file, "w", encoding="utf-8") as f:
             f.write(out)
-        logger.info("Clang format logs written to %s", clang_log_file)
+        logger.info("Clang logs written to %s", clang_log_file)
+
+
+        clang_dump = os.path.join(FAILURE_FILE, "clang_logs.txt")
+        dump_out, _ = run_cmd(
+            remote_session,
+            f"cd {test_workspace}/nfs-ganesha && "
+            "git clang-format -v "
+            "--diff "
+            "--style file:src/.clang-format "
+            "--extensions c,cc,cpp,h,hpp "
+            "HEAD~1", check=False
+        )
+        with open(clang_dump, "w", encoding="utf-8") as f:
+            f.write(dump_out)
+        logger.info("Clang format logs written to %s", clang_dump)
+
+        # Try to parse JSON output for cleaner logging to gerrit
+        try:
+            data = json.loads(out)
+            formatted_out = []
+            for file, issues in data.get("comments", {}).items():
+                for issue in issues:
+                    # Flatten message to avoid newlines/special chars
+                    msg = issue["message"].splitlines()[0]
+                    formatted_out.append(f"{file}:{issue['line']}: {msg}")
+            formatted_out.append(data.get("message", ""))
+            out = "\n".join(formatted_out)
+        except Exception:
+            logger.warning("Failed to parse clang output as JSON, using raw output")
+
+    gerrit_custom_message(code, "Clang-format Check", out)
 
     assert code == 0, f"Clang format check failed"
 
