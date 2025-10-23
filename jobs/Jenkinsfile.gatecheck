@@ -1,9 +1,9 @@
 // Common helper to post message to Gerrit
-def postToGerrit(messageFile, notifyFlag, verifiedFlag, postCheckpatchFailure=false, checkpatchJsonFile='') {
+def postToGerrit(messageFile, notifyFlag, verifiedFlag, postCheckpatchFailure=false, checkpatchJsonFile='', postClangFailure=false, clangJsonFile='') {
     if (fileExists(messageFile)) {
         withCredentials([file(credentialsId: 'GERRITHUB_PRIVATE_KEY', variable: 'GERRITHUB_KEY_FILE')]) {
-            if (postCheckpatchFailure)  {
-                // JSON inline comments mode
+            if (fileExists(messageFile)) {
+                // Start with a fresh message file
                 sh """
                     # Start with a fresh file
                     : > gerrit_message.txt
@@ -22,40 +22,60 @@ def postToGerrit(messageFile, notifyFlag, verifiedFlag, postCheckpatchFailure=fa
                     fi
 
                     echo -e "\\nJenkins Build URL: ${env.BUILD_URL}console\\n" >> gerrit_message.txt
-
+                """                
+            }
+            
+            if (postCheckpatchFailure || postClangFailure)  {
+                // JSON inline comments mode
+                sh """
                     msg=\$(cat gerrit_message.txt)
-                    jq --arg msg "\$msg" '.message = \$msg' ${checkpatchJsonFile} > review_payload.json
+                    
+                    if ${postCheckpatchFailure.toString()} && ! ${postClangFailure.toString()}; then
+                        jq --arg msg "\$msg" '.message = \$msg' ${checkpatchJsonFile} > review_payload.json
+                    elif ${postClangFailure.toString()} && ! ${postCheckpatchFailure.toString()}; then
+                        jq --arg msg "\$msg" '.message = \$msg' ${clangJsonFile} > review_payload.json
+                    else
+                        # Merge both JSONs if both are enabled
+                        jq -s --arg msg "\$msg" '
+                        # Start with an empty base object
+                        reduce .[] as \$item (
+                            {comments:{}};
+
+                            # Only process if "comments" exists and is an object
+                            if (\$item | type == "object") and (\$item.comments? | type == "object") then
+                            reduce (\$item.comments | to_entries[]) as \$entry (
+                                .;
+                                .comments[\$entry.key] = ((.comments[\$entry.key] // []) + (\$entry.value // []))
+                            )
+                            else
+                            .
+                            end
+                        )
+                        | .message = \$msg
+                        ' ${checkpatchJsonFile} ${clangJsonFile} > review_payload.json
+                    fi
 
                     cat review_payload.json
+
+                    # Capture the count of comments
+                    count=\$(jq '[.comments[] | length] | add' review_payload.json)
+                    echo "Comments count: \$count"
+
+                    # Set verified flag to -1 if count > 10
+                    if [ "\$count" -gt 10 ]; then
+                        jq '.labels.Verified = -1' review_payload.json > tmp.json && mv tmp.json review_payload.json
+                        cat review_payload.json
+                    fi
 
                     ssh -i ${GERRITHUB_KEY_FILE} -l ${GERRIT_USER} -o StrictHostKeyChecking=no -p ${GERRIT_PORT} ${GERRIT_HOST} \\
                         gerrit review \\
                         ${notifyFlag} \\
-                        ${verifiedFlag} \\
                         --json < review_payload.json \\
                         --project ${GERRIT_PROJECT} \\
                         ${GERRIT_PATCHSET_REVISION}
                 """
             } else {
                 sh """
-                    # Start with a fresh file
-                    : > gerrit_message.txt
-
-                    if grep -q "Failed" ${messageFile}; then
-                        echo -e "\\nFailure Logs: ${env.BUILD_URL}artifact/failures/ \\n" >> gerrit_message.txt
-                    fi
-
-                    # Append message but trim to ~15KB max
-                    # head -c 15000 ensures Gerrits 16KB limit wont be exceeded
-                    head -c 15000 ${messageFile} >> gerrit_message.txt
-
-                    # Indicate truncation if trimmed
-                    if [ \$(wc -c <${messageFile}) -gt 15000 ]; then
-                        echo -e "\\n... (output truncated, see failure logs for details)\\n" >> gerrit_message.txt
-                    fi
-
-                    echo -e "\\nJenkins Build URL: ${env.BUILD_URL}console\\n" >> gerrit_message.txt
-                    
                     ssh -i ${GERRITHUB_KEY_FILE} -l ${GERRIT_USER} -o StrictHostKeyChecking=no -p ${GERRIT_PORT} ${GERRIT_HOST} \\
                         gerrit review \\
                         ${notifyFlag} \\
@@ -178,7 +198,7 @@ pipeline {
                     script {
                         def filesToCat = [
                             "${WORKSPACE}/failures/checkpatch_logs.json",
-                            "${WORKSPACE}/failures/clang_logs.txt",
+                            "${WORKSPACE}/failures/clang_logs.json",
                             "${WORKSPACE}/summary_checkpatch_fsal.txt",
                             "${WORKSPACE}/summary_status.txt"
                         ]
@@ -193,8 +213,10 @@ pipeline {
                         def notifyFlag = '--notify NONE'
                         def verifiedFlag = ''
                         def postCheckpatchFailure = false
+                        def postClangFailure = false
                         def statusFile = "${WORKSPACE}/summary_status.txt"
                         def checkpatchJSONFile = "${WORKSPACE}/failures/checkpatch_logs.json"
+                        def clangJSONFile = "${WORKSPACE}/failures/clang_logs.json"
 
                         if (fileExists(statusFile)) {
                             def content = readFile(statusFile).trim()
@@ -208,18 +230,28 @@ pipeline {
                             echo "summary_status.txt not found, using default flags"
                         }
 
-                        // Check for Clang-format failures in the JSON file to post to gerrit as inline comments
+                        // Check for Clang-format & Checkpatch failures in the JSON file to post to gerrit as inline comments
                         if (fileExists(checkpatchJSONFile)) {
                             def checkpatch_content = readFile(checkpatchJSONFile).trim()
                             echo "Checkpatch JSON content: ${checkpatch_content}"
                             
                             if (!checkpatch_content.contains("Checkpatch OK")) {
                                 postCheckpatchFailure = true
-                                echo "Clang-format failure detected → setting postCheckpatchFailure=${postCheckpatchFailure}"
+                                echo "Checkpatch failure detected → setting postCheckpatchFailure=${postCheckpatchFailure}"
                             }
                         }
  
-                        postToGerrit("${WORKSPACE}/summary_checkpatch_fsal.txt", notifyFlag, verifiedFlag, postCheckpatchFailure, "${WORKSPACE}/failures/checkpatch_logs.json")
+                         if (fileExists(clangJSONFile)) {
+                            def clang_content = readFile(clangJSONFile).trim()
+                            echo "Clang JSON content: ${clang_content}"
+                            
+                            if (!clang_content.contains("clang-format OK")) {
+                                postClangFailure = true
+                                echo "Clang-format failure detected → setting postClangFailure=${postClangFailure}"
+                            }
+                        }
+
+                        postToGerrit("${WORKSPACE}/summary_checkpatch_fsal.txt", notifyFlag, verifiedFlag, postCheckpatchFailure, "${WORKSPACE}/failures/checkpatch_logs.json", postClangFailure, "${WORKSPACE}/failures/clang_logs.json")
 
                         def failuresFolder = "${WORKSPACE}/failures"
                         def failuresFiles = findFiles(glob: 'failures/**')
