@@ -33,6 +33,10 @@ class GaneshaManager:
     Protocols = 4;
 }}
 
+NFSv4 {{
+    Enforce_UTF8_Validation = true;
+}}
+
 EXPORT_DEFAULTS {{
     Access_Type = RW;
 }}

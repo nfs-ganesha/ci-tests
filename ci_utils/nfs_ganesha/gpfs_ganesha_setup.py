@@ -165,9 +165,6 @@ class GPFSGaneshaManager:
         run_cmd(self.session, "ulimit -c unlimited")
         run_cmd(self.session, "ulimit -a")
 
-        ganesha_conf = "NFSv4 { Graceless = true; }"
-        cmd = f"bash -c 'cat > /etc/ganesha/ganesha.conf <<EOF\n{ganesha_conf}\nEOF'"
-        run_cmd(self.session, cmd)
         run_cmd(self.session, "cat /etc/ganesha/ganesha.conf")
 
         run_cmd(self.session, "systemctl stop nfs-ganesha")
@@ -188,6 +185,7 @@ class GPFSGaneshaManager:
         out, rc = run_cmd(self.session, "systemctl enable --now nfs-ganesha.service", check=False)
         out, rc = run_cmd(self.session, "systemctl start nfs-ganesha.service", check=False)
         run_cmd(self.session, "systemctl status nfs-ganesha.service", check=False)
+        run_cmd(self.session, "cat /etc/ganesha/ganesha.conf")
         if rc != 0:
             logger.error("Failed to start nfs-ganesha: %s", out)
             run_cmd(self.session, "journalctl -xe", check=False)

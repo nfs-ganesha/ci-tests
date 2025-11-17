@@ -131,6 +131,7 @@ def run_cmd(session, cmd, check=True, timeout=3600, source_bashrc=False):
     out, err, code = session.run(cmd_to_run, timeout)
     if code != 0 and check:
         logger.error(f"Command failed: {cmd_to_run}\n{err}")
+        logger.error(f"Failure Output: {out}")
         raise RuntimeError(err)
     logger.info(f"[REMOTE] Command output for {cmd_to_run} with return code {code}:\n {out.strip()}")
     return out.strip(), code

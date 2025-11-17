@@ -206,7 +206,7 @@ def test_pynfs_cephfs(create_session):
         # Client Execution
         # -----------------------
         logger.info("Running PyNFS tests on client node: %s", client_node)
-        pynfs = PyNFSManager(session=client_session, server_ip=server_node)
+        pynfs = PyNFSManager(session=client_session, server_ip=server_node, backend_type="ceph")
         fail_found, failure_summary, code = pynfs.run_all_tests(export="/nfs/cephfs")
         
         logger.info("Value %s: Type of rc: %s", fail_found, type(fail_found))
@@ -222,6 +222,8 @@ def test_pynfs_cephfs(create_session):
             failure_msg = f"\n**🟢 PyNFS-CephFS:** `Passed`"
             with open(SUMMARY_FILE, "a", encoding="utf-8") as f:
                 f.write(failure_msg)
+            with open(SUMMARY_STATUS, "a", encoding="utf-8") as f:
+                f.write("\nPassed")
         
         assert fail_found == False and code == 0, "PyNFS CephFS tests failed"
 
@@ -229,6 +231,8 @@ def test_pynfs_cephfs(create_session):
         failure_msg = f"\n**🔴 PyNFS-CephFS:** `Failed`"
         with open(SUMMARY_FILE, "a", encoding="utf-8") as f:
             f.write(failure_msg)
+        with open(SUMMARY_STATUS, "a", encoding="utf-8") as f:
+            f.write("\nFailed")
 
 # -------------------------------------------------------------------
 # Test 3: PyNFS-ACL with VFS
@@ -261,7 +265,7 @@ def test_pynfs_acl_vfs(create_session):
         # -----------------------
         logger.info("Running PyNFS-ACL tests on client node for VFS: %s", client_node)
 
-        pynfs = PyNFSManager(session=client_session, server_ip=server_node)
+        pynfs = PyNFSManager(session=client_session, server_ip=server_node, backend_type="acl_vfs")
         fail_found, failure_summary, code = pynfs.run_all_tests(export="/pynfs")
         
         if fail_found:
@@ -274,13 +278,16 @@ def test_pynfs_acl_vfs(create_session):
             failure_msg = f"\n**🟢 PyNFS-ACL-VFS:** `Passed`"
             with open(SUMMARY_FILE, "a", encoding="utf-8") as f:
                 f.write(failure_msg)
+            with open(SUMMARY_STATUS, "a", encoding="utf-8") as f:
+                f.write("\nPassed")
         
-        # assert return_code == 0, f"PyNFS-ACL CephFS tests failed"
         assert fail_found == False and code == 0, "PyNFS CephFS tests failed"
     except Exception as e:
         failure_msg = f"\n**🔴 PyNFS-ACL-VFS:** `Failed`"
         with open(SUMMARY_FILE, "a", encoding="utf-8") as f:
             f.write(failure_msg)
+        with open(SUMMARY_STATUS, "a", encoding="utf-8") as f:
+            f.write("\nFailed")
 
 # -----------------------
 # Test 4: PyNFS with GPFS
@@ -325,8 +332,8 @@ def test_pynfs_gpfs(create_session):
             session=server_session,
             workspace=server_workspace,
             vm_name=vm_name,
-            image_url="https://cloud.centos.org/centos/9-stream/x86_64/images/CentOS-Stream-GenericCloud-9-20241028.0.x86_64.qcow2",
-            image_name="CentOS-Stream-GenericCloud-9-20241028.0.x86_64.qcow2",
+            image_url="https://cloud.centos.org/centos/9-stream/x86_64/images/CentOS-Stream-GenericCloud-x86_64-9-20251111.0.x86_64.qcow2",
+            image_name="CentOS-Stream-GenericCloud-x86_64-9-20251111.0.x86_64.qcow2",
             vm_cpu="2",
             vm_ram="8192",
             vm_disk="30G",
@@ -420,6 +427,13 @@ local-hostname: {vm_name}
         run_cmd(vm_session, f"cp /tmp/{verion_to_use} {default_vm_dir}/")
         run_cmd(vm_session, f"ls -l {default_vm_dir}")
 
+        # -----------------------
+        # Update Python on VM
+        # -----------------------
+        logger.info("Updating Python on VM")
+        run_cmd(vm_session, "dnf install python3.11 -y")
+        bin_path, _ = run_cmd(vm_session, "which python3.11")
+        run_cmd(vm_session, f"export ANSIBLE_PYTHON_INTERPRETER={bin_path}")
         
         # -----------------------
         # GPFS Setup
@@ -451,7 +465,7 @@ local-hostname: {vm_name}
         # Client Execution
         # -----------------------
         logger.info("Running PyNFS tests on barmetal node: %s", server_node)
-        pynfs = PyNFSManager(session=server_session, server_ip=vm_ip)
+        pynfs = PyNFSManager(session=server_session, server_ip=vm_ip, backend_type="gpfs")
         fail_found, failure_summary, code = pynfs.run_all_tests(export="/ibm/fs1")
         
         logger.info("Value %s: Type of rc: %s", fail_found, type(fail_found))
