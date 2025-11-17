@@ -94,7 +94,12 @@ class VFSGaneshaManager:
 
         run_cmd(self.session, f"cd {build_dir} && dnf -y install {{x86_64,noarch}}/*.rpm")
 
-        ganesha_conf = "NFSv4 { Graceless = true; }"
+        ganesha_conf = """
+NFSv4 {
+    Graceless = true;
+    Enforce_UTF8_Validation = true;
+}
+"""
         cmd = f"bash -c 'cat > /etc/ganesha/ganesha.conf <<EOF\n{ganesha_conf}\nEOF'"
         run_cmd(self.session, cmd)
         run_cmd(self.session, "cat /etc/ganesha/ganesha.conf")

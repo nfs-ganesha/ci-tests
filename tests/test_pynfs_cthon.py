@@ -1,5 +1,6 @@
 import os
 import re
+from time import sleep
 from ci_utils.ceph.ceph_setup import CephGaneshaSetup
 from ci_utils.common.remote_session import RemoteSession, RemoteSessionThroughJump
 from ci_utils.cthon.cthon_setup import CthonManager
@@ -464,6 +465,8 @@ local-hostname: {vm_name}
         # -----------------------
         # Client Execution
         # -----------------------
+        logger.info("Waiting for 90 seconds before starting PyNFS tests as the NFS grace period is 90 seconds")
+        sleep(90)
         logger.info("Running PyNFS tests on barmetal node: %s", server_node)
         pynfs = PyNFSManager(session=server_session, server_ip=vm_ip, backend_type="gpfs")
         fail_found, failure_summary, code = pynfs.run_all_tests(export="/ibm/fs1")
@@ -481,6 +484,8 @@ local-hostname: {vm_name}
             failure_msg = f"\n**🟢 PyNFS-GPFS:** `Passed`"
             with open(SUMMARY_FILE, "a", encoding="utf-8") as f:
                 f.write(failure_msg)
+            with open(SUMMARY_STATUS, "a", encoding="utf-8") as f:
+                f.write("\nPassed")
         
         assert fail_found == False and code == 0, "PyNFS GPFS tests failed"
     
@@ -488,3 +493,5 @@ local-hostname: {vm_name}
         failure_msg = f"\n**🔴 PyNFS-GPFS:** `Failed`"
         with open(SUMMARY_FILE, "a", encoding="utf-8") as f:
             f.write(failure_msg)
+        with open(SUMMARY_STATUS, "a", encoding="utf-8") as f:
+            f.write("\nFailed")
