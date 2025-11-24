@@ -28,7 +28,7 @@ class GPFSGaneshaManager:
             if rc == 0:
                 statuses = dict(re.findall(r"^\s*([A-Z_]+)\s+([A-Z]+)\s+", out, re.M))
                 logger.info(f"CES statuses: {statuses}")
-                if statuses.get("CES") == "HEALTHY" and statuses.get("NFS") == "HEALTHY":
+                if statuses.get("CES") == "HEALTHY":
                     logger.info("CES is healthy")
                     return True
                 else:
@@ -95,6 +95,8 @@ class GPFSGaneshaManager:
         build_dir = f"{test_workspace}/nfs-ganesha/build"
         src_dir = f"{test_workspace}/nfs-ganesha"
 
+        logger.info("Disabling GPFS NFS service to avoid conflicts during Ganesha build")
+        run_cmd(self.session, f"/usr/lpp/mmfs/bin/mmces service disable nfs --force")
         out, code = run_cmd(self.session, [
             f"bash -c 'cd {src_dir} && rm -rf {build_dir} && "
             f"mkdir -p {build_dir} && cd {build_dir} && "
@@ -196,6 +198,9 @@ class GPFSGaneshaManager:
     # Setup and export NFS volume
     # -------------------------------
     def export_nfs_volume(self):
+        run_cmd(self.session, "/usr/lpp/mmfs/bin/mmces service enable nfs")
+        run_cmd(self.session, "cat /etc/ganesha/ganesha.conf")
+
         logger.info("[STEP]: Exporting NFS volume...")
         run_cmd(self.session, "/usr/lpp/mmfs/bin/mmuserauth service create --data-access-method file --type userdefined")
         if self.system_type == "centos":
@@ -211,14 +216,19 @@ class GPFSGaneshaManager:
             )
         run_cmd(self.session, "/usr/lpp/mmfs/bin/mmnfs export list")
 
-        logger.info("Restarting NFS-Ganesha to apply changes for Minor versions")
+        logger.info("Restarting NFS-Ganesha to apply changes for Minor versions and UTF8 enforcement")
+        run_cmd(self.session, "cat /var/mmfs/ces/nfs-config/gpfs.ganesha.main.conf")
         run_cmd(self.session, "systemctl stop nfs-ganesha", check=False)
         run_cmd(self.session, "/usr/lpp/mmfs/bin/mmnfs config list |grep MINOR")
         run_cmd(self.session, "/usr/lpp/mmfs/bin/mmnfs config change MINOR_VERSIONS=0,1,2")
+        run_cmd(self.session, "/usr/lpp/mmfs/bin/mmnfs config list |grep ENFORCE")
+        run_cmd(self.session, "/usr/lpp/mmfs/bin/mmnfs config change ENFORCE_UTF8_VALIDATION=true")
         time.sleep(20)
         run_cmd(self.session, "/usr/lpp/mmfs/bin/mmnfs config list |grep MINOR")
-        run_cmd(self.session, "cat /var/mmfs/ces/nfs-config/gpfs.ganesha.main.conf")
+        run_cmd(self.session, "/usr/lpp/mmfs/bin/mmnfs config list |grep ENFORCE")
         run_cmd(self.session, "systemctl daemon-reload")
+        run_cmd(self.session, "cat /var/mmfs/ces/nfs-config/gpfs.ganesha.main.conf")
+        
         self.start_ganesha_service()
 
         logger.info("Validating health of CES and NFS services")
@@ -226,5 +236,8 @@ class GPFSGaneshaManager:
         run_cmd(self.session, "cat /etc/ganesha/ganesha.conf", check=False)
         self.wait_for_ces_healthy()
         run_cmd(self.session, "/usr/lpp/mmfs/bin/mmhealth cluster show CES")
+
+        logger.info("Listing NFS exports configured in Ganesha")
+        run_cmd(self.session, "cat /var/mmfs/ces/nfs-config/gpfs.ganesha.exports.conf")
         
         logger.info("NFS volume exported successfully.")

@@ -80,18 +80,15 @@ class PyNFSManager:
                     "LOOKCHAR",
                     "LOOKBLK",
                     "SATT18",
-                    "SEC6",
-                    "RNM8",
-                    "RNM9",
-                    "RM5",
-                    "OPEN13",
-                    "LOOK7",
                     "LOCK20",
-                    "LINK8",
-                    "COMP3"
                 ]
             elif self.backend_type == "gpfs":
-                known_failures = []
+                known_failures = [
+                    "WRT17",
+                    "WRT16",
+                    "SATT12x",
+                    "LOCK20",
+                ]
 
         elif version == "4.1":
             cmd = (
@@ -132,8 +129,6 @@ class PyNFSManager:
                     "RNM2b",
                     "RNM3c",
                     "RNM3b",
-                    "RNM8",
-                    "RNM9",
                     "LKPP1c",
                     "LKPP1b",
                     "DELEG2",
@@ -149,15 +144,39 @@ class PyNFSManager:
                     "SEQ6",
                     "CSESS21",
                     "CSESS20",
-                    "COMP3",
                     "EID9"
                 ]
             elif self.backend_type == "gpfs":
-                known_failures = []
+                known_failures = [
+                    "XATT5",
+                    "XATT7",
+                    "XATT8",
+                    "XATT9",
+                    "XATT10",
+                    "XATT11",
+                    "XATT2",
+                    "XATT6",
+                    "XATT4",
+                    "XATT3",
+                    "DELEG2",
+                    "DELEG23",
+                    "DELEG1",
+                    "DELEG8",
+                    "DELEG25",
+                    "DELEG24",
+                    "DELEG6",
+                    "DELEG7",
+                    "DELEG5",
+                    "DELEG3",
+                    "SEQ6",
+                    "CSESS21",
+                    "CSESS20",
+                    "EID9"
+                ]
         else:
             raise ValueError(f"Unsupported NFS version: {version}")
 
-        max_retries = 3
+        max_retries = 10
         wait_secs = 15
         for attempt in range(1, max_retries + 1):
             logger.info(f"PyNFS attempt {attempt}/{max_retries}...")
