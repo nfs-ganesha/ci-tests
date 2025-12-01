@@ -64,6 +64,7 @@ class PyNFSManager:
             )
 
             if self.backend_type == "ceph":
+                # BZ-2415387
                 known_failures = [
                     "WRT17",
                     "MKLINK",
@@ -73,6 +74,7 @@ class PyNFSManager:
                     "RNM20"
                 ]
             elif self.backend_type == "acl_vfs":
+                # BZ-2415390
                 known_failures = [
                     "WRT17",
                     "WRT16",
@@ -83,6 +85,7 @@ class PyNFSManager:
                     "LOCK20",
                 ]
             elif self.backend_type == "gpfs":
+                # BZ-2416755
                 known_failures = [
                     "WRT17",
                     "WRT16",
@@ -98,6 +101,7 @@ class PyNFSManager:
             )
 
             if self.backend_type == "ceph":
+                # BZ-2415388
                 known_failures = [
                     "ALLOC1",
                     "ALLOC2",
@@ -105,21 +109,24 @@ class PyNFSManager:
                     "RNM20",
                     "DELEG2",
                     "DELEG23",
-                    "DELEG1",
                     "DELEG8",
                     "DELEG25",
                     "DELEG24",
-                    "DELEG6",
                     "DELEG7",
-                    "DELEG5",
-                    "DELEG3",
                     "SEQ6",
                     "CSESS21",
                     "CSESS20",
                     "COMP3",
                     "EID9",
+                    "EID4",
                 ]
             elif self.backend_type == "acl_vfs":
+                ## Adding no-deleg option to skip delegation tests for VFS backends BZ-2415392
+                cmd = (
+                    f"cd {self.repo_dir}/nfs4.1 && "
+                    f"./testserver.py {server}:{export} all ganesha nodeleg"
+                    f" --secure --verbose --maketree --showomit --rundeps"
+                )
                 known_failures = [
                     "PUTFH1c",
                     "PUTFH1b",
@@ -131,22 +138,13 @@ class PyNFSManager:
                     "RNM3b",
                     "LKPP1c",
                     "LKPP1b",
-                    "DELEG2",
-                    "DELEG23",
-                    "DELEG1",
-                    "DELEG8",
-                    "DELEG25",
-                    "DELEG24",
-                    "DELEG6",
-                    "DELEG7",
-                    "DELEG5",
-                    "DELEG3",
                     "SEQ6",
                     "CSESS21",
                     "CSESS20",
                     "EID9"
                 ]
             elif self.backend_type == "gpfs":
+                # BZ-2416757
                 known_failures = [
                     "XATT5",
                     "XATT7",

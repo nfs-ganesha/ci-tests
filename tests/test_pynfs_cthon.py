@@ -199,7 +199,8 @@ def test_pynfs_cephfs(create_session):
         ganesha_setup = GaneshaManager(
             session=server_session,
             subvol_path=subvol_path,
-            cephfs_name=ceph_setup.cephfs_name
+            cephfs_name=ceph_setup.cephfs_name,
+            test_type="pynfs"
         )
         ganesha_setup.setup()
 
