@@ -9,7 +9,7 @@ class GaneshaManager:
     """
     NFS-Ganesha Setup and Management for CephFS
     """
-    def __init__(self, session, subvol_path, cephfs_name="cephfs", export_id=101):
+    def __init__(self, session, subvol_path, cephfs_name="cephfs", export_id=101, test_type=None):
         """
         Manage NFS-Ganesha setup on a remote session.
 
@@ -22,11 +22,18 @@ class GaneshaManager:
         self.subvol_path = subvol_path
         self.cephfs_name = cephfs_name
         self.export_id = export_id
+        self.test_type = test_type
 
     # ------------------------
     # Internal helpers
     # ------------------------
     def _generate_conf(self):
+        delegations_v4 = ""
+        delegations_export = ""
+
+        if self.test_type == "pynfs":
+            delegations_v4 = "    Delegations = true;"
+            delegations_export = "    delegations = readwrite;"
         return f"""NFS_CORE_PARAM {{
     Enable_NLM = false;
     Enable_RQUOTA = false;
@@ -35,6 +42,7 @@ class GaneshaManager:
 
 NFSv4 {{
     Enforce_UTF8_Validation = true;
+    {delegations_v4}
 }}
 
 EXPORT_DEFAULTS {{
@@ -49,6 +57,7 @@ EXPORT {{
     Transports = TCP;
     Access_Type = RW;
     Squash = None;
+    {delegations_export}
     FSAL {{
         Name = "CEPH";
     }}
