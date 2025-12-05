@@ -1,7 +1,7 @@
 import time
 import json
 
-from ci_utils.common.helpers import run_cmd
+from ci_utils.common.helpers import run_cmd, scp_copy
 
 from ci_utils.common.logger import get_logger
 logger = get_logger(__name__)
@@ -11,6 +11,7 @@ class CephGaneshaSetup:
     def __init__(
         self,
         session,
+        extra_sessions=None,
         disk_img="/tmp/ceph-disk.img",
         disk_size="35G",
         vg_name="ceph-vg",
@@ -34,6 +35,7 @@ class CephGaneshaSetup:
             timeout (int): Timeout in seconds for waiting operations. 0 means no timeout.
         """
         self.session = session
+        self.extra_sessions = extra_sessions if extra_sessions else []
         self.disk_img = disk_img
         self.disk_size = disk_size
         self.vg_name = vg_name
@@ -48,24 +50,29 @@ class CephGaneshaSetup:
     # Disk + LVM Setup
     # -----------------------
     def setup_virtual_disks(self):
-        logger.info("[STEP]: Setting up virtual disks and LVMs")
-        run_cmd(self.session, f"truncate -s {self.disk_size} {self.disk_img}")
-        run_cmd(self.session, f"losetup -f {self.disk_img}")
-        loop_dev, _ = run_cmd(self.session, f"losetup -j {self.disk_img} | cut -d: -f1")
-        run_cmd(self.session, f"pvcreate {loop_dev}")
-        run_cmd(self.session, f"vgcreate {self.vg_name} {loop_dev}")
-        for i in range(1, self.osd_count + 1):
-            run_cmd(self.session, f"lvcreate -L 10G -n osd{i} {self.vg_name}")
-        logger.info("[OK] Virtual disks and LVMs created")
+        target_sessions = [self.session] + self.extra_sessions 
+        for sess in target_sessions:
+            logger.info("[STEP]: Setting up virtual disks and LVMs")
+            run_cmd(sess, f"truncate -s {self.disk_size} {self.disk_img}")
+            run_cmd(sess, f"losetup -f {self.disk_img}")
+            loop_dev, _ = run_cmd(sess, f"losetup -j {self.disk_img} | cut -d: -f1")
+            run_cmd(sess, f"pvcreate {loop_dev}")
+            run_cmd(sess, f"vgcreate {self.vg_name} {loop_dev}")
+            for i in range(1, self.osd_count + 1):
+                run_cmd(sess, f"lvcreate -L 10G -n osd{i} {self.vg_name}")
+            logger.info("[OK] Virtual disks and LVMs created")
 
     # -----------------------
     # Ceph Bootstrap
     # -----------------------
     def bootstrap_ceph(self):
+        target_sessions = [self.session] + self.extra_sessions 
+        for sess in target_sessions:
+            run_cmd(sess, "dnf install -y cephadm")
+            run_cmd(sess, "cephadm add-repo --release squid")
+            run_cmd(sess, "dnf install -y ceph")
+
         logger.info("[STEP]: Bootstrapping Ceph cluster")
-        run_cmd(self.session, "dnf install -y cephadm")
-        run_cmd(self.session, "cephadm add-repo --release squid")
-        run_cmd(self.session, "dnf install -y ceph")
         run_cmd(
             self.session,
             "cephadm bootstrap --mon-ip $(hostname -I | awk '{print $1}') "
@@ -78,13 +85,87 @@ class CephGaneshaSetup:
         )
         logger.info("[OK] Ceph cluster bootstrapped")
 
+    def add_extra_hosts(self):
+        if not self.extra_sessions:
+            logger.info("[SKIP] No extra Ceph hosts provided.")
+            return
+
+        logger.info(f"[STEP] Adding {len(self.extra_sessions)} extra Ceph hosts")
+
+        # Pack ceph configs for shipping
+        run_cmd(self.session, "tar czf /tmp/ceph_conf.tgz /etc/ceph")
+
+        # -------------------------------------------------------------------
+        # 1) Ensure SSH key exists for scp + cephadm
+        # -------------------------------------------------------------------
+        run_cmd(
+            self.session,
+            "test -f /root/.ssh/id_ed25519.pub || "
+            "(mkdir -p /root/.ssh && ssh-keygen -t ed25519 -N '' -f /root/.ssh/id_ed25519)"
+        )
+
+        # Read ssh key
+        ssh_pubkey, _ = run_cmd(self.session, "cat /root/.ssh/id_ed25519.pub")
+
+        # Read ceph orchestrator pubkey
+        ceph_pubkey, _ = run_cmd(self.session, "cat /etc/ceph/ceph.pub")
+        public_nw, _ = run_cmd(self.session, "echo $(ipcalc -n $(ip -o -4 addr show scope global | awk '{print $4}') | cut -d= -f2)/$(ip -o -4 addr show scope global | awk '{print $4}' | cut -d/ -f2)")
+        run_cmd(self.session, f"ceph config set global public_network {public_nw}")
+        
+        for sess in self.extra_sessions:
+
+            # -------------------------------------------------------------------
+            # 2) Install authorized_keys on extra node
+            # -------------------------------------------------------------------
+            run_cmd(sess, "mkdir -p /root/.ssh")
+            run_cmd(sess, f"echo '{ssh_pubkey.strip()}' >> /root/.ssh/authorized_keys")
+            run_cmd(sess, f"echo '{ceph_pubkey.strip()}' >> /root/.ssh/authorized_keys")
+            run_cmd(sess, "chmod 600 /root/.ssh/authorized_keys")
+
+            # -------------------------------------------------------------------
+            # 3) Copy ceph config bundle using scp
+            # -------------------------------------------------------------------
+            run_cmd(
+                self.session,
+                f"scp -o StrictHostKeyChecking=no /tmp/ceph_conf.tgz "
+                f"root@{sess.node_ip}:/tmp/"
+            )
+
+            # Extract on extra node
+            run_cmd(sess, "tar xzf /tmp/ceph_conf.tgz -C /")
+
+            run_cmd(
+                self.session,
+                f"scp -o StrictHostKeyChecking=no /var/lib/ceph/bootstrap-osd/ceph.keyring "
+                f"root@{sess.node_ip}:/var/lib/ceph/bootstrap-osd/"
+            )
+
+            # Set public network on extra node
+            public_nw, _ = run_cmd(sess, "echo $(ipcalc -n $(ip -o -4 addr show scope global | awk '{print $4}') | cut -d= -f2)/$(ip -o -4 addr show scope global | awk '{print $4}' | cut -d/ -f2)")
+            run_cmd(sess, f"ceph config set global public_network {public_nw}")
+
+            # -------------------------------------------------------------------
+            # 4) Add host to ceph orch
+            # -------------------------------------------------------------------
+            host_ip, _ = run_cmd(sess, "hostname -I | awk '{print $1}'")
+            hostname, _ = run_cmd(sess, "hostname")
+            run_cmd(self.session, f"ceph orch host add {hostname.strip()} {host_ip.strip()}")
+            run_cmd(self.session, "ceph orch host ls")
+
+
     # -----------------------
     # OSD Setup
     # -----------------------
     def setup_osds(self):
         logger.info("[STEP]: Setting up OSDs")
-        for i in range(1, self.osd_count + 1):
-            run_cmd(self.session, f"ceph-volume lvm create --data /dev/{self.vg_name}/osd{i}")
+
+
+        target_sessions = [self.session] + self.extra_sessions
+
+        for sess in target_sessions:
+            for i in range(1, self.osd_count + 1):
+                run_cmd(sess, f"ceph-volume lvm create --data /dev/{self.vg_name}/osd{i}")
+                        
         run_cmd(self.session, "ceph orch device ls")
         run_cmd(self.session, "ceph orch apply osd --all-available-devices")
 
@@ -153,6 +234,7 @@ class CephGaneshaSetup:
         """
         self.setup_virtual_disks()
         self.bootstrap_ceph()
+        self.add_extra_hosts()
         self.setup_osds()
         self.setup_cephfs()
         self.install_build_dependencies()

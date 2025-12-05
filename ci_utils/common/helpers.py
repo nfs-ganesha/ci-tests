@@ -133,5 +133,5 @@ def run_cmd(session, cmd, check=True, timeout=3600, source_bashrc=False):
         logger.error(f"Command failed: {cmd_to_run}\n{err}")
         logger.error(f"Failure Output: {out}")
         raise RuntimeError(err)
-    logger.info(f"[REMOTE] Command output for {cmd_to_run} with return code {code}:\n {out.strip()}")
+    logger.info(f"[REMOTE] Command output for {cmd_to_run} with return code {code}: Output: {out.strip()} \n {err.strip()}\n")
     return out.strip(), code
