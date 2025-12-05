@@ -8,7 +8,7 @@ logger = get_logger(__name__)
 
 
 class GPFSGaneshaManager:
-    def __init__(self, session, export="/ibm/fs1", system_type="centos"):
+    def __init__(self, session, export="/ibm/fs1", system_type="centos", cmake_flags=None):
         """Handles GPFS and NFS-Ganesha installation and setup on a VM.
         Args:
             session (RemoteSession): Remote session to the VM.
@@ -16,6 +16,7 @@ class GPFSGaneshaManager:
         self.session = session
         self.export = export
         self.system_type = system_type
+        self.cmake_flags = cmake_flags
 
     # -------------------------------
     # Helpers
@@ -72,7 +73,7 @@ class GPFSGaneshaManager:
         logger.info("[STEP]: Building Ganesha from source...")
 
         BASE_PACKAGES="git bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel rpm-build redhat-rpm-config gdb"
-        BUILDREQUIRES_EXTRA="libnsl2-devel libnfsidmap-devel libwbclient-devel userspace-rcu-devel libcephfs-devel"
+        BUILDREQUIRES_EXTRA="libnsl2-devel libnfsidmap-devel libwbclient-devel userspace-rcu-devel libcephfs-devel python3-devel"
     
         if self.system_type == "centos":
             repo_name = "crb"
@@ -100,9 +101,7 @@ class GPFSGaneshaManager:
         out, code = run_cmd(self.session, [
             f"bash -c 'cd {src_dir} && rm -rf {build_dir} && "
             f"mkdir -p {build_dir} && cd {build_dir} && "
-            f"{cmake_binary} {src_dir}/src -DCMAKE_BUILD_TYPE=Maintainer "
-            "-DUSE_FSAL_GPFS=ON -DUSE_DBUS=ON -D_MSPAC_SUPPORT=OFF "
-            "-DMONITORING=ON -DUSE_MONITORING=ON && make dist'"
+            f"{cmake_binary} {src_dir}/src {self.cmake_flags} && make dist'"
         ])
 
         logger.info("GPFS Make CephFS output: %s", out)
@@ -146,7 +145,13 @@ class GPFSGaneshaManager:
             logger.info("NTIRPC Version: %s", ntirpc_version)
             logger.info("NTIRPC RPM: %s", ntirpc_rpm)
 
-        run_cmd(self.session, f"bash -c 'cd {build_dir} && rpm -e gpfs.nfs-ganesha gpfs.nfs-ganesha-gpfs --nodeps'", check=False)
+        run_cmd(
+            self.session,
+            '\"bash -c \'rpm -e --nodeps \$(rpm -qa | grep \"^gpfs\\.nfs-ganesha\")\'\"',
+            check=False
+        )
+
+        run_cmd(self.session, f"\"bash -c 'rpm -qa | grep gpfs.nfs-ganesha'\"", check=False)
         out, _ = run_cmd(self.session, f"ls {build_dir}/x86_64/*.rpm")
         rpm_files_x86 = out.strip().splitlines()
 

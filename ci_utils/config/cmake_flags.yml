@@ -1,0 +1,48 @@
+default:
+  - "-DCMAKE_BUILD_TYPE=Maintainer"
+  - "-DUSE_ADMIN_TOOLS=ON"
+  - "-DUSE_DBUS=ON"
+
+tests:
+  test_fsal_cephfs:
+    - "-DUSE_FSAL_GLUSTER=OFF"
+    - "-DUSE_FSAL_CEPH=ON" 
+    - "-DUSE_FSAL_RGW=OFF"
+    - "-DUSE_FSAL_GPFS=OFF"
+    - "-DUSE_FSAL_VFS=OFF"
+
+  test_fsal_rgw:
+    - "-DUSE_FSAL_GLUSTER=OFF" 
+    - "-DUSE_FSAL_CEPH=OFF"
+    - "-DUSE_FSAL_RGW=ON"
+    - "-DUSE_FSAL_GPFS=OFF"
+    - "-DUSE_FSAL_VFS=OFF"
+  
+  test_fsal_vfs:
+    - "-DUSE_FSAL_VFS=ON"
+    - "-DUSE_FSAL_GLUSTER=OFF"
+    - "-DUSE_FSAL_CEPH=OFF"
+    - "-DUSE_FSAL_RGW=OFF"
+    - "-DUSE_FSAL_GPFS=OFF"
+    - "-DUSE_MONITORING=ON"
+
+  test_fsal_gpfs:
+    - "-DUSE_FSAL_GLUSTER=OFF" 
+    - "-DUSE_FSAL_CEPH=OFF" 
+    - "-DUSE_FSAL_RGW=OFF"
+    - "-DUSE_FSAL_VFS=OFF"
+    - "-DUSE_GUI_ADMIN_TOOLS=OFF"
+    - "-D_MSPAC_SUPPORT=ON"
+    - "-DRADOS_URLS=OFF" 
+    - "-DUSE_RADOS_RECOV=OFF"
+    - "-DUSE_9P=OFF"
+    - "-DUSE_FSAL_NULL=OFF"
+    - "-DUSE_FSAL_XFS=OFF"
+    - "-DUSE_FSAL_MEM=OFF"
+    - "-DUSE_FSAL_LUSTRE=OFF"
+    - "-DUSE_FSAL_PROXY_V4=OFF"
+    - "-DUSE_FSAL_PROXY_V3=OFF"
+    - "-DUSE_FSAL_KVSFS=OFF"
+    - "-DUSE_FSAL_GPFS=ON"
+    - "-DMONITORING=ON"
+    - "-DUSE_MONITORING=ON"

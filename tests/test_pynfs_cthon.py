@@ -1,6 +1,9 @@
 import os
+import pathlib
 import re
 from time import sleep
+
+import yaml
 from ci_utils.ceph.ceph_setup import CephGaneshaSetup
 from ci_utils.common.remote_session import RemoteSession, RemoteSessionThroughJump
 from ci_utils.cthon.cthon_setup import CthonManager
@@ -49,6 +52,21 @@ def all_baremetal_nodes():
     with open(BAREMETAL_SESSION_FILE) as f:
         session_data = read_json_file(BAREMETAL_SESSION_FILE)
     return session_data.get("nodes", [])
+
+@pytest.fixture(scope="session")
+def cmake_config():
+    # Find repo root based on THIS file's location
+    this_file = pathlib.Path(__file__).resolve()
+
+    # Navigate to ci_utils/config/cmake_flags.yml relative to this conftest
+    config_path = this_file.parent.parent / "ci_utils" / "config" / "cmake_flags.yml"
+
+    if not config_path.exists():
+        raise FileNotFoundError(f"CMake flag config not found: {config_path}")
+
+    with config_path.open() as f:
+        return yaml.safe_load(f)
+    
 # -----------------------
 # Fixtures - Test level
 # -----------------------
@@ -90,6 +108,31 @@ def create_session(all_nodes, all_baremetal_nodes, request):
     for sess, _, _ in sessions:
         sess.close()
 
+@pytest.fixture
+def cmake_flags(request, cmake_config):
+    # Optional test-name override
+    forced_test_name = getattr(request, "param", None)
+
+    # Default behavior: real PyTest node name
+    test_name = forced_test_name or request.node.name
+
+    yaml_default = cmake_config.get("default", [])
+    yaml_test_specific = cmake_config.get("tests", {}).get(test_name, [])
+    logger.info(f"Getting default values: {os.environ}")
+
+    # ENV variable: general flags
+    env_flags = os.getenv("CMAKE_FLAGS", "")
+    env_flags_list = env_flags.split(",") if env_flags else []
+
+    # ENV override?
+    override = os.getenv("CMAKE_OVERRIDE", "").lower() in ("1", "true", "yes")
+
+    if override:
+        # Jenkins wants to ignore YAML entirely
+        return env_flags_list
+
+    # Merge YAML and CLI (YAML first, then CLI append / override)
+    return yaml_default + yaml_test_specific +  env_flags_list
 
 # -----------------------
 # Actual Tests Starts Here
@@ -100,8 +143,9 @@ def create_session(all_nodes, all_baremetal_nodes, request):
 # Node allocation: 1 (index 1)
 # -------------------------
 @pytest.mark.parametrize("create_session", [1], indirect=True)
+@pytest.mark.parametrize("cmake_flags", ["test_fsal_cephfs"], indirect=True)
 @pytest.mark.timeout(1200) 
-def test_cthon_cephfs(create_session):
+def test_cthon_cephfs(create_session, cmake_flags):
     try:
         logger.info("[TEST START]: Cthon with CephFS")
         
@@ -111,13 +155,16 @@ def test_cthon_cephfs(create_session):
         logger.info("[TEST WORKSPACE DETAILS]: Workspace: %s", test_workspace)
         logger.info("[TEST SESSION DETAILS]: Session: %s", remote_session)
 
+        flag_str = " ".join(cmake_flags)
+        logger.info("Using CMake flags: %s", flag_str)
+
         _, code = run_cmd(
             remote_session,
             f"cd {test_workspace}/nfs-ganesha && "
             "rm -rf build && "
             "mkdir -p build && "
             "cd build && "
-            "cmake ../src -DCMAKE_BUILD_TYPE=Maintainer -DUSE_FSAL_GLUSTER=OFF -DUSE_FSAL_CEPH=ON -DUSE_FSAL_RGW=OFF -DUSE_DBUS=ON -DUSE_ADMIN_TOOLS=ON && "
+            f"cmake ../src {flag_str} && "
             "make && "
             "make install"
         )
@@ -168,7 +215,8 @@ def test_cthon_cephfs(create_session):
 # Node allocation: 2 (index 0 - client, index 2 - server)
 # -----------------------------------------------------------------
 @pytest.mark.parametrize("create_session", [[0, 2]], indirect=True)
-def test_pynfs_cephfs(create_session):
+@pytest.mark.parametrize("cmake_flags", ["test_fsal_cephfs"], indirect=True)
+def test_pynfs_cephfs(create_session, cmake_flags):
     try:
         logger.info("[TEST START]: PyNFS with CephFS")
         (client_session, client_workspace, client_node), (server_session, server_workspace, server_node) = create_session
@@ -178,13 +226,16 @@ def test_pynfs_cephfs(create_session):
         logger.info("[TEST WORKSPACE DETAILS]: Client Workspace: %s, Server Workspace: %s", client_workspace, server_workspace)
         logger.info("[TEST SESSION DETAILS]: Client Session: %s, Server Session: %s", client_session, server_session)
 
+        flag_str = " ".join(cmake_flags)
+        logger.info("Using CMake flags: %s", flag_str)
+
         _, code = run_cmd(
             server_session,
             f"cd {server_workspace}/nfs-ganesha && "
             "rm -rf build && "
             "mkdir -p build && "
             "cd build && "
-            "cmake ../src -DCMAKE_BUILD_TYPE=Maintainer -DUSE_FSAL_GLUSTER=OFF -DUSE_FSAL_CEPH=ON -DUSE_FSAL_RGW=OFF -DUSE_DBUS=ON -DUSE_ADMIN_TOOLS=ON && "
+            f"cmake ../src {flag_str} && "
             "make && "
             "make install"
         )
@@ -241,7 +292,8 @@ def test_pynfs_cephfs(create_session):
 # Node allocation: 2 (index 0 - client, index 3 - server)
 # -------------------------------------------------------------------
 @pytest.mark.parametrize("create_session", [[0, 3]], indirect=True)
-def test_pynfs_acl_vfs(create_session):
+@pytest.mark.parametrize("cmake_flags", ["test_fsal_vfs"], indirect=True)
+def test_pynfs_acl_vfs(create_session, cmake_flags):
     try:
         logger.info("[TEST START]: PyNFS-ACL with VFS")
         (client_session, client_workspace, client_node), (server_session, server_workspace, server_node) = create_session
@@ -251,9 +303,13 @@ def test_pynfs_acl_vfs(create_session):
         logger.info("[TEST WORKSPACE DETAILS]: Client Workspace: %s, Server Workspace: %s", client_workspace, server_workspace)
         logger.info("[TEST SESSION DETAILS]: Client Session: %s, Server Session: %s", client_session, server_session)
 
+        flag_str = " ".join(cmake_flags)
+        logger.info("Using CMake flags: %s", flag_str)
+
         logger.info("NFS Ganesha setup for VFS tests")
         ganesha_setup = VFSGaneshaManager(
-            session=server_session
+            session=server_session,
+            cmake_flags=flag_str
         )
         ganesha_setup.install_ganesha(server_workspace)
         
@@ -297,7 +353,8 @@ def test_pynfs_acl_vfs(create_session):
 # -----------------------
 @pytest.mark.baremetal
 @pytest.mark.parametrize("create_session", [0], indirect=True)
-def test_pynfs_gpfs(create_session):
+@pytest.mark.parametrize("cmake_flags", ["test_fsal_gpfs"], indirect=True)
+def test_pynfs_gpfs(create_session, cmake_flags):
     try:
         logger.info("[TEST START]: PyNFS with GPFS")
         server_session, server_workspace, server_node = create_session
@@ -453,8 +510,13 @@ local-hostname: {vm_name}
         # NFS Ganesha Setup for GPFS
         # -----------------------
         logger.info("NFS Ganesha setup for GPFS tests")
+
+        flag_str = " ".join(cmake_flags)
+        logger.info("Using CMake flags: %s", flag_str)
+
         ganesha_setup = GPFSGaneshaManager(
-            session=vm_session
+            session=vm_session,
+            cmake_flags=flag_str
         )
         ganesha_setup.intall_pre_reqs_on_vm()
         ganesha_setup.install_ganesha("/root")
