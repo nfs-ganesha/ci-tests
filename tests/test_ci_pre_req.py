@@ -167,7 +167,7 @@ def setup_node_vfs(server_node):
     version = duffy_session.centos_version
 
     build_requires_vfs = "git bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel rpm-build redhat-rpm-config gdb libblkid-devel libcap-devel libgfapi-devel xfsprogs-devel"
-    build_requires_extra_vfs= "libnsl2-devel libnfsidmap-devel libwbclient-devel userspace-rcu-devel libcephfs-devel"
+    build_requires_extra_vfs= "libnsl2-devel libnfsidmap-devel libwbclient-devel userspace-rcu-devel libcephfs-devel python3-devel"
     build_requires_add_on_vfs = "selinux-policy-devel sqlite"
 
     if version.startswith("9"):

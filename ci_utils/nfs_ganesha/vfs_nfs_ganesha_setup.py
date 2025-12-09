@@ -6,12 +6,13 @@ logger = get_logger(__name__)
 
 
 class VFSGaneshaManager:
-    def __init__(self, session):
+    def __init__(self, session, cmake_flags=None):
         """Handles VFS and NFS-Ganesha installation and setup on a VM.
         Args:
             session (RemoteSession): Remote session to the VM.
         """
         self.session = session
+        self.cmake_flags = cmake_flags
 
     # -------------------------------
     # Install Ganesha with VFS support
@@ -43,10 +44,7 @@ class VFSGaneshaManager:
             "rm -rf build && "
             "mkdir -p build && "
             "cd build && "
-            "cmake ../src -DCMAKE_BUILD_TYPE=Maintainer "
-            "-DUSE_FSAL_VFS=ON -DUSE_FSAL_GLUSTER=OFF "
-            "-DUSE_FSAL_CEPH=OFF -DUSE_FSAL_RGW=OFF "
-            "-DUSE_FSAL_GPFS=OFF -DUSE_MONITORING=ON && "
+            f"cmake ../src {self.cmake_flags} && "
             "make dist"
         )
 

@@ -1,4 +1,7 @@
 import os
+import pathlib
+
+import yaml
 from ci_utils.common.remote_session import RemoteSession
 import pytest
 from ci_utils.common.logger import get_logger
@@ -26,6 +29,20 @@ def server_node():
     session_data = read_json_file(SESSION_FILE)
     return session_data.get("nodes")[0]
 
+@pytest.fixture(scope="session")
+def cmake_config():
+    # Find repo root based on THIS file's location
+    this_file = pathlib.Path(__file__).resolve()
+
+    # Navigate to ci_utils/config/cmake_flags.yml relative to this conftest
+    config_path = this_file.parent.parent / "ci_utils" / "config" / "cmake_flags.yml"
+
+    if not config_path.exists():
+        raise FileNotFoundError(f"CMake flag config not found: {config_path}")
+
+    with config_path.open() as f:
+        return yaml.safe_load(f)
+    
 # -----------------------
 # Fixtures - Test level
 # -----------------------
@@ -50,6 +67,26 @@ def create_session(server_node, request):
     yield session, default_dir  # Yield both session and default dir
     session.close()   
 
+@pytest.fixture
+def cmake_flags(request, cmake_config):
+    test_name = request.node.name
+    yaml_default = cmake_config.get("default", [])
+    yaml_test_specific = cmake_config.get("tests", {}).get(test_name, [])
+    logger.info(f"Getting default values: {os.environ}")
+
+    # ENV variable: general flags
+    env_flags = os.getenv("CMAKE_FLAGS", "")
+    env_flags_list = env_flags.split(",") if env_flags else []
+
+    # ENV override?
+    override = os.getenv("CMAKE_OVERRIDE", "").lower() in ("1", "true", "yes")
+
+    if override:
+        # Jenkins wants to ignore YAML entirely
+        return env_flags_list
+
+    # Merge YAML and CLI (YAML first, then CLI append / override)
+    return yaml_default + yaml_test_specific +  env_flags_list
 # ---------------------------------------------------------
 # Helper function to log results to summary file
 # ---------------------------------------------------------
@@ -219,10 +256,13 @@ def test_clang_format(create_session, server_node):
 # TEST 3: FSAL build tests - CephFS
 # Required Node: 1
 # -----------------------
-def test_fsal_cephfs(create_session):
+def test_fsal_cephfs(create_session, cmake_flags):
     logger.info("[TEST] Running FSAL CephFS test")
     remote_session, test_workspace = create_session
     logger.info("TEST WORKSPACE: %s", test_workspace)
+
+    flag_str = " ".join(cmake_flags)
+    logger.info("Using CMake flags: %s", flag_str)
 
     out, code = run_cmd(
         remote_session,
@@ -230,7 +270,7 @@ def test_fsal_cephfs(create_session):
         "rm -rf build && "
         "mkdir -p build && "
         "cd build && "
-        "cmake ../src -DCMAKE_BUILD_TYPE=Maintainer -DUSE_FSAL_GLUSTER=OFF -DUSE_FSAL_CEPH=ON -DUSE_FSAL_RGW=OFF -DUSE_DBUS=ON -DUSE_ADMIN_TOOLS=ON && "
+        f"cmake ../src {flag_str} && "
         "make", check=False
     )
 
@@ -248,10 +288,13 @@ def test_fsal_cephfs(create_session):
 # TEST 4: FSAL build tests - GPFS
 # Required Node: 1
 # -----------------------
-def test_fsal_gpfs(create_session):
+def test_fsal_gpfs(create_session, cmake_flags):
     logger.info("[TEST] Running FSAL GPFS test")
     remote_session, test_workspace = create_session
     logger.info("TEST WORKSPACE: %s", test_workspace)
+
+    flag_str = " ".join(cmake_flags)
+    logger.info("Using CMake flags: %s", flag_str)
 
     out, code = run_cmd(
         remote_session,
@@ -259,7 +302,7 @@ def test_fsal_gpfs(create_session):
         "rm -rf build && "
         "mkdir -p build && "
         "cd build && "
-        "cmake ../src -DCMAKE_BUILD_TYPE=Maintainer -DUSE_FSAL_GLUSTER=OFF -DUSE_FSAL_CEPH=OFF -DUSE_FSAL_RGW=OFF -DUSE_FSAL_GPFS=ON -DUSE_DBUS=ON -DUSE_ADMIN_TOOLS=ON && "
+        f"cmake ../src {flag_str} && "
         "make", check=False
     )
 
@@ -277,10 +320,13 @@ def test_fsal_gpfs(create_session):
 # TEST 5: FSAL build tests - RGW
 # Required Node: 1
 # -----------------------
-def test_fsal_rgw(create_session):
+def test_fsal_rgw(create_session, cmake_flags):
     logger.info("[TEST] Running FSAL RGW test")
     remote_session, test_workspace = create_session  # Unpack the tuple
     logger.info("TEST WORKSPACE: %s", test_workspace)
+
+    flag_str = " ".join(cmake_flags)
+    logger.info("Using CMake flags: %s", flag_str)
 
     out, code = run_cmd(
         remote_session,
@@ -288,7 +334,7 @@ def test_fsal_rgw(create_session):
         "rm -rf build && "
         "mkdir -p build && "
         "cd build && "
-        "cmake ../src -DCMAKE_BUILD_TYPE=Maintainer -DUSE_FSAL_GLUSTER=OFF -DUSE_FSAL_CEPH=OFF -DUSE_FSAL_RGW=ON -DUSE_DBUS=ON -DUSE_ADMIN_TOOLS=ON && "
+        f"cmake ../src {flag_str} && "
         "make", check=False
     )
 
@@ -306,10 +352,13 @@ def test_fsal_rgw(create_session):
 # TEST 6: FSAL build tests - VFS
 # Required Node: 1
 # -----------------------
-def test_fsal_vfs(create_session):
+def test_fsal_vfs(create_session, cmake_flags):
     logger.info("[TEST] Running FSAL VFS test")
     remote_session, test_workspace = create_session
     logger.info("TEST WORKSPACE: %s", test_workspace)
+
+    flag_str = " ".join(cmake_flags)
+    logger.info("Using CMake flags: %s", flag_str)
 
     out, code = run_cmd(
         remote_session,
@@ -317,7 +366,7 @@ def test_fsal_vfs(create_session):
         "rm -rf build && "
         "mkdir -p build && "
         "cd build && "
-        "cmake ../src -DCMAKE_BUILD_TYPE=Maintainer -DUSE_FSAL_VFS=ON -DUSE_FSAL_GLUSTER=OFF -DUSE_FSAL_CEPH=OFF -DUSE_FSAL_RGW=OFF -DUSE_FSAL_GPFS=OFF -DUSE_MONITORING=ON && "
+        f"cmake ../src {flag_str} && "
         "make", check=False
     )
 
