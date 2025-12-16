@@ -7,7 +7,7 @@ from ci_utils.common.logger import get_logger
 logger = get_logger(__name__)
 
 class DuffySession:
-    def __init__(self, workspace=None, centos_version=None, centos_arch=None, metal_only=False):
+    def __init__(self, workspace=None, centos_version=None, centos_arch=None, metal_only=False, node_count=None):
         """
         Initialize Duffy client and configuration.
         Args:
@@ -20,7 +20,7 @@ class DuffySession:
         self.centos_version = centos_version or os.getenv("CENTOS_VERSION", "9")
         self.centos_arch = centos_arch or os.getenv("CENTOS_ARCH", "x86_64")
         self.metal_only = metal_only
-        self.node_count = int(os.getenv("NODE_COUNT", "1"))  # default = 1
+        self.node_count = node_count or int(os.getenv("NODE_COUNT", "1"))  # default = 1
         self.session_id = None
         self.nodes = []
 

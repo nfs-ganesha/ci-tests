@@ -21,8 +21,8 @@ class CthonManager:
         self.repo_url = repo_url
         self.cthon_dir = "cthon04"
         if server_ip:
-            logger.info(f"[INFO] Using IP: {self.server_ip}")
             self.server_ip = server_ip
+            logger.info(f"[INFO] Using IP: {self.server_ip}")
         else:
             logger.info("[INFO] No server IP provided, using local hostname IP")
             self.server_ip, _ = run_cmd(self.session, "hostname -I | awk '{print $1}'")
