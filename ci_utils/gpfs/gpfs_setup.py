@@ -119,11 +119,10 @@ class SpectrumScaleInstaller:
                 run_cmd(sess, "dnf install -y kernel-devel-$(uname -r) kernel-headers-$(uname -r)")
             else:
                 logger.info(f"Attempting Koji fetch...")
-                run_cmd(sess, "wget https://kojihub.stream.centos.org/kojifiles/packages/kernel/5.14.0/635.el9/x86_64/kernel-devel-5.14.0-635.el9.x86_64.rpm")
-                run_cmd(sess, "wget https://kojihub.stream.centos.org/kojifiles/packages/kernel/5.14.0/635.el9/x86_64/kernel-headers-5.14.0-635.el9.x86_64.rpm")
+                run_cmd(sess, "wget https://kojihub.stream.centos.org/kojifiles/packages/kernel/5.14.0/639.el9/x86_64/kernel-devel-5.14.0-639.el9.x86_64.rpm")
+                run_cmd(sess, "wget https://kojihub.stream.centos.org/kojifiles/packages/kernel/5.14.0/639.el9/x86_64/kernel-headers-5.14.0-639.el9.x86_64.rpm")
                 run_cmd(sess, "ls -la")
-                run_cmd(sess, "dnf -y install openssl-fips-provider ./kernel-devel-5.14.0-635.el9.x86_64.rpm ./kernel-headers-5.14.0-635.el9.x86_64.rpm")
-
+                run_cmd(sess, "dnf -y install openssl-fips-provider ./kernel-devel-5.14.0-639.el9.x86_64.rpm ./kernel-headers-5.14.0-639.el9.x86_64.rpm")
             run_cmd(
                 sess,
                 "yum -y install "

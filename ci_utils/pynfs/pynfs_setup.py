@@ -116,9 +116,6 @@ class PyNFSManager:
                     "SEQ6",
                     "CSESS21",
                     "CSESS20",
-                    "COMP3",
-                    "EID9",
-                    "EID4",
                 ]
             elif self.backend_type == "acl_vfs":
                 ## Adding no-deleg option to skip delegation tests for VFS backends BZ-2415392
@@ -141,7 +138,6 @@ class PyNFSManager:
                     "SEQ6",
                     "CSESS21",
                     "CSESS20",
-                    "EID9"
                 ]
             elif self.backend_type == "gpfs":
                 # BZ-2416757

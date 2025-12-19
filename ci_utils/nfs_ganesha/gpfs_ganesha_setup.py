@@ -231,6 +231,7 @@ class GPFSGaneshaManager:
         time.sleep(20)
         run_cmd(self.session, "/usr/lpp/mmfs/bin/mmnfs config list |grep MINOR")
         run_cmd(self.session, "/usr/lpp/mmfs/bin/mmnfs config list |grep ENFORCE")
+        run_cmd(self.session, "/usr/lpp/mmfs/bin/mmnfs config list")
         run_cmd(self.session, "systemctl daemon-reload")
         run_cmd(self.session, "cat /var/mmfs/ces/nfs-config/gpfs.ganesha.main.conf")
         
