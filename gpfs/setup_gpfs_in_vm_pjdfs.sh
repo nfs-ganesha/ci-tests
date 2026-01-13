@@ -484,22 +484,36 @@ dnf ${ENABLE_REPO} install -y libtirpc-devel
 echo "/tmp/cores/core.%e.%p.%h.%t" > /proc/sys/kernel/core_pattern
 mkdir -p /tmp/cores
 
-# checkout the connectathon tests
-git clone --depth=1 git://git.linux-nfs.org/projects/steved/cthon04.git
-cd cthon04
-make all
-
 EXPORT="/ibm/scale_volume"
-# v4 mount
-mkdir -p /mnt/nfsv4
-mount -t nfs -o vers=4 ${VM_IP}:${EXPORT} /mnt/nfsv4
-./server -a -p ${EXPORT} -m /mnt/nfsv4 ${VM_IP}
 
+# install build and runtime dependencies
+dnf -y install git gcc nfs-utils redhat-rpm-config krb5-devel python3-devel python3-gssapi python3-ply
 
-# V3 mount
+dnf -y install wget git gcc gcc-c++ time make automake autoconf pkgconf pkgconf-pkg-config libtool bison flex perl perl-Time-HiRes python3 wget tar libaio-devel net-tools nfs-utils
+
+cd /root;git clone https://github.com/pjd/pjdfstest.git;cd pjdfstest;autoreconf -ifs;./configure;make pjdfstest
+
 mkdir -p /mnt/nfsv3
-mount -t nfs -o vers=3 ${VM_IP}:${EXPORT} /mnt/nfsv3
-./server -a -p ${EXPORT} -m /mnt/nfsv3 ${VM_IP}
+mount -t nfs -o vers=3 ${SERVER}:${EXPORT} /mnt/nfsv3
+export TESTDIR=/mnt/nfsv3
+cd /mnt/nfsv3;prove -rv /root/pjdfstest/tests/
+
+
+mkdir -p /mnt/nfsv4
+mount -t nfs -o vers=4 ${SERVER}:${EXPORT} /mnt/nfsv4
+export TESTDIR=/mnt/nfsv4
+cd /mnt/nfsv4;prove -rv /root/pjdfstest/tests/
+
+
+# v4.1 mount
+mkdir -p /mnt/nfsv41
+mount -t nfs -o vers=4.1 ${SERVER}:${EXPORT} /mnt/nfsv41
+export TESTDIR=/mnt/nfsv41
+cd /mnt/nfsv41;prove -rv /root/pjdfstest/tests/
+
+
+
+
 
 # VM Shutdown and Deletion
 echo "Starting VM shutdown and cleanup process..."

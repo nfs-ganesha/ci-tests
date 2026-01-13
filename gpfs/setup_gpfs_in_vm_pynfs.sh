@@ -484,22 +484,51 @@ dnf ${ENABLE_REPO} install -y libtirpc-devel
 echo "/tmp/cores/core.%e.%p.%h.%t" > /proc/sys/kernel/core_pattern
 mkdir -p /tmp/cores
 
-# checkout the connectathon tests
-git clone --depth=1 git://git.linux-nfs.org/projects/steved/cthon04.git
-cd cthon04
-make all
-
 EXPORT="/ibm/scale_volume"
-# v4 mount
-mkdir -p /mnt/nfsv4
-mount -t nfs -o vers=4 ${VM_IP}:${EXPORT} /mnt/nfsv4
-./server -a -p ${EXPORT} -m /mnt/nfsv4 ${VM_IP}
 
+# install build and runtime dependencies
+dnf -y install git gcc nfs-utils redhat-rpm-config krb5-devel python3-devel python3-gssapi python3-ply
 
-# V3 mount
-mkdir -p /mnt/nfsv3
-mount -t nfs -o vers=3 ${VM_IP}:${EXPORT} /mnt/nfsv3
-./server -a -p ${EXPORT} -m /mnt/nfsv3 ${VM_IP}
+rm -rf /root/pynfs && git clone git://git.linux-nfs.org/projects/cdmackay/pynfs.git /root/pynfs
+
+cd /root/pynfs && yes | python3 setup.py build > /tmp/output_tempfile.txt
+echo $?
+
+LOG_FILE40="/tmp/pynfs"$(date +%s)".log"
+cd /root/pynfs/nfs4.0
+./testserver.py ${VM_IP}:${EXPORT} --verbose --maketree --showomit --rundeps all ganesha ${TEST_PARAMETERS} >> "${LOG_FILE40}"
+RETURN_CODE40=$?
+
+echo "pynfs 4.0 test output:"
+cat $LOG_FILE40
+
+LOG_FILE41="/tmp/pynfs"$(date +%s)".log"
+cd /root/pynfs/nfs4.1
+./testserver.py ${VM_IP}:${EXPORT} all ganesha --verbose --maketree --showomit --rundeps >> "${LOG_FILE41}"
+RETURN_CODE41=$?
+
+echo "pynfs 4.1 test output:"
+cat $LOG_FILE41
+
+if [ $RETURN_CODE40 == 0 ]; then
+    echo "All tests passed in pynfs 4.0 test suite"
+fi
+
+if [ $RETURN_CODE41 == 0 ]; then
+    echo "All tests passed in pynfs 4.1 test suite"
+fi
+
+if [ $RETURN_CODE40 != 0 ] || [ $RETURN_CODE40 != 0 ]; then
+    echo "pynfs 4.0 test suite failures:"
+    echo "--------------------------"
+    cat $LOG_FILE40 | grep FAILURE
+
+    echo "pynfs 4.1 test suite failures:"
+    echo "--------------------------"
+    cat $LOG_FILE41 | grep FAILURE
+    exit 1
+fi
+
 
 # VM Shutdown and Deletion
 echo "Starting VM shutdown and cleanup process..."

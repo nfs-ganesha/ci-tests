@@ -24,10 +24,21 @@ BUILDREQUIRES="git bison cmake dbus-devel flex gcc-c++ krb5-devel libacl-devel l
 BUILDREQUIRES_EXTRA="libnsl2-devel libnfsidmap-devel libwbclient-devel userspace-rcu-devel"
 
 # basic packages to install
-yum install -y ${BUILDREQUIRES}
-yum install --enablerepo=crb -y ${BUILDREQUIRES_EXTRA}
-yum install -y libcephfs-devel
-
+case "${CENTOS_VERSION}" in
+    7)
+        yum install -y ${BUILDREQUIRES} ${BUILDREQUIRES_EXTRA} python2-devel
+    ;;
+    8s)
+        yum install -y ${BUILDREQUIRES}
+        yum install --enablerepo=powertools -y ${BUILDREQUIRES_EXTRA}
+        yum install -y libcephfs-devel
+    ;;
+    9s)
+       yum install -y ${BUILDREQUIRES}
+       yum install --enablerepo=crb -y ${BUILDREQUIRES_EXTRA}
+       yum install -y libcephfs-devel
+    ;;
+esac
 
 git clone --depth=1 ${GIT_REPO}
 cd $(basename "${GERRIT_PROJECT}")
@@ -50,6 +61,26 @@ if ( git log --oneline -1 | grep -q -i -w 'WIP' )
 then
     echo "Change marked as WIP, not posting result to GerritHub."
     touch WIP
+fi
+
+# If failure found during build, return the status and skip proceeding
+# to ceph configuration
+
+
+# we accept different return values
+# 0 - SUCCESS + VOTE
+# 1 - FAILED + VOTE
+# 10 - SUCCESS + REPORT ONLY (NO VOTE)
+# 11 - FAILED + REPORT ONLY (NO VOTE)
+RET=0
+if [ -e FAILED ]
+then
+	exit ${RET}
+fi
+if [ -e WIP ]
+then
+	RET=$[RET + 10]
+	exit ${RET}
 fi
 
 # Create a virtual disk file (for OSD storage):
