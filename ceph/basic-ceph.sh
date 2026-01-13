@@ -16,6 +16,8 @@ GIT_REPO="https://${GERRIT_HOST}/${GERRIT_PROJECT}"
 
 # enable the Storage SIG Gluster and Ceph repositories
 dnf -y install centos-release-ceph epel-release
+dnf install dnf-plugins-core -y
+dnf config-manager --set-enabled crb
 
 BUILDREQUIRES="git bison cmake dbus-devel flex gcc-c++ krb5-devel libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build xfsprogs-devel lvm2"
 
@@ -93,6 +95,7 @@ lvcreate -L 10G -n osd3 ceph-vg
 
 # Install and configure ceph cluster
 dnf install -y cephadm
+dnf install -y lua-devel
 cephadm add-repo --release squid
 dnf install -y ceph
 cephadm bootstrap --mon-ip $(hostname -I | awk '{print $1}') --single-host-defaults --allow-fqdn-hostname
@@ -168,7 +171,7 @@ echo "Subvolume path: $SUBVOL_PATH"
 echo "NFS_CORE_PARAM {
     Enable_NLM = false;
     Enable_RQUOTA = false;
-    Protocols = 4;
+    Protocols = 3,4;
 }
 
 EXPORT_DEFAULTS {
@@ -178,7 +181,8 @@ EXPORT {
     Export_ID = 101;
     Path = \"$SUBVOL_PATH\";
     Pseudo = \"/nfs/cephfs\";
-    Protocols = 4;
+    Protocols = 3,4;
+    mount_path_pseudo = true;
     Transports = TCP;
     Access_Type = RW;
     Squash = None;
@@ -207,5 +211,3 @@ if pgrep ganesha >/dev/null; then
         echo "[ERROR] Service ganesha is NOT running" >&2
         exit 1
 fi
-exit 0
-

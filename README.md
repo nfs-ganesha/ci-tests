@@ -24,3 +24,7 @@ script to install and configure a server.
 The `pynfs` directory contains the `client.sh` script and a Jenkins `.xml` to
 run the tests from the pynfs project. The Jenkins `.xml` job runs the a common
 script to install and configure a server.
+
+## Onboarding documentation
+- [Gatecheck CI tests onboarding](docs/ci_gatecheck.md)
+- [Sanity dev job onboarding](docs/dev_onborading.md)

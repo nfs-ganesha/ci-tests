@@ -1,0 +1,69 @@
+pipeline {
+    agent { label 'cico-workspace' }
+
+    options {
+        disableConcurrentBuilds()
+        timestamps()
+    }
+
+    environment {
+        PATH = "$HOME/.local/bin:$PATH"
+        PYTHONPATH = "ci-tests"
+    }
+
+    stages {
+
+        stage('Checkout CI Tests') {
+            steps {
+                echo "Cloning CI repo: ${params.CI_REPO} (${params.CI_BRANCH})"
+
+                dir('ci-tests') {
+                    git url: params.CI_REPO, branch: params.CI_BRANCH
+                }
+            }
+        }
+
+        stage('Checkout NFS-Ganesha') {
+            steps {
+                echo "Cloning Ganesha repo: ${params.GIT_REPO} (${params.GIT_BRANCH})"
+                dir('nfs-ganesha') {
+                    git url: params.GIT_REPO, branch: params.GIT_BRANCH
+                    
+                    // Update submodules recursively
+                    sh '''
+                        echo "Updating submodules recursively"
+                        git submodule update --init --recursive
+                    '''
+                }
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh '''
+                    python3 -m pip install --user --upgrade pip setuptools wheel
+                    python3 -m pip install --user -r ./ci-tests/ci_utils/requirements.txt
+                '''
+            }
+        }
+
+        stage('Run tests') {
+            steps {
+                script {
+                    def suiteFileMap = [
+                        "fsal_ceph": "ci-tests/tests/dev_space/test_fsal.py"
+                    ]
+
+                    def testFile = suiteFileMap[params.TEST_SUITE]
+
+                    echo "[PIPELINE]: Selected suite '${params.TEST_SUITE}' → ${testFile}"
+                
+                    sh """
+                        echo "[PIPELINE]: Reserving nodes for tests..."
+                        pytest -v -s ci-tests/tests/dev_space/${params.TEST_SUITE}.py --confcutdir=ci-tests/tests/dev_space
+                    """
+                }
+            }
+        }
+    }
+}
