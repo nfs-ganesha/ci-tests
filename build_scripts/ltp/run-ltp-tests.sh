@@ -40,3 +40,5 @@ cd /opt/ltp; sudo ./runltp -d /mnt/nfsv42 -f fs -o /tmp/ltp_output_nfsv42.log -l
 
 # Run ltp on v4 mount
 cd /opt/ltp; sudo ./runltp -d /mnt/nfsv4 -f fs -o /tmp/ltp_output_nfsv4.log -l /tmp/ltp_run_nfsv4.log -p
+
+exit 0
