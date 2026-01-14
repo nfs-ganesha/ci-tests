@@ -367,6 +367,7 @@ def test_pynfs_gpfs(create_session, cmake_flags):
         vm_name = "centos9-vm"
         username = "root"
         ssh_key = "/root/.ssh/id_rsa.pub"
+        version_constraints = "5.14.0-570.62.1.el9_6" #Assuming GPFS 6.0 https://www.ibm.com/docs/en/STXKQY/gpfsclustersfaq.html#fsi
         gerrit_host = os.getenv("GERRIT_HOST", "review.gerrithub.io")
         gerrit_project = os.getenv("GERRIT_PROJECT", "ffilz/nfs-ganesha")
         gerrit_refspec = os.getenv("GERRIT_REFSPEC", "")
@@ -386,13 +387,16 @@ def test_pynfs_gpfs(create_session, cmake_flags):
         # -----------------------
         # VM Setup
         # -----------------------
+        image_url = identify_matching_qcow_image(server_session, "x86_64", "9", "https://cloud.centos.org/centos/9-stream/x86_64/images/", version_constraints=version_constraints)
+        logger.info("Image URL: %s", image_url)
+
         logger.info("Setting up VM on baremetal node: %s", server_node)
         vm = VMManager(
             session=server_session,
             workspace=server_workspace,
             vm_name=vm_name,
-            image_url="https://cloud.centos.org/centos/9-stream/x86_64/images/CentOS-Stream-GenericCloud-x86_64-9-20251117.0.x86_64.qcow2",
-            image_name="CentOS-Stream-GenericCloud-x86_64-9-20251117.0.x86_64.qcow2",
+            image_url=image_url,
+            image_name=image_url.split("/")[-1],
             vm_cpu="2",
             vm_ram="8192",
             vm_disk="30G",

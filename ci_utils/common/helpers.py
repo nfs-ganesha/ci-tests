@@ -1,7 +1,9 @@
 import os
 import json
+import re
 import subprocess
 from typing import Dict, Any
+from distutils.version import LooseVersion
 
 from ci_utils.common.logger import get_logger
 
@@ -135,3 +137,80 @@ def run_cmd(session, cmd, check=True, timeout=3600, source_bashrc=False):
         raise RuntimeError(err)
     logger.info(f"[REMOTE] Command output for {cmd_to_run} with return code {code}: Output: {out.strip()} \n {err.strip()}\n")
     return out.strip(), code
+
+# -----------------------
+# Identify the matching Qcow image from the list of available images
+# -----------------------
+def identify_matching_qcow_image(session,centos_arch, centos_version, image_base_url, backend_type="gpfs", version_constraints=None):
+    """
+    Identify the matching Qcow image from the list of available images
+    Args:
+        centos_arch (str): CentOS architecture (x86_64, aarch64)
+        centos_version (str): CentOS version (9, 8, 7)
+        image_base_url (str): Base URL of the image list
+        backend_type (str): Backend type (gpfs, pjdfs)
+    Returns:
+        str: Matching Qcow image name
+    """
+    logger.info(f"[STEP]: Identifying matching Qcow image for CentOS {centos_version} {centos_arch} {backend_type} with version constraints {version_constraints}")
+    run_cmd(session, "systemctl enable --now libvirtd")
+    run_cmd(session, "dnf install -y libguestfs-tools-c")
+    available_images = run_cmd(
+        session,
+        rf"curl -s {image_base_url} | grep -oP 'CentOS-Stream-GenericCloud-{centos_arch}-{centos_version}.*?\.qcow2(?=\")'"
+    )
+
+    logger.info(f"[INFO] Available images: {available_images}")
+  
+    # Parse available_images output into a list (assuming it's a string with newlines)
+    # Note: available_images is a tuple (output, code) from run_cmd, so we need to extract the output
+    images_list = available_images[0].strip().split('\n') if isinstance(available_images, tuple) else available_images.strip().split('\n')
+    images_list = [img for img in images_list if img.strip()]  # Remove empty strings
+
+    # Create the destination directory if it doesn't exist
+    run_cmd(session, "mkdir -p /var/lib/libguestfs/images/")
+
+    # Iterate from the last image backwards
+    for image_name in reversed(images_list):
+        image_name = image_name.strip()
+        if not image_name:
+            continue
+        
+        logger.info(f"Processing image: {image_name}")
+        
+        # wget operation with baseurl + image name
+        image_url = f"{image_base_url.rstrip('/')}/{image_name}"
+        run_cmd(session, f"wget -q {image_url}")
+        
+        # Move the downloaded image to /var/lib/libguestfs/images/
+        run_cmd(session, f"mv {image_name} /var/lib/libguestfs/images/")
+        
+        # chmod 644 on all qcow2 images in the directory
+        run_cmd(session, "chmod 644 /var/lib/libguestfs/images/*.qcow2")
+        
+        # Check kernel version using guestfish
+        image_path = f"/var/lib/libguestfs/images/{image_name}"
+        kernel_version, _ = run_cmd(session, f'virt-ls -a "{image_path}" /usr/lib/modules/')
+        logger.info(f"[INFO] Kernel version for {image_name}: {kernel_version}")
+
+        if version_constraints:
+
+            kernel_ver_str = kernel_version[0].strip() if isinstance(kernel_version, tuple) else kernel_version.strip()
+            
+            # Normalize both versions
+            kernel_normalized = re.match(r"(\d+\.\d+\.\d+-\d+)", kernel_ver_str).group(1)
+            constraint_normalized = re.match(r"(\d+\.\d+\.\d+-\d+)", version_constraints).group(1)
+            
+            logger.info(f"[INFO] Comparing kernel {kernel_ver_str} (normalized: {kernel_normalized}) with constraint {version_constraints} (normalized: {constraint_normalized})")
+            
+            # Use LooseVersion for comparison
+            if LooseVersion(kernel_normalized) <= LooseVersion(constraint_normalized):
+                logger.info(f"[INFO] Kernel version meets constraint. Returning image URL: {image_url}")
+                return image_url
+            else:
+                logger.info(f"[INFO] Kernel version does NOT meet constraint, trying next image")
+                run_cmd(session, f"rm -f {image_path}")
+                continue
+        else:
+            logger.info(f"[INFO] No version constraints specified, returning image URL: {image_url}")
+            return image_url
