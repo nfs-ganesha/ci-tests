@@ -47,11 +47,11 @@ EXPORT {{
     Path = "/{self.vfs_volume}";
     Pseudo = "/{self.vfs_volume}";
     Access_type = RW;
-    Disable_ACL = True;
+    Disable_ACL = {str(not self.enable_acl).capitalize()};
     Protocols = "3","4";
     Transports = "UDP","TCP";
     SecType = "sys";
-    Security_Label = False;
+    Security_Label = {str(self.security_label).capitalize()};
     FSAL {{
         Name = VFS;
     }}
@@ -78,41 +78,44 @@ EXPORT {{
             run_cmd(self.session, "grep --with-filename -e '' /etc/ganesha/exports/*.conf", check=False)
             raise RuntimeError(f"Export {self.vfs_volume} not found!")
 
+    # Commenting out below enablement as the changes are already done in the export configuration
+    # Retaining the code for future reference for enabling other features
+    
     # -------------------------------
     # Enable ACL if required
     # -------------------------------
-    def enable_acl_if_required(self):
-        logger.info("[TEST]: Checking if ACL needs to be enabled")
-        if self.enable_acl:
-            logger.info("Enabling ACL for volume...")
-            run_cmd(self.session, f"sed -i s/'Disable_ACL = .*'/'Disable_ACL = false;'/g {self.export_conf}")
-            run_cmd(self.session, f"cat {self.export_conf}")
-            export_id, _ = run_cmd(self.session, f"grep 'Export_Id' {self.export_conf} | sed 's/^[[:space:]]*Export_Id.*=[[:space:]]*\\([0-9]*\\).*/\\1/'")
-            run_cmd(
-                self.session,
-                f"dbus-send --type=method_call --print-reply --system "
-                f"--dest=org.ganesha.nfsd /org/ganesha/nfsd/ExportMgr "
-                f"org.ganesha.nfsd.exportmgr.UpdateExport string:{self.export_conf} "
-                f"string:\"EXPORT(Export_Id = {export_id})\""
-            )
+    # def enable_acl_if_required(self):
+        # logger.info("[TEST]: Checking if ACL needs to be enabled")
+        # if self.enable_acl:
+        #     # logger.info("Enabling ACL for volume...")
+        #     # run_cmd(self.session, f"sed -i s/'Disable_ACL = .*'/'Disable_ACL = false;'/g {self.export_conf}")
+        #     run_cmd(self.session, f"cat {self.export_conf}")
+        #     export_id, _ = run_cmd(self.session, f"grep 'Export_Id' {self.export_conf} | sed 's/^[[:space:]]*Export_Id.*=[[:space:]]*\\([0-9]*\\).*/\\1/'")
+        #     run_cmd(
+        #         self.session,
+        #         f"dbus-send --type=method_call --print-reply --system "
+        #         f"--dest=org.ganesha.nfsd /org/ganesha/nfsd/ExportMgr "
+        #         f"org.ganesha.nfsd.exportmgr.UpdateExport string:{self.export_conf} "
+        #         f"string:\"EXPORT(Export_Id = {export_id})\""
+        #     )
 
     # -------------------------------
     # Enable Security_Label if required
     # -------------------------------
-    def enable_security_label_if_required(self):
-        logger.info("[TEST]: Checking if Security_Label needs to be enabled")
-        if self.security_label:
-            logger.info("Enabling Security_Label for volume...")
-            run_cmd(self.session, f"sed -i s/'Security_Label = .*'/'Security_Label = True;'/g {self.export_conf}")
-            run_cmd(self.session, f"cat {self.export_conf}")
-            export_id, _ = run_cmd(self.session, f"grep 'Export_Id' {self.export_conf} | sed 's/^[[:space:]]*Export_Id.*=[[:space:]]*\\([0-9]*\\).*/\\1/'")
-            run_cmd(
-                self.session,
-                f"dbus-send --type=method_call --print-reply --system "
-                f"--dest=org.ganesha.nfsd /org/ganesha/nfsd/ExportMgr "
-                f"org.ganesha.nfsd.exportmgr.UpdateExport string:{self.export_conf} "
-                f"string:\"EXPORT(Export_Id = {export_id})\""
-            )
+    # def enable_security_label_if_required(self):
+    #     logger.info("[TEST]: Checking if Security_Label needs to be enabled")
+    #     if self.security_label:
+    #         logger.info("Enabling Security_Label for volume...")
+    #         run_cmd(self.session, f"sed -i s/'Security_Label = .*'/'Security_Label = True;'/g {self.export_conf}")
+    #         run_cmd(self.session, f"cat {self.export_conf}")
+    #         export_id, _ = run_cmd(self.session, f"grep 'Export_Id' {self.export_conf} | sed 's/^[[:space:]]*Export_Id.*=[[:space:]]*\\([0-9]*\\).*/\\1/'")
+    #         run_cmd(
+    #             self.session,
+    #             f"dbus-send --type=method_call --print-reply --system "
+    #             f"--dest=org.ganesha.nfsd /org/ganesha/nfsd/ExportMgr "
+    #             f"org.ganesha.nfsd.exportmgr.UpdateExport string:{self.export_conf} "
+    #             f"string:\"EXPORT(Export_Id = {export_id})\""
+    #         )
 
     # -------------------------------
     # Main export workflow
@@ -123,6 +126,6 @@ EXPORT {{
         self.configure_export()
         run_cmd(self.session, "sleep 5")
         self.validate_export()
-        self.enable_acl_if_required()
-        self.enable_security_label_if_required()
+        # self.enable_acl_if_required()
+        # self.enable_security_label_if_required()
         logger.info("Export completed successfully.")

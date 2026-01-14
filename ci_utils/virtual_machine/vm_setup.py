@@ -79,7 +79,7 @@ class VMManager:
             )
             run_cmd(self.session, f"virsh net-define {remote_xml}", check=False)
             run_cmd(self.session, "virsh net-start default")
-            run_cmd(self.session, "virsh net-autostart default"
+            run_cmd(self.session, "virsh net-autostart default")
             self.network = "default"
 
     # -----------------------
