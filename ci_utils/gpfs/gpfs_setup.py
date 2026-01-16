@@ -119,10 +119,26 @@ class SpectrumScaleInstaller:
                 run_cmd(sess, "dnf install -y kernel-devel-$(uname -r) kernel-headers-$(uname -r)")
             else:
                 logger.info(f"Attempting Koji fetch...")
-                run_cmd(sess, "wget https://kojihub.stream.centos.org/kojifiles/packages/kernel/5.14.0/639.el9/x86_64/kernel-devel-5.14.0-639.el9.x86_64.rpm")
-                run_cmd(sess, "wget https://kojihub.stream.centos.org/kojifiles/packages/kernel/5.14.0/639.el9/x86_64/kernel-headers-5.14.0-639.el9.x86_64.rpm")
-                run_cmd(sess, "ls -la")
-                run_cmd(sess, "dnf -y install openssl-fips-provider ./kernel-devel-5.14.0-639.el9.x86_64.rpm ./kernel-headers-5.14.0-639.el9.x86_64.rpm")
+                # Get kernel version and extract components for Koji URL
+                # Example: 5.14.0-658.el9.x86_64 -> major=5.14.0, build=658, release=el9
+                kernel_ver, _ = run_cmd(sess, "uname -r")
+                kernel_ver = kernel_ver.strip()
+                # Parse: 5.14.0-658.el9.x86_64 -> extract 5.14.0, 658, el9
+                match = re.match(r'(\d+\.\d+\.\d+)-(\d+)\.(el\d+)', kernel_ver)
+                if match:
+                    major, build, release = match.groups()
+                    koji_base = f"https://kojihub.stream.centos.org/kojifiles/packages/kernel/{major}/{build}.{release}/x86_64"
+                    kernel_pkg_ver = f"{major}-{build}.{release}"
+                    run_cmd(sess, f"wget {koji_base}/kernel-devel-{kernel_pkg_ver}.x86_64.rpm")
+                    run_cmd(sess, f"wget {koji_base}/kernel-headers-{kernel_pkg_ver}.x86_64.rpm")
+                    run_cmd(sess, "ls -la")
+                    run_cmd(sess, f"dnf -y install openssl-fips-provider ./kernel-devel-{kernel_pkg_ver}.x86_64.rpm ./kernel-headers-{kernel_pkg_ver}.x86_64.rpm")
+                else:
+                    logger.warning(f"Could not parse kernel version {kernel_ver}, falling back to default")
+                    run_cmd(sess, "wget https://kojihub.stream.centos.org/kojifiles/packages/kernel/5.14.0/570.el9/x86_64/kernel-devel-5.14.0-570.el9.x86_64.rpm")
+                    run_cmd(sess, "wget https://kojihub.stream.centos.org/kojifiles/packages/kernel/5.14.0/570.el9/x86_64/kernel-headers-5.14.0-570.el9.x86_64.rpm")
+                    run_cmd(sess, "ls -la")
+                    run_cmd(sess, "dnf -y install openssl-fips-provider ./kernel-devel-5.14.0-570.el9.x86_64.rpm ./kernel-headers-5.14.0-570.el9.x86_64.rpm")
             run_cmd(
                 sess,
                 "yum -y install "
