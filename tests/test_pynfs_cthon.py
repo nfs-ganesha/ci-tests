@@ -367,7 +367,7 @@ def test_pynfs_gpfs(create_session, cmake_flags):
         vm_name = "centos9-vm"
         username = "root"
         ssh_key = "/root/.ssh/id_rsa.pub"
-        version_constraints = "5.14.0-570.62.1.el9_6" #Assuming GPFS 6.0 https://www.ibm.com/docs/en/STXKQY/gpfsclustersfaq.html#fsi
+        version_constraints = "5.14.0-611.16.1.el9_7" #Assuming GPFS 6.0 https://www.ibm.com/docs/en/STXKQY/gpfsclustersfaq.html#fsi
         gerrit_host = os.getenv("GERRIT_HOST", "review.gerrithub.io")
         gerrit_project = os.getenv("GERRIT_PROJECT", "ffilz/nfs-ganesha")
         gerrit_refspec = os.getenv("GERRIT_REFSPEC", "")
