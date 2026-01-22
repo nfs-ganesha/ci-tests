@@ -171,7 +171,7 @@ def identify_matching_qcow_image(session,centos_arch, centos_version, image_base
     run_cmd(session, "mkdir -p /var/lib/libguestfs/images/")
 
     # Iterate from the last image backwards
-    for image_name in reversed(images_list):
+    for image_name in images_list:
         image_name = image_name.strip()
         if not image_name:
             continue
@@ -204,7 +204,7 @@ def identify_matching_qcow_image(session,centos_arch, centos_version, image_base
             logger.info(f"[INFO] Comparing kernel {kernel_ver_str} (normalized: {kernel_normalized}) with constraint {version_constraints} (normalized: {constraint_normalized})")
             
             # Use LooseVersion for comparison
-            if LooseVersion(kernel_normalized) <= LooseVersion(constraint_normalized):
+            if LooseVersion(kernel_normalized) >= LooseVersion(constraint_normalized):
                 logger.info(f"[INFO] Kernel version meets constraint. Returning image URL: {image_url}")
                 return image_url
             else:
