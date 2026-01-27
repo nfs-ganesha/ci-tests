@@ -74,9 +74,15 @@ class GPFSGaneshaManager:
 
         BASE_PACKAGES="git bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel rpm-build redhat-rpm-config gdb"
         BUILDREQUIRES_EXTRA="libnsl2-devel libnfsidmap-devel libwbclient-devel userspace-rcu-devel libcephfs-devel python3-devel"
+        ADDITIONAL_PACKAGES=""
     
         if self.system_type == "centos":
             repo_name = "crb"
+            version, _ = run_cmd(self.session, "rpm -E %{rhel}")
+            version = version.strip()
+            logger.info("CentOS Version for GPFS: %s", version)
+            if version.startswith("10"):
+                ADDITIONAL_PACKAGES = "python3-build python3-wheel python3-installer"
         elif self.system_type == "baremetal" or self.system_type == "openstack":
             # Detect RHEL version and arch
             release_out, _ = run_cmd(self.session, "cat /etc/redhat-release")
@@ -91,7 +97,7 @@ class GPFSGaneshaManager:
             repo_name = f"codeready-builder-for-rhel-{rhel_major}-{arch.strip()}-rpms"
             run_cmd(self.session, f"subscription-manager repos --enable={repo_name}")
 
-        run_cmd(self.session, f"dnf install --enablerepo={repo_name} -y {BASE_PACKAGES} {BUILDREQUIRES_EXTRA} libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build libgfapi-devel xfsprogs-devel selinux-policy-devel sqlite --skip-broken")
+        run_cmd(self.session, f"dnf install --enablerepo={repo_name} -y {BASE_PACKAGES} {BUILDREQUIRES_EXTRA} {ADDITIONAL_PACKAGES} libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build libgfapi-devel xfsprogs-devel selinux-policy-devel sqlite --skip-broken")
         cmake_binary, _ = run_cmd(self.session, "which cmake")
         build_dir = f"{test_workspace}/nfs-ganesha/build"
         src_dir = f"{test_workspace}/nfs-ganesha"

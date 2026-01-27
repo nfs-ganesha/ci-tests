@@ -364,10 +364,21 @@ def test_pynfs_gpfs(create_session, cmake_flags):
         logger.info("[TEST WORKSPACE DETAILS]:Server Workspace: %s", server_workspace)
         logger.info("[TEST SESSION DETAILS]: Server Session: %s", server_session)
 
+        version, _ = run_cmd(server_session, "rpm -E %{rhel}")
+        version = version.strip()
+        logger.info("CentOS Version for GPFS: %s", version)
+
         vm_name = "centos9-vm"
         username = "root"
         ssh_key = "/root/.ssh/id_rsa.pub"
-        version_constraints = "5.14.0-611.16.1.el9_7" #Assuming GPFS 6.0 https://www.ibm.com/docs/en/STXKQY/gpfsclustersfaq.html#fsi
+
+        if version.startswith("9"):
+            version_constraints = "5.14.0-611.16.1.el9_7" #Assuming GPFS 6.0 https://www.ibm.com/docs/en/STXKQY/gpfsclustersfaq.html#fsi
+        elif version.startswith("10"):
+            version_constraints = "6.12.0-124.11.1.el10_1" #Assuming GPFS 6.0 https://www.ibm.com/docs/en/STXKQY/gpfsclustersfaq.html#fsi
+        else:
+            version_constraints = "6.12.0-124.11.1.el10_1" #Assuming GPFS 6.0 https://www.ibm.com/docs/en/STXKQY/gpfsclustersfaq.html#fsi
+
         gerrit_host = os.getenv("GERRIT_HOST", "review.gerrithub.io")
         gerrit_project = os.getenv("GERRIT_PROJECT", "ffilz/nfs-ganesha")
         gerrit_refspec = os.getenv("GERRIT_REFSPEC", "")
@@ -387,7 +398,7 @@ def test_pynfs_gpfs(create_session, cmake_flags):
         # -----------------------
         # VM Setup
         # -----------------------
-        image_url = identify_matching_qcow_image(server_session, "x86_64", "9", "https://cloud.centos.org/centos/9-stream/x86_64/images/", version_constraints=version_constraints)
+        image_url = identify_matching_qcow_image(server_session, "x86_64", version, f"https://cloud.centos.org/centos/{version}-stream/x86_64/images/", version_constraints=version_constraints)
         logger.info("Image URL: %s", image_url)
 
         logger.info("Setting up VM on baremetal node: %s", server_node)

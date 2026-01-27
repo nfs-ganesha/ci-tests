@@ -146,7 +146,16 @@ class SpectrumScaleInstaller:
                 "rpcbind sssd-tools openldap-clients bind-utils net-tools "
                 "krb5-workstation python3 --skip-broken"
             )
-            run_cmd(sess, "python3 -m pip install --user ansible cherrypy")
+            version, _ = run_cmd(self.session, "rpm -E %{rhel}")
+            version = version.strip()
+            logger.info("CentOS Version for VM: %s", version)
+            if version.startswith("9"):
+                run_cmd(sess, "python3 -m pip install --user ansible cherrypy")
+            elif version.startswith("10"):
+                run_cmd(sess, "python3 -m pip install --user 'ansible-core==2.18.*' cherrypy")
+            else:
+                run_cmd(sess, "python3 -m pip install --user 'ansible-core==2.18.*' cherrypy")
+                
             logger.info(f"[INFO] Base packages installed on {node}")
 
         # Limit concurrency to avoid overloading network / SSH sessions
@@ -194,13 +203,13 @@ class SpectrumScaleInstaller:
         logger.info("[STEP]: Detecting usable IP addresses on the VM")
 
         # 1️⃣ Base IP
-        base_ip, _ = run_cmd(self.session, "/sbin/ip -o -4 addr list eth0 | awk '{print $4}' | cut -d/ -f1 | head -n1")
+        iface, _ = run_cmd(self.session, "ip -o -4 addr show up | awk '!/ lo / {print $2; exit}'")
+        base_ip, _ = run_cmd(self.session, f"/sbin/ip -o -4 addr list {iface} | awk '{{print $4}}' | cut -d/ -f1 | head -n1")
         base_ip = base_ip.strip()
         logger.info(f"Base IP detected: {base_ip}")
         subnet_prefix = ".".join(base_ip.split(".")[:3])
         servers = self.nodes.get("servers", [])
         required_ips = len(servers)
-        iface, _ = run_cmd(self.session, "ip -o -4 addr show up | awk '!/ lo / {print $2; exit}'")
         ip_cidr, _ = run_cmd(self.session, f"ip -o -4 addr show {iface} | awk '{{print $4}}' | head -n1")
         logger.info(f"Network interface: {iface.strip()}, CIDR: {ip_cidr}")
 

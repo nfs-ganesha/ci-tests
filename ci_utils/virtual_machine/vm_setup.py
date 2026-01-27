@@ -141,10 +141,31 @@ class VMManager:
         )
 
         iso_path = self.image_dir / "cloud-init.iso"
-        run_cmd(
-            self.session,
-            f"genisoimage -output {iso_path} -volid cidata -joliet -rock {cloud_dir}/user-data {cloud_dir}/meta-data"
-        )
+        version, _ = run_cmd(self.session, "rpm -E %{rhel}")
+        version = version.strip()
+        logger.info("CentOS Version for VM: %s", version)
+        if version.startswith("9"):
+            logger.info("Generating ISO image using genisoimage for CentOS 9")
+            run_cmd(
+                self.session,
+                f"genisoimage -output {iso_path} -volid cidata -joliet -rock {cloud_dir}/user-data {cloud_dir}/meta-data"
+            )
+        elif version.startswith("10"):
+            logger.info("Generating ISO image using xorriso for CentOS 10")
+            run_cmd(self.session, "dnf install -y xorriso")
+            run_cmd(
+                self.session,
+                f"xorriso -as mkisofs -output {iso_path} -volid cidata -joliet -rock "
+                f"{cloud_dir}/user-data {cloud_dir}/meta-data"
+            )
+        else:
+            logger.info("Generating ISO image using xorriso for CentOS 10")
+            run_cmd(self.session, "dnf install -y xorriso")
+            run_cmd(
+                self.session,
+                f"xorriso -as mkisofs -output {iso_path} -volid cidata -joliet -rock "
+                f"{cloud_dir}/user-data {cloud_dir}/meta-data"
+            )   
 
         return iso_path
 
