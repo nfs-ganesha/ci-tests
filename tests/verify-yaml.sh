@@ -1,3 +1,3 @@
 #!/bin/bash
 
-jenkins-jobs test globals/macros:jobs
+jenkins-jobs test globals/macros:jobs --recursive

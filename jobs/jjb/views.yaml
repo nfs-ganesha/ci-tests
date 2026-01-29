@@ -1,0 +1,82 @@
+- view:
+    name: Gatecheck Tests
+    view-type: list
+    description: 'Jobs related to patchset testing and validation'
+    job-name:
+      - gatecheck-trigger-gerrithub
+    columns:
+      - status
+      - weather
+      - job
+      - last-success
+      - last-failure
+      - last-duration
+      - build-button
+      - favorite
+    recurse: false
+
+- view:
+    name: Dev Tests
+    view-type: list
+    description: 'Development and testing jobs'
+    regex: 'dev-.*'
+    columns:
+      - status
+      - weather
+      - job
+      - last-success
+      - last-failure
+      - last-duration
+      - build-button
+      - favorite
+    recurse: false
+
+
+- view:
+    name: Ceph Tests
+    view-type: list
+    description: 'Ceph and CephFS related test jobs'
+    regex: '.*ceph.*'
+    columns:
+      - status
+      - weather
+      - job
+      - last-success
+      - last-failure
+      - last-duration
+      - build-button
+      - favorite
+    recurse: false
+
+- view:
+    name: GPFS Tests
+    view-type: list
+    description: 'GPFS and Storage Scale related test jobs'
+    regex: '.*gpfs.*'
+    columns:
+      - status
+      - weather
+      - job
+      - last-success
+      - last-failure
+      - last-duration
+      - build-button
+      - favorite
+    recurse: false
+
+
+- view:
+    name: WIP (Test only)
+    view-type: list
+    description: 'Work in progress and test-only jobs'
+    regex: 'test-.*'
+    columns:
+      - status
+      - weather
+      - job
+      - last-success
+      - last-failure
+      - last-duration
+      - build-button
+      - favorite
+    recurse: false

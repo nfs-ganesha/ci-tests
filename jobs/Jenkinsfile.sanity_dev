@@ -13,16 +13,6 @@ pipeline {
 
     stages {
 
-        stage('Checkout CI Tests') {
-            steps {
-                echo "Cloning CI repo: ${params.CI_REPO} (${params.CI_BRANCH})"
-
-                dir('ci-tests') {
-                    git url: params.CI_REPO, branch: params.CI_BRANCH
-                }
-            }
-        }
-
         stage('Checkout NFS-Ganesha') {
             steps {
                 echo "Cloning Ganesha repo: ${params.GIT_REPO} (${params.GIT_BRANCH})"

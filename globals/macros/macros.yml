@@ -8,7 +8,7 @@
         skip-tag: true
         shallow-clone: true
         url: https://github.com/nfs-ganesha/ci-tests.git 
-        basedir: "$WORKSPACE/ci-tests"
+        basedir: "ci-tests"
 
 - builder:
     name: get-node
@@ -56,7 +56,7 @@
                 exclude-drafts: true
                 exclude-no-code-change: true
             - comment-added-contains-event:
-                comment-contains-value: 'recheck {option}'
+                comment-contains-value: '(?i)recheck {option}'
           projects:
             - project-compare-type: PLAIN
               project-pattern: 'ffilz/nfs-ganesha'
@@ -103,6 +103,10 @@
         default: refs/heads/next
         description: Git reference to fetch from the Gerrit project.
         name: GERRIT_REFSPEC
+    - string:
+        name: GERRIT_USER
+        default: jenkins-glusterorg
+        description: Gerrit user to comment with
 
 - parameter:
     name: centos_variables

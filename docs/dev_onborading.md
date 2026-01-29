@@ -4,22 +4,21 @@
 
 - **Goal**: Run and develop CI tests for **NFS-Ganesha** using the `sanity_dev` Jenkins job.
 - **Key pieces**:
-  - `jobs/distributed_test_runner/sanity_dev.groovy` – defines the Jenkins job & parameters.
+  - `jobs/jjb/dev_sanity.yaml` – defines the Jenkins job & parameters.
   - `jobs/Jenkinsfile.sanity_dev` – actual pipeline (checkout, install, run tests).
   - `tests/dev_space/` – dev-focused pytest suites (e.g. `test_fsal.py`).
   - `ci_utils/` – shared Python helpers.
   - `ci_utils/dev_space/` – dev-only helpers (dependencies, node reservation, etc.).
-- **Sanity dev pipeline**: [`sanity_dev` Jenkins job](https://jenkins-nfs-ganesha.apps.ocp.cloud.ci.centos.org/view/all/job/sanity_dev/)
+- **Sanity dev pipeline**: [`dev-sanity-tests` Jenkins job](https://jenkins-nfs-ganesha.apps.ocp.cloud.ci.centos.org/view/all/job/dev-sanity-tests/)
 
 ---
 
 ## How the Jenkins Job Works
 
-- **Job definition (`sanity_dev.groovy`)**
+- **Job definition (`dev_sanity.yaml`)**
   - **Defines parameters**:
     - **`TEST_SUITE`**: which test file to run (e.g. `test_fsal` → `test_fsal.py`).
     - **`SERVER_NODE_COUNT`**, **`CLIENT_NODE_COUNT`**: how many nodes to reserve.
-    - **`CI_REPO`/`CI_BRANCH`**: repo/branch for this CI framework (default is this repo).
     - **`GIT_REPO`/`GIT_BRANCH`**: NFS-Ganesha source to test.
     - **`CMAKE_FLAGS`**, **`CMAKE_OVERRIDE`**: extra/override CMake options.
     - **`CENTOS_VERSION`**, **`CENTOS_ARCH`**: OS/arch to use.
@@ -72,7 +71,7 @@ Use this pattern (fixtures + managers from `ci_utils`) for any new dev tests.
 ## Typical Dev Workflow
 
 - **To run via Jenkins**:
-  - Open **`sanity_dev`** job.
+  - Open **`dev-sanity-tests`** job.
   - Set:
     - **`TEST_SUITE`**: e.g. `test_fsal`.
     - **Node counts**: `SERVER_NODE_COUNT`, `CLIENT_NODE_COUNT`.
@@ -93,7 +92,7 @@ Use this pattern (fixtures + managers from `ci_utils`) for any new dev tests.
     - Reserve nodes, connect via SSH, setup backends, run tests.
 
 - **2. Wire it up in Jenkins**
-  - In `jobs/distributed_test_runner/sanity_dev.groovy`:
+  - In `jobs/jjb/dev_sanity.yaml`:
     - Add your test suite name to `TEST_SUITE` choices (e.g. `'test_newbackend'`).
   - In `jobs/Jenkinsfile.sanity_dev`:
     - Make sure `pytest` call matches the pattern:
