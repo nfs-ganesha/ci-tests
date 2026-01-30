@@ -1,0 +1,60 @@
+- job:
+    name: dev-sanity-tests
+    project-type: pipeline
+    description: |
+      Dynamic CI Test Pipeline with parametrized test suite, topology, repos, and CMake options
+
+    properties:
+      - discarder
+
+    parameters:
+      - centos_variables
+
+      # Job-specific parameters
+      - choice:
+          name: TEST_SUITE
+          choices:
+            - test_fsal
+          description: Select which test suite to run
+
+      - choice:
+          name: SERVER_NODE_COUNT
+          choices:
+            - '1'
+            - '2'
+          description: Number of server nodes to reserve
+
+      - choice:
+          name: CLIENT_NODE_COUNT
+          choices:
+            - '1'
+            - '2'
+          description: Number of client nodes to reserve
+
+      - string:
+          name: GIT_REPO
+          default: 'https://github.com/nfs-ganesha/nfs-ganesha.git'
+          description: NFS-Ganesha source repo
+
+      - string:
+          name: GIT_BRANCH
+          default: 'next'
+          description: NFS-Ganesha branch
+
+      - string:
+          name: CMAKE_FLAGS
+          default: ''
+          description: Custom cmake flags to append to the existing flags
+
+      - bool:
+          name: CMAKE_OVERRIDE
+          default: false
+          description: >
+            If set, overrides existing cmake flags and only uses CMAKE_FLAGS.
+            If unset, CMAKE_FLAGS is appended to the existing flags.
+
+    pipeline-scm:
+      scm:
+        - ci-tests
+      script-path: jobs/Jenkinsfile.sanity_dev
+      lightweight-checkout: true

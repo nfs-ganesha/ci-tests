@@ -24,7 +24,9 @@ PARAM_KEYS = [
     "CENTOS_VERSION",
     "CENTOS_ARCH",
 ]
-NFS_GANESHA_REPO = "/tmp/workspace/sanity_dev/nfs-ganesha"
+# Get the current working directory as WORKSPACE
+WORKSPACE = os.getcwd()
+NFS_GANESHA_REPO = os.path.join(WORKSPACE, "nfs-ganesha")
 
 @pytest.fixture(scope="session", autouse=True)
 def ci_params():

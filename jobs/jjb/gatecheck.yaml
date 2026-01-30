@@ -1,0 +1,39 @@
+- job:
+    name: nfs-ganesha-pipeline
+    project-type: pipeline
+    description: |
+      Automated GerritHub patch validation pipeline. Runs staged checks for every new patchset:
+      - Code checks (Checkpatch, Clang)
+      - FSAL tests (CephFS, GPFS, VFS, RGW) in parallel
+      - Functional tests (Cthon, Pynfs variants) in parallel
+      Posts consolidated results to Gerrit with links to full logs.
+
+    properties:
+      - discarder
+
+    parameters:
+      - gerrit_variables
+      - centos_variables
+
+      # Job-specific parameters
+      - string:
+          name: CMAKE_FLAGS
+          default: ''
+          description: Custom cmake flags to append to the existing flags
+
+      - bool:
+          name: CMAKE_OVERRIDE
+          default: false
+          description: >
+            If set, overrides existing cmake flags and only uses CMAKE_FLAGS.
+            If unset, CMAKE_FLAGS is appended to the existing flags.
+
+    triggers:
+      - gerrithub-trigger:
+          option: gatecheck 
+
+    pipeline-scm:
+      scm:
+        - ci-tests
+      script-path: jobs/Jenkinsfile.gatecheck
+      lightweight-checkout: true
