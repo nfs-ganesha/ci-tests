@@ -1,5 +1,5 @@
 - job:
-    name: nfs-ganesha-pipeline
+    name: gatecheck-trigger-gerrithub
     project-type: pipeline
     description: |
       Automated GerritHub patch validation pipeline. Runs staged checks for every new patchset:
