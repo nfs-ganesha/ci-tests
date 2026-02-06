@@ -58,6 +58,7 @@ class GPFSGaneshaManager:
         else:
             self._build_from_source(test_workspace)
 
+        self.coredump_setup()
         self.start_ganesha_service()
 
     # -------------------------------
@@ -97,7 +98,20 @@ class GPFSGaneshaManager:
             repo_name = f"codeready-builder-for-rhel-{rhel_major}-{arch.strip()}-rpms"
             run_cmd(self.session, f"subscription-manager repos --enable={repo_name}")
 
-        run_cmd(self.session, f"dnf install --enablerepo={repo_name} -y {BASE_PACKAGES} {BUILDREQUIRES_EXTRA} {ADDITIONAL_PACKAGES} libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build libgfapi-devel xfsprogs-devel selinux-policy-devel sqlite --skip-broken")
+        dnf_cmd = f"dnf install --enablerepo={repo_name} -y {BASE_PACKAGES} {BUILDREQUIRES_EXTRA} {ADDITIONAL_PACKAGES} libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build libgfapi-devel xfsprogs-devel selinux-policy-devel sqlite --skip-broken"
+        max_attempts = 3
+        retry_delay = 30
+        for attempt in range(1, max_attempts + 1):
+            try:
+                run_cmd(self.session, dnf_cmd)
+                break
+            except RuntimeError as e:
+                if attempt == max_attempts:
+                    raise
+                logger.warning("dnf install failed (attempt %d/%d): %s. Cleaning cache and retrying in %ds ...", attempt, max_attempts, e, retry_delay)
+                run_cmd(self.session, "dnf clean all", check=False)
+                time.sleep(retry_delay)
+
         cmake_binary, _ = run_cmd(self.session, "which cmake")
         build_dir = f"{test_workspace}/nfs-ganesha/build"
         src_dir = f"{test_workspace}/nfs-ganesha"
@@ -189,7 +203,16 @@ class GPFSGaneshaManager:
         run_cmd(self.session, "systemctl daemon-reload")
 
         logger.info("NFS-Ganesha build, install, and minimal config complete.")
-
+    # -------------------------------
+    # Setup coredump configuration
+    # -------------------------------
+    def coredump_setup(self):
+        logger.info("[STEP]: Setting up coredump configuration")
+        run_cmd(self.session, "sysctl -w kernel.core_pattern=/tmp/cores/core.%e.%p.%h.%t")
+        run_cmd(self.session, "mkdir -p /tmp/cores")
+        run_cmd(self.session, "cat /proc/sys/kernel/core_pattern")
+        logger.info("Coredump setup complete.")
+        
     # -------------------------------
     # Start Ganesha service
     # -------------------------------

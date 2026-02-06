@@ -114,6 +114,78 @@ def read_json_file(json_path: str) -> Dict[str, Any]:
         raise
 
 # -----------------------
+# Check for process crash and dump backtraces from core files
+# -----------------------
+def check_process_crash_and_backtrace(
+    session,
+    process_name="ganesha",
+    cores_dir="/tmp/cores",
+    binary_path="/usr/bin/ganesha.nfsd",
+    gdb_cmd=None,
+):
+    """
+    Check if a process is running; if not, look for core dumps in cores_dir,
+    install gdb if needed, and run gdb to get backtraces for each core file.
+
+    Args:
+        session: Active RemoteSession instance (same as run_cmd).
+        process_name (str): Process name to check via pgrep (e.g. "ganesha").
+        cores_dir (str): Directory where core dumps are stored (e.g. /tmp/cores).
+        binary_path (str): Full path to the binary for gdb (e.g. /usr/bin/ganesha.nfsd).
+        gdb_cmd (str, optional): Custom gdb command format string. Must use
+            {binary_path} and {core_path} placeholders. If None, uses the default:
+            gdb -q -batch with debuginfod, pagination off, and "thread apply all bt full".
+
+    Returns:
+        str: Combined gdb backtrace output for all core files, or None if process
+        was running or no core files found. Caller can write this to a file.
+    """
+    try:
+        logger.info("Check if %s is running", process_name)
+        out, code = run_cmd(session, f"pgrep {process_name}", check=False)
+        logger.debug("Output: %s, Code: %s", out, code)
+        if code != 0:
+            logger.error("%s is not running", process_name)
+            logger.info("Check for crash in %s", cores_dir)
+            out, code = run_cmd(session, f"ls -la {cores_dir}", check=False)
+            logger.debug("Output: %s, Code: %s", out, code)
+            list_out, _ = run_cmd(session, f"ls {cores_dir} 2>/dev/null", check=False)
+            core_files = [
+                line.strip()
+                for line in (list_out or "").splitlines()
+                if line.strip()
+            ]
+            if core_files:
+                logger.info("Crashes found")
+                logger.info("Install debug packages and see for crashes")
+                run_cmd(session, "dnf install -y gdb")
+                default_gdb_cmd = (
+                    "gdb -q -batch "
+                    "-ex \"set debuginfod enabled on\" "
+                    "-ex \"set pagination off\" "
+                    "-ex \"thread apply all bt full\" "
+                    "{binary_path} {core_path}"
+                )
+                backtraces = []
+                for core_name in core_files:
+                    core_path = f"{cores_dir}/{core_name}"
+                    cmd = (gdb_cmd if gdb_cmd is not None else default_gdb_cmd).format(
+                        binary_path=binary_path,
+                        core_path=core_path,
+                    )
+                    bt_out, _ = run_cmd(session, cmd, check=False)
+                    section = f"--- Backtrace for {core_path} ---\n{bt_out or ''}"
+                    backtraces.append(section)
+                return "\n\n".join(backtraces)
+            else:
+                logger.info("No crashes found")
+        return None
+    except Exception as e:
+        logger.error("Error checking for crashes: %s", e)
+        return None
+
+
+# -----------------------
 # Run remote commands
 # -----------------------
 def run_cmd(session, cmd, check=True, timeout=3600, source_bashrc=False):

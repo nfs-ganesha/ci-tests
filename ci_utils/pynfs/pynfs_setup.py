@@ -236,6 +236,8 @@ class PyNFSManager:
                 failure_summary.append("")  # blank line
             if code != 0:
                 return_code = code
+                fail_found = True
+                logger.error("Return code %s detected in pynfs %s", code, version)
 
         if failure_summary:
             summary_text = "\n".join(failure_summary)

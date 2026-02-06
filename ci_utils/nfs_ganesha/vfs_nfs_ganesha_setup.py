@@ -26,6 +26,7 @@ class VFSGaneshaManager:
         else:
             self._build_from_source(test_workspace)
 
+        self.coredump_setup()
         self.start_ganesha_service()
 
     # -------------------------------
@@ -103,7 +104,17 @@ NFSv4 {
         run_cmd(self.session, "cat /etc/ganesha/ganesha.conf")
 
         logger.info("NFS-Ganesha build, install, and minimal config complete.")
-    
+
+    # -------------------------------
+    # Setup coredump configuration
+    # -------------------------------
+    def coredump_setup(self):
+        logger.info("[STEP]: Setting up coredump configuration")
+        run_cmd(self.session, "echo '/tmp/cores/core.%e.%p.%h.%t' > /proc/sys/kernel/core_pattern")
+        run_cmd(self.session, "mkdir -p /tmp/cores")
+        logger.info("Coredump setup complete.")
+        
+            
     # -------------------------------
     # Start Ganesha service
     # -------------------------------
@@ -116,4 +127,3 @@ NFSv4 {
             run_cmd(self.session, "journalctl -xe", check=False)
             assert False, "Failed to start nfs-ganesha service"
         logger.info("NFS-Ganesha started successfully.")
-    
