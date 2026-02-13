@@ -247,17 +247,20 @@ class VMManager:
         run_cmd(self.session, f"ssh-keyscan -H {self.vm_ip} >> ~/.ssh/known_hosts", check=False)
 
     def copy_file_to_vm(self, local_path, remote_path="/tmp"):
-        logger.info(f"[STEP]: Copying {local_path} to VM {self.vm_ip}:{remote_path}")
-        run_cmd(
-            self.session,
-            f"scp -i {self.ssh_key.with_suffix('')} {local_path} {self.username}@{self.vm_ip}:{remote_path}"
-        )
+        try:
+            logger.info(f"[STEP]: Copying {local_path} to VM {self.vm_ip}:{remote_path}")
+            run_cmd(
+                self.session,
+                f"scp -i {self.ssh_key.with_suffix('')} {local_path} {self.username}@{self.vm_ip}:{remote_path}"
+            )
 
-        logger.info(f"Copying SSH keys and nfs-ganesha source to VM {self.vm_ip}")
-        run_cmd(self.session, f"scp -i {self.ssh_key.with_suffix('')} {self.ssh_key} {self.username}@{self.vm_ip}:/tmp")
-        run_cmd(self.session, f"scp -i {self.ssh_key.with_suffix('')} {self.ssh_key.with_suffix('')} {self.username}@{self.vm_ip}:/tmp")
-        run_cmd(self.session, f"scp -i {self.ssh_key.with_suffix('')} -r {self.workspace}/nfs-ganesha {self.username}@{self.vm_ip}:/root")
-
+            logger.info(f"Copying SSH keys and nfs-ganesha source to VM {self.vm_ip}")
+            run_cmd(self.session, f"scp -i {self.ssh_key.with_suffix('')} {self.ssh_key} {self.username}@{self.vm_ip}:/tmp")
+            run_cmd(self.session, f"scp -i {self.ssh_key.with_suffix('')} {self.ssh_key.with_suffix('')} {self.username}@{self.vm_ip}:/tmp")
+            run_cmd(self.session, f"scp -i {self.ssh_key.with_suffix('')} -r {self.workspace}/nfs-ganesha {self.username}@{self.vm_ip}:/root")
+        except Exception as e:
+            logger.error("Failed to copy files to VM with error: %s", e)
+            raise e
     # -----------------------
     # Shutdown and Cleanup
     # -----------------------

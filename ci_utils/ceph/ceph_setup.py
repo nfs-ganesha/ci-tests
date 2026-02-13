@@ -224,6 +224,24 @@ class CephGaneshaSetup:
         run_cmd(self.session, "echo '/tmp/cores/core.%e.%p.%h.%t' > /proc/sys/kernel/core_pattern")
         run_cmd(self.session, "mkdir -p /tmp/cores")
 
+    def get_ceph_version(self):
+        """
+        Get the Ceph version from the cluster.
+        
+        Returns:
+            str: Full Ceph version string or "Unknown" if unable to retrieve.
+        """
+        logger.info("[STEP]: Getting Ceph version")
+        output, code = run_cmd(self.session, "ceph --version", check=False)
+        
+        if code == 0 and output:
+            version = output.strip()
+            logger.info(f"[OK] Ceph version: {version}")
+            return version
+        
+        logger.warning("Failed to get Ceph version")
+        return "Unknown"
+
     # -----------------------
     # Full Pipeline Setup
     # -----------------------

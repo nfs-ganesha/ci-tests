@@ -229,6 +229,27 @@ class GPFSGaneshaManager:
         logger.info("NFS-Ganesha started successfully.")
 
     # -------------------------------
+    # Get NFS version
+    # -------------------------------
+    def get_nfs_version(self):
+        """
+        Get the NFS-Ganesha version.
+        
+        Returns:
+            str: NFS-Ganesha version string (first line only) or "Unknown" if unable to retrieve.
+        """
+        logger.info("[STEP]: Getting NFS-Ganesha version")
+        output, code = run_cmd(self.session, "ganesha.nfsd -v", check=False)
+        
+        if code == 0 and output:
+            # Parse only the first line to get the version
+            first_line = output.strip().split('\n')[0]
+            logger.info(f"[OK] NFS-Ganesha version: {first_line}")
+            return first_line
+        
+        logger.warning("Failed to get NFS-Ganesha version")
+        return "Unknown"
+    # -------------------------------
     # Setup and export NFS volume
     # -------------------------------
     def export_nfs_volume(self):

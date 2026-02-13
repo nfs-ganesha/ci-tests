@@ -1,0 +1,240 @@
+def runTests(config) {
+
+    def workloadTestMap = config.workloadMap
+    def base = config.baseExpr
+    def paramsMap = config.paramsMap
+    def xmlReport = config.xmlReport
+    def extraEnv = config.extraEnv ?: ""
+
+    def workloads = []
+
+    paramsMap.each { paramName, testName ->
+        if (params[paramName]) {
+            workloads << testName
+        }
+    }
+
+    if (workloads.isEmpty()) {
+        error("At least one workload must be selected")
+    }
+
+    def mappingList = workloadTestMap.collect { k, v -> "${k}:${v}" }
+    echo "Mapping List = ${mappingList}"
+    echo "Workload = ${workloads}"
+
+    def state = [:]
+
+    if (fileExists('workload_state.json')) {
+        state = readJSON file: 'workload_state.json'
+        echo "Current State: ${state}"
+    }
+
+    def newWorkloads = workloads.collect { it.toString() }
+    def newMapping = mappingList.collect { it.toString() }
+
+    state.selectedWorkloads = (state.selectedWorkloads ?: []) + newWorkloads
+    state.workloadMapping = (state.workloadMapping ?: []) + newMapping
+
+    writeJSON file: 'workload_state.json', json: state
+
+    def finalExpr = base + " or " + workloads.join(" or ")
+
+    echo "Running: ${finalExpr}"
+
+    sh """
+        ${extraEnv}
+
+        export SERVER_NODE_COUNT=1
+        export CLIENT_NODE_COUNT=${config.clientNodes}
+
+        pytest -v -s \
+            -k "${finalExpr}" \
+            ci-tests/tests/test_weekly_ceph.py \
+            --confcutdir=ci-tests/tests \
+            --junitxml=${xmlReport}
+    """
+}
+
+pipeline {
+
+    agent { label 'cico-workspace' }
+
+    options {
+        disableConcurrentBuilds()
+        timestamps()
+    }
+
+    environment {
+        PATH = "$HOME/.local/bin:$PATH"
+        PYTHONPATH = "ci-tests"
+        SELECTED_WORKLOADS = ""
+        WORKLOAD_TEST_MAPPING = ""
+    }
+
+    stages {
+
+        stage('Checkout NFS-Ganesha') {
+            steps {
+                echo "Cloning Ganesha repo: ${params.GIT_REPO} (${params.GIT_BRANCH})"
+
+                dir('nfs-ganesha') {
+                    git url: params.GIT_REPO, branch: params.GIT_BRANCH
+
+                    sh '''
+                        echo "Updating submodules recursively"
+                        git submodule update --init --recursive
+                    '''
+                }
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh '''
+                    python3 -m pip install --user --upgrade pip setuptools wheel
+                    python3 -m pip install --user -r ./ci-tests/ci_utils/requirements.txt
+                '''
+            }
+        }
+
+        stage('Run Ceph Tests') {
+
+            when {
+                expression {
+                    return params.RUN_CTHON || params.RUN_PYNFS || params.RUN_PJDFS
+                }
+            }
+
+            steps {
+                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                    script {
+
+                        runTests([
+
+                            workloadMap: [
+                                'test_cthon': 'Ceph_Cthon (NFS - v4.0 ; v4.2)',
+                                'test_pynfs': 'Ceph_PyNFS (NFS - v4.0 ; v4.1)',
+                                'test_pjdfs': 'Ceph_Pjdfs (NFS - v3 ; v4.0 ; v4.2)'
+                            ],
+
+                            paramsMap: [
+                                'RUN_CTHON': 'test_cthon',
+                                'RUN_PYNFS': 'test_pynfs',
+                                'RUN_PJDFS': 'test_pjdfs'
+                            ],
+
+                            baseExpr: "test_cephfs_fsal or test_bringup_cephfs",
+                            xmlReport: "upstream-weekly-report.xml",
+                            clientNodes: 1
+                        ])
+                    
+                    }
+                }
+            }
+
+            post {
+                always {
+                    junit allowEmptyResults: true, testResults: 'upstream-weekly-report.xml'
+                }
+            }
+        }
+
+        stage('Run GPFS Tests') {
+
+            when {
+                expression {
+                    return params.RUN_GPFS_CTHON || params.RUN_GPFS_PYNFS || params.RUN_GPFS_PJDFS
+                }
+            }
+
+            steps {
+                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                    script {
+
+                        withCredentials([
+                            string(credentialsId: 'AWS_SECRET_KEY', variable: 'SECRET_KEY'),
+                            string(credentialsId: 'AWS_ACCESS_KEY', variable: 'ACCESS_KEY')
+                        ]) {
+
+                            runTests([
+
+                                workloadMap: [
+                                    'test_gpfs_cthon': 'GPFS_Cthon (NFS - v3 ; v4.0 ; v4.2)',
+                                    'test_gpfs_pynfs': 'GPFS_PyNFS (NFS - v4.0 ; v4.1)',
+                                    'test_gpfs_pjdfs': 'GPFS_Pjdfs (NFS - v3 ; v4.0 ; v4.2)'
+                                ],
+
+                                paramsMap: [
+                                    'RUN_GPFS_CTHON': 'test_gpfs_cthon',
+                                    'RUN_GPFS_PYNFS': 'test_gpfs_pynfs',
+                                    'RUN_GPFS_PJDFS': 'test_gpfs_pjdfs'
+                                ],
+
+                                baseExpr: "test_bringup_gpfs",
+                                xmlReport: "upstream-weekly-gpfs-report.xml",
+                                clientNodes: 0,
+
+                                extraEnv: """
+                                    export BAREMETAL_NODES=True
+                                """
+                            ])
+                        }
+                    }
+                }
+            }
+
+            post {
+                always {
+                    junit allowEmptyResults: true, testResults: 'upstream-weekly-gpfs-report.xml'
+                }
+            }
+        }
+    }
+
+    post {
+
+        always {
+            script {
+
+                def cephVersion = sh(script: 'cat ceph_version.txt 2>/dev/null || echo "N/A"', returnStdout: true).trim()
+                def nfsVersion = sh(script: 'cat nfs_version.txt 2>/dev/null || echo "N/A"', returnStdout: true).trim()
+                def gpfsVersion = sh(script: 'cat gpfs_version.txt 2>/dev/null || echo "N/A"', returnStdout: true).trim()
+                def state = readJSON file: 'workload_state.json'
+
+                echo "DEBUG workloads = ${state.selectedWorkloads}"
+                echo "DEBUG mapping = ${state.workloadMapping}"
+                
+                sh """
+                    JOB_URL="${env.BUILD_URL}" \\
+                    NFS_VER="${nfsVersion}" \\
+                    CEPH_VER="${cephVersion}" \\
+                    GPFS_VER="${gpfsVersion}" \\
+                    WORKLOAD_TEST_MAPPING="${state.workloadMapping}" \\
+                    SELECTED_WORKLOADS="${state.selectedWorkloads}" \\
+                    python3 ci-tests/ci_utils/report_generation/weekly_report.py
+                """
+
+                def bodyContent = fileExists('email_report.html') ?
+                    readFile('email_report.html') :
+                    "Report generation failed"
+
+                echo "Email Report HTML Content:"
+                echo bodyContent
+
+                emailext(
+                    subject: "[NFS Upstream] Weekly Run Status for Ceph & GPFS - ${currentBuild.currentResult}",
+                    mimeType: 'text/html',
+                    body: bodyContent,
+                    to: "${params.EMAIL_TO}"
+                )
+
+                // Archive test failures
+                if (fileExists("${WORKSPACE}/failures")) {
+                    archiveArtifacts artifacts: 'failures/**', allowEmptyArchive: true
+                } else {
+                    echo "No failures folder found, skipping artifact archive."
+                }
+            }
+        }
+    }
+}

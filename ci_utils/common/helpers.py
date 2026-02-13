@@ -122,6 +122,7 @@ def check_process_crash_and_backtrace(
     cores_dir="/tmp/cores",
     binary_path="/usr/bin/ganesha.nfsd",
     gdb_cmd=None,
+    force_check=False,
 ):
     """
     Check if a process is running; if not, look for core dumps in cores_dir,
@@ -144,7 +145,7 @@ def check_process_crash_and_backtrace(
         logger.info("Check if %s is running", process_name)
         out, code = run_cmd(session, f"pgrep {process_name}", check=False)
         logger.debug("Output: %s, Code: %s", out, code)
-        if code != 0:
+        if code != 0 or force_check:
             logger.error("%s is not running", process_name)
             logger.info("Check for crash in %s", cores_dir)
             out, code = run_cmd(session, f"ls -la {cores_dir}", check=False)
