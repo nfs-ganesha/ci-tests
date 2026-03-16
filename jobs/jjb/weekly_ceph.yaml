@@ -1,0 +1,80 @@
+- job:
+    name: weekly-ceph-tests
+    project-type: pipeline
+    description: |
+      Weekly CI Test Pipeline for CephFS & GPFS backend — runs Ceph bringup, Cthon, PyNFS, and PJDFS test suites
+
+    properties:
+      - discarder
+
+    triggers:
+      - timed: "30 0 * * 0"
+
+    parameters:
+      - centos_variables
+
+      # Job-specific parameters
+      - string:
+          name: GIT_REPO
+          default: 'https://github.com/nfs-ganesha/nfs-ganesha.git'
+          description: NFS-Ganesha source repo
+
+      - string:
+          name: GIT_BRANCH
+          default: 'next'
+          description: NFS-Ganesha branch
+
+      - string:
+          name: CMAKE_FLAGS
+          default: ''
+          description: Custom cmake flags to append to the existing flags
+
+      - bool:
+          name: CMAKE_OVERRIDE
+          default: false
+          description: >
+            If set, overrides existing cmake flags and only uses CMAKE_FLAGS.
+            If unset, CMAKE_FLAGS is appended to the existing flags.
+      
+      - bool:
+          name: RUN_CTHON
+          default: true
+          description: Run Cthon tests - Ceph
+
+      - bool:
+          name: RUN_PYNFS
+          default: true
+          description: Run PyNFS tests - Ceph
+
+      - bool:
+          name: RUN_PJDFS
+          default: true
+          description: Run PJDFS tests - Ceph
+
+      - bool:
+          name: RUN_GPFS_CTHON
+          default: true
+          description: Run Cthon tests - GPFS
+
+      - bool:
+          name: RUN_GPFS_PYNFS
+          default: true
+          description: Run PyNFS tests - GPFS
+
+      - bool:
+          name: RUN_GPFS_PJDFS
+          default: true
+          description: Run PJDFS tests - GPFS
+
+      - string:
+          name: EMAIL_TO
+          default: "manimaran.m@ibm.com,sjeurkar@in.ibm.com,kkeithle@ibm.com,ffilz@ibm.com,Sachin.Punadikar@ibm.com,diederich@de.ibm.com,kekarmar@in.ibm.com,Rajesh.Prasad3@ibm.com,Prabhu.Murugesan1@ibm.com,rkomandu@in.ibm.com,mbenjami@ibm.com,Sameer.Natekar@ibm.com,B.Veeraraghava.Reddy@ibm.com,Neha.Gangadhar@ibm.com,Pragadeeswaran.Sathyanarayanan@ibm.com,Hemanth.Kumar.YJ@ibm.com,Arunkumar.Ravindranath@ibm.com"
+          description: "Email recipients (comma separated)"
+        
+    pipeline-scm:
+      scm:
+        - ci-tests
+      script-path: jobs/Jenkinsfile.weekly_ceph
+      lightweight-checkout: true
+
+# Made with Bob

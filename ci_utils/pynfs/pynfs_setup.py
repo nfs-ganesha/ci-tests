@@ -40,7 +40,7 @@ class PyNFSManager:
         version: str,
         server: str,
         export: str = "/nfs/cephfs",
-    ) -> Tuple[str, str, int]:
+    ):
         """
         Run pynfs test for a specific version.
 
@@ -172,6 +172,8 @@ class PyNFSManager:
 
         max_retries = 10
         wait_secs = 15
+        out = ""
+        code = 1
         for attempt in range(1, max_retries + 1):
             logger.info(f"PyNFS attempt {attempt}/{max_retries}...")
 
@@ -218,7 +220,7 @@ class PyNFSManager:
     # ----------------------------
     # Collect and summarize failures
     # ----------------------------
-    def collect_failures(self, outputs: List[Tuple[str, str, int]]) -> Tuple[bool, str]:
+    def collect_failures(self, outputs):
         logger.info("[TEST]: Collecting pynfs failures...")
         fail_found = False
         failure_summary = []
@@ -248,7 +250,7 @@ class PyNFSManager:
     # ----------------------------
     # Run all pynfs tests
     # ----------------------------
-    def run_all_tests(self, export) -> bool:
+    def run_all_tests(self, export):
         logger.info("[TEST]: Running all pynfs test suites")
         self.clone_and_build()
 

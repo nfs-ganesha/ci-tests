@@ -1,4 +1,5 @@
 
+import time
 from ci_utils.common.helpers import run_cmd
 
 from ci_utils.common.logger import get_logger, set_test_name
@@ -35,9 +36,9 @@ class GaneshaManager:
             delegations_v4 = "    Delegations = true;"
             delegations_export = "    delegations = readwrite;"
         return f"""NFS_CORE_PARAM {{
-    Enable_NLM = false;
+    Enable_NLM = true;
     Enable_RQUOTA = false;
-    Protocols = 4;
+    Protocols = 3,4;
 }}
 
 NFSv4 {{
@@ -53,7 +54,7 @@ EXPORT {{
     Export_ID = {self.export_id};
     Path = "{self.subvol_path}";
     Pseudo = "/nfs/{self.cephfs_name}";
-    Protocols = 4;
+    Protocols = 3,4;
     Transports = TCP;
     Access_Type = RW;
     Squash = None;
@@ -96,7 +97,37 @@ EXPORT {{
     def restart(self):
         """Restart ganesha service."""
         self.stop()
+        
+        # Wait up to 10 minutes for ganesha processes to stop
+        for i in range(120):  # 120 * 5 seconds = 600 seconds (10 minutes)
+            output, _ = run_cmd(self.session, "pgrep ganesha", check=False)
+            if not output or not output.strip():
+                break
+            logger.warning(f"Ganesha processes still running, retrying... (attempt {i+1}/120)")
+            time.sleep(5)
+        else:
+            raise RuntimeError("Ganesha processes still running after 10 minutes")
+        
         self.start()
+
+    def get_nfs_version(self):
+        """
+        Get the NFS-Ganesha version.
+        
+        Returns:
+            str: NFS-Ganesha version string (first line only) or "Unknown" if unable to retrieve.
+        """
+        logger.info("[STEP]: Getting NFS-Ganesha version")
+        output, code = run_cmd(self.session, "ganesha.nfsd -v", check=False)
+        
+        if code == 0 and output:
+            # Parse only the first line to get the version
+            first_line = output.strip().split('\n')[0]
+            logger.info(f"[OK] NFS-Ganesha version: {first_line}")
+            return first_line
+        
+        logger.warning("Failed to get NFS-Ganesha version")
+        return "Unknown"
 
     def setup(self):
         """Full pipeline for setting up ganesha."""

@@ -3,6 +3,7 @@ import json
 from ci_utils.common.duffy_client import DuffySession
 
 from ci_utils.common.logger import get_logger
+from ci_utils.common.retry import retry_func
 logger = get_logger(__name__)
 
 WORKSPACE = os.getenv("WORKSPACE", "/tmp")
@@ -12,6 +13,11 @@ BAREMETAL_NODES = os.getenv("BAREMETAL_NODES", "false").lower()
 
 reserved_session = None
 
+@retry_func(
+    retry_on=(RuntimeError,),
+    retry_interval=120,
+    timeout=3600
+)
 def reserve_nodes(server_count=1, client_count=1):
     """
     Reserve server and client nodes separately and store in JSON.

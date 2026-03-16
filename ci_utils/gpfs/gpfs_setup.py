@@ -473,6 +473,16 @@ class SpectrumScaleInstaller:
         out, _ = run_cmd(self.session, f"{self.spectrum_scale_binary} nsd list")
         assert "nsd" in out.lower(), "No NSD created"
 
+    def get_gpfs_version(self):
+        output, code = run_cmd(self.session, "/usr/lpp/mmfs/bin/mmdsh -N all rpm -q gpfs.base")
+        
+        if code == 0 and output:
+            version = output.strip()
+            logger.info(f"[OK] GPFS version: {version}")
+            return version
+        
+        logger.warning("Failed to get GPFS version")
+        return "Unknown"        
     # -------------------------------
     # Master flow
     # -------------------------------
