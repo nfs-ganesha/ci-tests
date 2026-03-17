@@ -1,3 +1,5 @@
+import groovy.json.JsonOutput
+
 def runTests(config) {
 
     def workloadTestMap = config.workloadMap
@@ -18,8 +20,6 @@ def runTests(config) {
         error("At least one workload must be selected")
     }
 
-    def mappingList = workloadTestMap.collect { k, v -> "${k}:${v}" }
-    echo "Mapping List = ${mappingList}"
     echo "Workload = ${workloads}"
 
     def state = [:]
@@ -30,10 +30,11 @@ def runTests(config) {
     }
 
     def newWorkloads = workloads.collect { it.toString() }
-    def newMapping = mappingList.collect { it.toString() }
 
+    // ✅ Store structured mapping directly
     state.selectedWorkloads = (state.selectedWorkloads ?: []) + newWorkloads
-    state.workloadMapping = (state.workloadMapping ?: []) + newMapping
+    // ✅ Merge mappings (Ceph + GPFS)
+    state.workloadMappingMap = (state.workloadMappingMap ?: [:]) + workloadTestMap
 
     writeJSON file: 'workload_state.json', json: state
 
@@ -47,10 +48,10 @@ def runTests(config) {
         export SERVER_NODE_COUNT=1
         export CLIENT_NODE_COUNT=${config.clientNodes}
 
-        pytest -v -s \
-            -k "${finalExpr}" \
-            ci-tests/tests/test_weekly_ceph.py \
-            --confcutdir=ci-tests/tests \
+        pytest -v -s \\
+            -k "${finalExpr}" \\
+            ci-tests/tests/test_weekly_ceph.py \\
+            --confcutdir=ci-tests/tests \\
             --junitxml=${xmlReport}
     """
 }
@@ -67,8 +68,6 @@ pipeline {
     environment {
         PATH = "$HOME/.local/bin:$PATH"
         PYTHONPATH = "ci-tests"
-        SELECTED_WORKLOADS = ""
-        WORKLOAD_TEST_MAPPING = ""
     }
 
     stages {
@@ -112,9 +111,21 @@ pipeline {
                         runTests([
 
                             workloadMap: [
-                                'test_cthon': 'Ceph_Cthon (NFS - v4.0 ; v4.2)',
-                                'test_pynfs': 'Ceph_PyNFS (NFS - v4.0 ; v4.1)',
-                                'test_pjdfs': 'Ceph_Pjdfs (NFS - v3 ; v4.0 ; v4.2)'
+                                'test_cthon': [
+                                    name: 'Ceph_Cthon',
+                                    coverage: 'NFS v3, v4.0, v4.2',
+                                    comment: ''
+                                ],
+                                'test_pynfs': [
+                                    name: 'Ceph_PyNFS',
+                                    coverage: 'NFS v4.0, v4.1',
+                                    comment: ''
+                                ],
+                                'test_pjdfs': [
+                                    name: 'Ceph_Pjdfs',
+                                    coverage: 'NFS v3, v4.0, v4.2',
+                                    comment: 'IBMCEPH-13440'
+                                ]
                             ],
 
                             paramsMap: [
@@ -127,7 +138,6 @@ pipeline {
                             xmlReport: "upstream-weekly-report.xml",
                             clientNodes: 1
                         ])
-                    
                     }
                 }
             }
@@ -159,9 +169,21 @@ pipeline {
                             runTests([
 
                                 workloadMap: [
-                                    'test_gpfs_cthon': 'GPFS_Cthon (NFS - v3 ; v4.0 ; v4.2)',
-                                    'test_gpfs_pynfs': 'GPFS_PyNFS (NFS - v4.0 ; v4.1)',
-                                    'test_gpfs_pjdfs': 'GPFS_Pjdfs (NFS - v3 ; v4.0 ; v4.2)'
+                                    'test_gpfs_cthon': [
+                                        name: 'GPFS_Cthon',
+                                        coverage: 'NFS v3, v4.0, v4.2',
+                                        comment: ''
+                                    ],
+                                    'test_gpfs_pynfs': [
+                                        name: 'GPFS_PyNFS',
+                                        coverage: 'NFS v4.0, v4.1',
+                                        comment: ''
+                                    ],
+                                    'test_gpfs_pjdfs': [
+                                        name: 'GPFS_Pjdfs',
+                                        coverage: 'NFS v3, v4.0, v4.2',
+                                        comment: 'IBMCEPH-13445'
+                                    ]
                                 ],
 
                                 paramsMap: [
@@ -199,18 +221,26 @@ pipeline {
                 def cephVersion = sh(script: 'cat ceph_version.txt 2>/dev/null || echo "N/A"', returnStdout: true).trim()
                 def nfsVersion = sh(script: 'cat nfs_version.txt 2>/dev/null || echo "N/A"', returnStdout: true).trim()
                 def gpfsVersion = sh(script: 'cat gpfs_version.txt 2>/dev/null || echo "N/A"', returnStdout: true).trim()
+
                 def state = readJSON file: 'workload_state.json'
 
                 echo "DEBUG workloads = ${state.selectedWorkloads}"
-                echo "DEBUG mapping = ${state.workloadMapping}"
-                
+                echo "DEBUG mapping = ${state.workloadMappingMap}"
+
+                // ✅ Reuse existing state, just serialize safely
+                writeJSON file: 'mapping.json', json: state.workloadMappingMap
+                writeJSON file: 'selected.json', json: state.selectedWorkloads
+
+                def mappingJson = readFile('mapping.json').trim()
+                def selectedJson = readFile('selected.json').trim()
+
                 sh """
                     JOB_URL="${env.BUILD_URL}" \\
                     NFS_VER="${nfsVersion}" \\
                     CEPH_VER="${cephVersion}" \\
                     GPFS_VER="${gpfsVersion}" \\
-                    WORKLOAD_TEST_MAPPING="${state.workloadMapping}" \\
-                    SELECTED_WORKLOADS="${state.selectedWorkloads}" \\
+                    WORKLOAD_TEST_MAPPING='${mappingJson}' \\
+                    SELECTED_WORKLOADS='${selectedJson}' \\
                     python3 ci-tests/ci_utils/report_generation/weekly_report.py
                 """
 
@@ -228,7 +258,6 @@ pipeline {
                     to: "${params.EMAIL_TO}"
                 )
 
-                // Archive test failures
                 if (fileExists("${WORKSPACE}/failures")) {
                     archiveArtifacts artifacts: 'failures/**', allowEmptyArchive: true
                 } else {

@@ -194,7 +194,7 @@ def test_cthon_cephfs(create_session, cmake_flags):
 
         def run_cthon():
             try:
-                _, cthon_logs, rc = cthon.run_all_cthon_test(skip_v3=True)
+                _, cthon_logs, rc = cthon.run_all_cthon_test(skip_v3=False)
                 result_holder[0] = (cthon_logs, rc, False)
             except Exception as e:
                 result_holder[0] = (str(e) or "Test aborted", 1, ganesha_died.is_set())

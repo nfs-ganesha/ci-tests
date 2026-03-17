@@ -10,7 +10,9 @@ logger = get_logger(__name__)
 
 
 class PJDFSManager:
-    def __init__(self, session, server_ip, repo_url="https://github.com/pjd/pjdfstest.git", backend_type=None):
+    # Changed repo from generic(https://github.com/pjd/pjdfstest.git) to ffilz repo
+    # Based on discussion here - https://github.com/nfs-ganesha/ci-tests/pull/135#issuecomment-4075355151
+    def __init__(self, session, server_ip, repo_url="https://github.com/ffilz/pjdfstest.git", backend_type=None):
         """
         Manage PJDFS test runs on a remote session.
 
@@ -269,7 +271,7 @@ class PJDFSManager:
     # ----------------------------
     # Run all PJDFS tests
     # ----------------------------
-    def run_all_tests(self, export, export_v3=""):
+    def run_all_tests(self, export):
         """
         Run all PJDFS test suites for specified NFS versions.
 
@@ -286,7 +288,7 @@ class PJDFSManager:
         self.clone_and_build()
 
         results = [
-            self.run_test("3", self.server_ip, export_v3),
+            self.run_test("3", self.server_ip, export),
             self.run_test("4.0", self.server_ip, export),          
             self.run_test("4.2", self.server_ip, export)
         ]

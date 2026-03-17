@@ -69,7 +69,6 @@ class CephGaneshaSetup:
         target_sessions = [self.session] + self.extra_sessions 
         for sess in target_sessions:
             run_cmd(sess, "dnf install -y cephadm")
-            run_cmd(sess, "cephadm add-repo --release squid")
             run_cmd(sess, "dnf install -y ceph")
 
         logger.info("[STEP]: Bootstrapping Ceph cluster")
