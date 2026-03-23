@@ -486,7 +486,7 @@ def test_cthon(remote_sessions, reserved_nodes, cephfs_env):
     logger.info("Running Cthon tests on node: %s", client_ip)
     cthon = CthonManager(session=client, server_ip=server_ip)
     cthon.clone_and_build()
-    fail_found, cthon_logs, rc = cthon.run_all_cthon_test(skip_v3=True, export_v3=subvol_path)
+    fail_found, cthon_logs, rc = cthon.run_all_cthon_test(skip_v3=False)
 
     # Check for process crash and backtrace
     logger.info("Checking for process crash and backtrace for Ceph-Cthon")
@@ -525,7 +525,7 @@ def test_pjdfs(remote_sessions, reserved_nodes, cephfs_env):
     setup_install_client_deps_cthon_pynfs(client)
     logger.info("Running PJDFS tests on node: %s", client_ip)
     pjdfs = PJDFSManager(session=client, server_ip=server_ip, backend_type="ceph")
-    fail_found, failure_summary, code = pjdfs.run_all_tests(export="/nfs/cephfs", export_v3=subvol_path)
+    fail_found, failure_summary, code = pjdfs.run_all_tests(export="/nfs/cephfs")
 
     stacktrace = check_process_crash_and_backtrace(
         server,

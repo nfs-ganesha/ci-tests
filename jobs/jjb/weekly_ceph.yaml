@@ -68,7 +68,7 @@
 
       - string:
           name: EMAIL_TO
-          default: "manimaran.m@ibm.com,sjeurkar@in.ibm.com,kkeithle@ibm.com,ffilz@ibm.com,Sachin.Punadikar@ibm.com,diederich@de.ibm.com,kekarmar@in.ibm.com,Rajesh.Prasad3@ibm.com,Prabhu.Murugesan1@ibm.com,rkomandu@in.ibm.com,mbenjami@ibm.com,Sameer.Natekar@ibm.com,B.Veeraraghava.Reddy@ibm.com,Neha.Gangadhar@ibm.com,Pragadeeswaran.Sathyanarayanan@ibm.com,Hemanth.Kumar.YJ@ibm.com,Arunkumar.Ravindranath@ibm.com"
+          default: "manimaran.m@ibm.com,Common_Protocol_CI@wwpdl.vnet.ibm.com"
           description: "Email recipients (comma separated)"
         
     pipeline-scm:

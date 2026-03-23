@@ -37,8 +37,9 @@ class GaneshaManager:
             delegations_export = "    delegations = readwrite;"
         return f"""NFS_CORE_PARAM {{
     Enable_NLM = true;
-    Enable_RQUOTA = false;
+    Enable_RQUOTA = true;
     Protocols = 3,4;
+    mount_path_pseudo = true;
 }}
 
 NFSv4 {{

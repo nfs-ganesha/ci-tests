@@ -1,21 +1,10 @@
 import os
+import json
 import xml.etree.ElementTree as ET
 from ci_utils.common.logger import get_logger
+
 logger = get_logger(__name__)
 
-
-def parse_mapping(mapping_str):
-    mapping = {}
-
-    mapping_str = mapping_str.strip("[]")
-
-    for pair in mapping_str.split(","):
-        pair = pair.strip()
-        if ":" in pair:
-            k, v = pair.split(":", 1)
-            mapping[k.strip()] = v.strip()
-
-    return mapping
 
 def get_status(tc):
     if tc.find("failure") is not None:
@@ -39,14 +28,23 @@ def main():
     ceph_version = os.getenv("CEPH_VER", "N/A")
     gpfs_version = os.getenv("GPFS_VER", "N/A")
 
-    mapping_str = os.getenv("WORKLOAD_TEST_MAPPING", "")
-    selected_workloads = os.getenv("SELECTED_WORKLOADS", "")
-    selected_workloads = [w.strip() for w in selected_workloads.strip("[]").split(",")]
+    # ✅ Read JSON directly
+    mapping_json = os.getenv("WORKLOAD_TEST_MAPPING", "{}")
+    selected_json = os.getenv("SELECTED_WORKLOADS", "[]")
 
-    workload_map = parse_mapping(mapping_str)
+    try:
+        workload_map = json.loads(mapping_json)
+    except Exception:
+        logger.error("Failed to parse WORKLOAD_TEST_MAPPING")
+        workload_map = {}
 
-    logger.info("Mapping Str: %s", mapping_str)
-    logger.info("Selected Workload: %s", selected_workloads)
+    try:
+        selected_workloads = json.loads(selected_json)
+    except Exception:
+        logger.error("Failed to parse SELECTED_WORKLOADS")
+        selected_workloads = []
+
+    logger.info("Selected Workloads: %s", selected_workloads)
     logger.info("Workload Map: %s", workload_map)
 
     xml_files = [
@@ -69,16 +67,19 @@ def main():
         for tc in root.iter("testcase"):
 
             name = tc.attrib.get("name", "")
-            logger.info("TESTCASE: %s", name)
-            logger.info("WORKLOADS: %s", selected_workloads)
 
             if not any(w in name for w in selected_workloads):
                 continue
 
-            display = next(
-                (disp for func, disp in workload_map.items() if func in name),
-                name
+            # ✅ Safe structured lookup
+            entry = next(
+                (val for func, val in workload_map.items() if func in name),
+                {"name": name, "coverage": "", "comment": ""}
             )
+
+            display = entry.get("name", name)
+            coverage = entry.get("coverage", "")
+            comment = entry.get("comment", "")
 
             status, color, bg = get_status(tc)
             time = format_time(tc.attrib.get("time", "0"))
@@ -89,9 +90,11 @@ def main():
             rows.append(
                 f"<tr style='background-color:{bg}'>"
                 f"<td>{idx}</td>"
-                f"<td style='word-break:break-word; white-space:normal;'>{display}</td>"
+                f"<td style='word-break:break-word;'>{display}</td>"
+                f"<td>{coverage}</td>"
                 f"<td style='color:{color};font-weight:bold'>{status}</td>"
                 f"<td>{time}</td>"
+                f"<td>{comment}</td>"
                 "</tr>"
             )
 
@@ -124,7 +127,14 @@ def main():
 
 <h3>Test Results</h3>
 <table border='1' cellpadding='6' cellspacing='0'>
-<tr><th>S.No</th><th>Test Name</th><th>Status</th><th>Time</th></tr>
+<tr>
+    <th>S.No</th>
+    <th>Test Name</th>
+    <th>NFS Coverage</th>
+    <th>Status</th>
+    <th>Time</th>
+    <th>Comments</th>
+</tr>
 {rows_html}
 </table>
 """
