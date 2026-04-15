@@ -145,6 +145,11 @@ def cmake_flags(request, cmake_config):
 
     # Default behavior: real PyTest node name
     test_name = forced_test_name or request.node.name
+    logger.info("[CMake Flags] DEBUG - request.param: %s", forced_test_name)
+    logger.info("[CMake Flags] DEBUG - request.node.name: %s", request.node.name)
+    logger.info("[CMake Flags] DEBUG - Final test_name: %s", test_name)
+    logger.info("[CMake Flags] DEBUG - Available YAML keys: %s", list(cmake_config.get("tests", {}).keys()))
+    logger.info("[CMake Flags] Test name: %s", test_name)
 
     yaml_default = cmake_config.get("default", [])
     yaml_test_specific = cmake_config.get("tests", {}).get(test_name, [])
@@ -209,9 +214,8 @@ def cephfs_env(remote_sessions):
     }
 
 @pytest.fixture(scope="module")
-@pytest.mark.parametrize("cmake_flags", ["test_fsal_gpfs"], indirect=True)
-def gpfs_env(remote_sessions, reserved_nodes, cmake_flags):
-    logger.info("\n" + "=" * 80 + "\n[Fixture] Setting up GPFS + Ganesha\n" + "=" * 80)
+def gpfs_env(remote_sessions, reserved_nodes):
+    logger.info("\n" + "=" * 80 + "\n[Fixture] Setting up GPFS Environment\n" + "=" * 80)
     
     server = remote_sessions["servers"][0]
     server_ip = reserved_nodes["servers"][0]
@@ -381,28 +385,10 @@ local-hostname: {vm_name}
     logger.debug("GPFS Installer info: %s", gpfs_installer)
     gpfs_installer.run()
     
-    # -----------------------
-    # NFS Ganesha Setup for GPFS
-    # -----------------------
-    logger.info("NFS Ganesha setup for GPFS tests")
-    
-    flag_str = " ".join(cmake_flags)
-    logger.info("Using CMake flags: %s", flag_str)
-    
-    ganesha_setup = GPFSGaneshaManager(
-        session=vm_session,
-        cmake_flags=flag_str
-    )
-    ganesha_setup.intall_pre_reqs_on_vm()
-    ganesha_setup.install_ganesha("/root")
-    ganesha_setup.export_nfs_volume()
-    ganesha_setup.start_ganesha_service()
-    
     return {
         "server": server,
         "vm_session": vm_session,
         "vm_ip": vm_ip,
-        "ganesha_setup": ganesha_setup,
         "gpfs_setup": gpfs_installer
     }
 
@@ -604,16 +590,43 @@ def test_pynfs(remote_sessions, reserved_nodes, cephfs_env):
 # # --------------------------------
 @pytest.mark.timeout(3600)
 @pytest.mark.dependency(name="test_bringup_gpfs")
-def test_bringup_gpfs(gpfs_env):
-    logger.info("\n" + "=" * 80 + "\n[TEST START]: Bringup GPFS\n" + "=" * 80)
+@pytest.mark.parametrize("cmake_flags", ["test_fsal_gpfs"], indirect=True)
+def test_bringup_gpfs(gpfs_env, cmake_flags):
+    """
+    Test GPFS bringup including FSAL build and NFS Ganesha setup.
+    Uses parametrized cmake flags from cmake_flags.yml (test_fsal_gpfs).
+    """
+    logger.info("\n" + "=" * 80 + "\n[TEST START]: Bringup GPFS with Ganesha\n" + "=" * 80)
     
-    ganesha_setup = gpfs_env["ganesha_setup"]
-    
-    # Get NFS-Ganesha version and write to file for Jenkins post section
-    nfs_version = ganesha_setup.get_nfs_version()
+    vm_session = gpfs_env["vm_session"]
     gpfs_setup = gpfs_env["gpfs_setup"]
     
-    # Get Ceph version and write to file for Jenkins post section
+    # -----------------------
+    # NFS Ganesha Setup for GPFS
+    # -----------------------
+    logger.info("NFS Ganesha setup for GPFS tests")
+    
+    flag_str = " ".join(cmake_flags)
+    logger.info("Using CMake flags for GPFS FSAL: %s", flag_str)
+    
+    ganesha_setup = GPFSGaneshaManager(
+        session=vm_session,
+        cmake_flags=flag_str
+    )
+    ganesha_setup.intall_pre_reqs_on_vm()
+    ganesha_setup.install_ganesha("/root")
+    ganesha_setup.export_nfs_volume()
+    ganesha_setup.start_ganesha_service()
+    
+    # Store ganesha_setup in gpfs_env for other tests to use
+    gpfs_env["ganesha_setup"] = ganesha_setup
+    
+    logger.info("GPFS FSAL build and Ganesha setup completed successfully")
+    
+    # -----------------------
+    # Get and write versions
+    # -----------------------
+    # Get GPFS version and write to file for Jenkins post section
     gpfs_version = gpfs_setup.get_gpfs_version()
     logger.info("GPFS version: %s", gpfs_version)
     
@@ -721,6 +734,8 @@ def test_gpfs_pynfs(remote_sessions, reserved_nodes, gpfs_env):
     vm_ip = gpfs_env["vm_ip"]
     server_ip = reserved_nodes["servers"][0]
     
+    setup_install_client_deps_cthon_pynfs(server)
+
     # Wait for NFS grace period
     logger.info("Waiting for 90 seconds before starting PyNFS tests as the NFS grace period is 90 seconds")
     sleep(90)

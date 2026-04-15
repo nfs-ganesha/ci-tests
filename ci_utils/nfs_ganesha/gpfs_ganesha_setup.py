@@ -285,8 +285,18 @@ class GPFSGaneshaManager:
         run_cmd(self.session, "systemctl daemon-reload")
         run_cmd(self.session, "cat /var/mmfs/ces/nfs-config/gpfs.ganesha.main.conf")
         
+        # Validate enforce_utf8_validation and reload if false
+        logger.info("Checking enforce_utf8_validation value")
+        _, rc = run_cmd(self.session, "grep -i 'enforce_utf8_validation.*false' /var/mmfs/ces/nfs-config/gpfs.ganesha.main.conf", check=False)
+        if rc == 0:
+            logger.warning("enforce_utf8_validation is false, performing daemon-reload")
+            run_cmd(self.session, "systemctl daemon-reload")
+            time.sleep(20)
+            run_cmd(self.session, "cat /var/mmfs/ces/nfs-config/gpfs.ganesha.main.conf")
+        
         self.start_ganesha_service()
 
+        run_cmd(self.session, "cat /var/mmfs/ces/nfs-config/gpfs.ganesha.main.conf")
         logger.info("Validating health of CES and NFS services")
         run_cmd(self.session, "systemctl status nfs-ganesha.service", check=False)
         run_cmd(self.session, "cat /etc/ganesha/ganesha.conf", check=False)

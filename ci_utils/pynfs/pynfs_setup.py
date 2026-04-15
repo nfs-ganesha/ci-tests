@@ -71,7 +71,6 @@ class PyNFSManager:
                     "WRT16",
                     "PUTFH3",
                     "LOCK20",
-                    "RNM20"
                 ]
             elif self.backend_type == "acl_vfs":
                 # BZ-2415390
@@ -79,9 +78,6 @@ class PyNFSManager:
                     "WRT17",
                     "WRT16",
                     "WRT18",
-                    "LOOKCHAR",
-                    "LOOKBLK",
-                    "SATT18",
                     "LOCK20",
                 ]
             elif self.backend_type == "gpfs":
@@ -106,16 +102,10 @@ class PyNFSManager:
                     "ALLOC1",
                     "ALLOC2",
                     "ALLOC3",
-                    "RNM20",
-                    "DELEG2",
-                    "DELEG23",
-                    "DELEG8",
                     "DELEG25",
                     "DELEG24",
                     "DELEG7",
                     "SEQ6",
-                    "CSESS21",
-                    "CSESS20",
                 ]
             elif self.backend_type == "acl_vfs":
                 ## Adding no-deleg option to skip delegation tests for VFS backends BZ-2415392
@@ -125,19 +115,7 @@ class PyNFSManager:
                     f" --secure --verbose --maketree --showomit --rundeps"
                 )
                 known_failures = [
-                    "PUTFH1c",
-                    "PUTFH1b",
-                    "RNM1c",
-                    "RNM1b",
-                    "RNM2c",
-                    "RNM2b",
-                    "RNM3c",
-                    "RNM3b",
-                    "LKPP1c",
-                    "LKPP1b",
                     "SEQ6",
-                    "CSESS21",
-                    "CSESS20",
                 ]
             elif self.backend_type == "gpfs":
                 # BZ-2416757
@@ -158,14 +136,12 @@ class PyNFSManager:
                     "DELEG8",
                     "DELEG25",
                     "DELEG24",
+                    "DELEG26",
                     "DELEG6",
                     "DELEG7",
                     "DELEG5",
                     "DELEG3",
                     "SEQ6",
-                    "CSESS21",
-                    "CSESS20",
-                    "EID9"
                 ]
         else:
             raise ValueError(f"Unsupported NFS version: {version}")

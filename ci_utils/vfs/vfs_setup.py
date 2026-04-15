@@ -55,6 +55,7 @@ EXPORT {{
     FSAL {{
         Name = VFS;
     }}
+    Squash = no_root_squash;
 }}
 """
 
