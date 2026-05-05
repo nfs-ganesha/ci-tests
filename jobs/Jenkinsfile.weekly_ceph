@@ -77,12 +77,16 @@ pipeline {
                 echo "Cloning Ganesha repo: ${params.GIT_REPO} (${params.GIT_BRANCH})"
 
                 dir('nfs-ganesha') {
-                    git url: params.GIT_REPO, branch: params.GIT_BRANCH
-
-                    sh '''
+                    sh """
+                        echo "Cloning repository..."
+                        git clone ${params.GIT_REPO} .
+                        
+                        echo "Checking out ${params.GIT_BRANCH}..."
+                        git checkout ${params.GIT_BRANCH}
+                        
                         echo "Updating submodules recursively"
                         git submodule update --init --recursive
-                    '''
+                    """
                 }
             }
         }
@@ -177,7 +181,7 @@ pipeline {
                                     'test_gpfs_pynfs': [
                                         name: 'GPFS_PyNFS',
                                         coverage: 'NFS v4.0, v4.1',
-                                        comment: ''
+                                        comment: 'IBMCEPH-14012'
                                     ],
                                     'test_gpfs_pjdfs': [
                                         name: 'GPFS_Pjdfs',
