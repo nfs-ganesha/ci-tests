@@ -7,7 +7,8 @@ logger = get_logger(__name__)
 
 
 class PyNFSManager:
-    def __init__(self, session, server_ip, repo_url="git://git.linux-nfs.org/projects/cdmackay/pynfs.git", backend_type=None):
+    # def __init__(self, session, server_ip, repo_url="git://git.linux-nfs.org/projects/cdmackay/pynfs.git", backend_type=None):
+    def __init__(self, session, server_ip, repo_url="-b useme https://github.com/ffilz/pynfs.git", backend_type=None):
         """
         Manage PyNFS test runs on a remote session.
 
@@ -66,25 +67,19 @@ class PyNFSManager:
             if self.backend_type == "ceph":
                 # BZ-2415387
                 known_failures = [
-                    "WRT17",
                     "MKLINK",
-                    "WRT16",
                     "PUTFH3",
                     "LOCK20",
                 ]
             elif self.backend_type == "acl_vfs":
                 # BZ-2415390
                 known_failures = [
-                    "WRT17",
-                    "WRT16",
                     "WRT18",
                     "LOCK20",
                 ]
             elif self.backend_type == "gpfs":
                 # BZ-2416755
                 known_failures = [
-                    "WRT17",
-                    "WRT16",
                     "SATT12x",
                     "LOCK20",
                 ]
