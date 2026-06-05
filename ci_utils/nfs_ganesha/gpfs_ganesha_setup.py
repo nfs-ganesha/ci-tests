@@ -272,31 +272,25 @@ class GPFSGaneshaManager:
         run_cmd(self.session, "/usr/lpp/mmfs/bin/mmnfs export list")
 
         logger.info("Restarting NFS-Ganesha to apply changes for Minor versions and UTF8 enforcement")
-        run_cmd(self.session, "cat /var/mmfs/ces/nfs-config/gpfs.ganesha.main.conf")
+        main_conf = "/var/mmfs/ces/nfs-config/gpfs.ganesha.main.conf"
+        run_cmd(self.session, f"cat {main_conf}")
         run_cmd(self.session, "systemctl stop nfs-ganesha", check=False)
         run_cmd(self.session, "/usr/lpp/mmfs/bin/mmnfs config list |grep MINOR")
         run_cmd(self.session, "/usr/lpp/mmfs/bin/mmnfs config change MINOR_VERSIONS=0,1,2")
+        time.sleep(20)
+        run_cmd(self.session, "/usr/lpp/mmfs/bin/mmnfs config list |grep MINOR")
+        run_cmd(self.session, "systemctl daemon-reload")
+        run_cmd(self.session, f"cat {main_conf}")
+        run_cmd(self.session, "systemctl start nfs-ganesha", check=False)
+        run_cmd(self.session, "systemctl status nfs-ganesha.service", check=False)
+
+        # ENFORCE_UTF8 must run while ganesha is up; stopping before this leaves enforce_utf8_validation=false in main.conf
         run_cmd(self.session, "/usr/lpp/mmfs/bin/mmnfs config list |grep ENFORCE")
         run_cmd(self.session, "/usr/lpp/mmfs/bin/mmnfs config change ENFORCE_UTF8_VALIDATION=true")
         time.sleep(20)
-        run_cmd(self.session, "/usr/lpp/mmfs/bin/mmnfs config list |grep MINOR")
         run_cmd(self.session, "/usr/lpp/mmfs/bin/mmnfs config list |grep ENFORCE")
-        run_cmd(self.session, "/usr/lpp/mmfs/bin/mmnfs config list")
-        run_cmd(self.session, "systemctl daemon-reload")
-        run_cmd(self.session, "cat /var/mmfs/ces/nfs-config/gpfs.ganesha.main.conf")
-        
-        # Validate enforce_utf8_validation and reload if false
-        logger.info("Checking enforce_utf8_validation value")
-        _, rc = run_cmd(self.session, "grep -i 'enforce_utf8_validation.*false' /var/mmfs/ces/nfs-config/gpfs.ganesha.main.conf", check=False)
-        if rc == 0:
-            logger.warning("enforce_utf8_validation is false, performing daemon-reload")
-            run_cmd(self.session, "systemctl daemon-reload")
-            time.sleep(20)
-            run_cmd(self.session, "cat /var/mmfs/ces/nfs-config/gpfs.ganesha.main.conf")
-        
-        self.start_ganesha_service()
+        run_cmd(self.session, f"cat {main_conf}")
 
-        run_cmd(self.session, "cat /var/mmfs/ces/nfs-config/gpfs.ganesha.main.conf")
         logger.info("Validating health of CES and NFS services")
         run_cmd(self.session, "systemctl status nfs-ganesha.service", check=False)
         run_cmd(self.session, "cat /etc/ganesha/ganesha.conf", check=False)
