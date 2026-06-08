@@ -181,7 +181,7 @@ pipeline {
                                     'test_gpfs_pynfs': [
                                         name: 'GPFS_PyNFS',
                                         coverage: 'NFS v4.0, v4.1',
-                                        comment: 'IBMCEPH-14012'
+                                        comment: ''
                                     ],
                                     'test_gpfs_pjdfs': [
                                         name: 'GPFS_Pjdfs',
