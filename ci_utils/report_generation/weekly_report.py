@@ -7,7 +7,7 @@ logger = get_logger(__name__)
 
 
 def get_status(tc):
-    if tc.find("failure") is not None:
+    if tc.find("failure") is not None or tc.find("error") is not None:
         return "FAILED", "red", "#ffcccc"
     if tc.find("skipped") is not None:
         return "SKIPPED", "orange", "#ffe6cc"
