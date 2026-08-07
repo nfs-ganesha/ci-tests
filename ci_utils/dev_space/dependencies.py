@@ -20,7 +20,7 @@ def install_checkpatch_fsal_dependencies(session) -> None:
     logger.info("Installing dependencies on remote node: %s", session)
 
     # FSAL pre-requisites
-    cmd = "dnf -y install centos-release-ceph epel-release centos-release-gluster yum-utils"
+    cmd = "dnf -y install centos-release-ceph-tentacle epel-release centos-release-gluster yum-utils"
     _, code = run_cmd(session, cmd)
     if code != 0:
         raise RuntimeError(f"Failed to install FSAL dependencies on {session}")
@@ -29,8 +29,8 @@ def install_checkpatch_fsal_dependencies(session) -> None:
     duffy_session = DuffySession()
     version = duffy_session.centos_version
 
-    basic_packages = "centos-release-gluster yum-utils centos-release-ceph epel-release"
-    build_requires_common = "git bison cmake dbus-devel flex gcc-c++ krb5-devel libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build xfsprogs-devel"
+    basic_packages = "centos-release-gluster yum-utils centos-release-ceph-tentacle epel-release"
+    build_requires_common = "git bison cmake dbus-devel flex gcc-c++ krb5-devel libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build xfsprogs-devel openssl-devel"
     build_requires_extra_common = "libnsl2-devel libnfsidmap-devel libwbclient-devel userspace-rcu-devel"
     build_requires_extra_cephfs_vfs_rgw = "libcephfs-devel"
 
@@ -57,13 +57,13 @@ def setup_install_client_deps_cthon_pynfs(session):
 
 def setup_server_node_pynfs_cthon(session):    
     logger.info("Installing dependencies on remote node for PyNFS & Cthon")
-    _, code = run_cmd(session, "dnf -y install centos-release-ceph epel-release dnf-plugins-core")
+    _, code = run_cmd(session, "dnf -y install centos-release-ceph-tentacle epel-release dnf-plugins-core")
     assert code == 0, f"Failed to install dependencies for PyNFS & Cthon"
 
     duffy_session = DuffySession()
     version = duffy_session.centos_version
 
-    build_requires_cthon = "git bison cmake dbus-devel flex gcc-c++ krb5-devel libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build xfsprogs-devel lvm2 podman chrony"
+    build_requires_cthon = "git bison cmake dbus-devel flex gcc-c++ krb5-devel libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build xfsprogs-devel openssl-devel lvm2 podman chrony"
     build_requires_extra_cthon = "libnsl2-devel libnfsidmap-devel libwbclient-devel userspace-rcu-devel libcephfs-devel lua-devel"
 
     if version.startswith("9"):

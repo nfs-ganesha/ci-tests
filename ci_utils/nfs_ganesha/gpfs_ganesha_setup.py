@@ -42,7 +42,7 @@ class GPFSGaneshaManager:
     # -------------------------------
     def intall_pre_reqs_on_vm(self):
         logger.info("[STEP]: Installing pre-requisite packages for GPFS and Ganesha on the VM")
-        run_cmd(self.session, "dnf install -y rpcbind yum-utils centos-release-ceph epel-release unzip --skip-broken")
+        run_cmd(self.session, "dnf install -y rpcbind yum-utils centos-release-ceph-tentacle epel-release unzip --skip-broken")
         run_cmd(self.session, "systemctl start rpcbind")
         run_cmd(self.session, " sudo setenforce 0")
         run_cmd(self.session, "sudo systemctl stop firewalld", check=False)
@@ -73,7 +73,7 @@ class GPFSGaneshaManager:
     def _build_from_source(self, test_workspace: str):
         logger.info("[STEP]: Building Ganesha from source...")
 
-        BASE_PACKAGES="git bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel rpm-build redhat-rpm-config gdb"
+        BASE_PACKAGES="git bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel rpm-build redhat-rpm-config gdb openssl-devel"
         BUILDREQUIRES_EXTRA="libnsl2-devel libnfsidmap-devel libwbclient-devel userspace-rcu-devel libcephfs-devel python3-devel"
         ADDITIONAL_PACKAGES=""
     
