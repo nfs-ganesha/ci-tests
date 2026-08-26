@@ -69,19 +69,15 @@ class PyNFSManager:
                 known_failures = [
                     "MKLINK",
                     "PUTFH3",
-                    "LOCK20",
                 ]
             elif self.backend_type == "acl_vfs":
                 # BZ-2415390
                 known_failures = [
                     "WRT18",
-                    "LOCK20",
                 ]
             elif self.backend_type == "gpfs":
                 # BZ-2416755
                 known_failures = [
-                    "SATT12x",
-                    "LOCK20",
                 ]
 
         elif version == "4.1":
@@ -113,29 +109,13 @@ class PyNFSManager:
                     "SEQ6",
                 ]
             elif self.backend_type == "gpfs":
-                # BZ-2416757
+                # Skip xattr and delegation tests for GPFS backends BZ-2416757
+                cmd = (
+                    f"cd {self.repo_dir}/nfs4.1 && "
+                    f"./testserver.py {server}:{export} all ganesha noxattr nodeleg"
+                    f" --secure --verbose --maketree --showomit --rundeps"
+                )
                 known_failures = [
-                    "XATT5",
-                    "XATT7",
-                    "XATT8",
-                    "XATT9",
-                    "XATT10",
-                    "XATT11",
-                    "XATT2",
-                    "XATT6",
-                    "XATT4",
-                    "XATT3",
-                    "DELEG2",
-                    "DELEG23",
-                    "DELEG1",
-                    "DELEG8",
-                    "DELEG25",
-                    "DELEG24",
-                    "DELEG26",
-                    "DELEG6",
-                    "DELEG7",
-                    "DELEG5",
-                    "DELEG3",
                     "SEQ6",
                 ]
         else:
