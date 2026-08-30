@@ -170,11 +170,32 @@ def test_cephfs_fsal(remote_sessions, reserved_nodes, cmake_flags):
     )
     logger.info("Build completed with code: %s", code)
 
+    logger.info(f"Installing dependencies on server node {server_ip}")
+    for sess in remote_sessions["servers"]:
+        setup_server_node_pynfs_cthon(sess)
+
     assert code == 0, f"FSAL CephFS tests failed"
 
+@pytest.fixture(scope="session")
+def ceph_setup_data(remote_sessions):
+    server = remote_sessions["servers"][0]
+
+    if len(remote_sessions["servers"]) > 1:
+        ceph_setup = CephGaneshaSetup(
+            session=server,
+            extra_sessions=remote_sessions["servers"][1:]
+        )
+    else:
+        ceph_setup = CephGaneshaSetup(session=server)
+
+    # --- CACHE ---
+    ceph_setup._is_setup_done = False
+    ceph_setup._subvol_path = None
+
+    return ceph_setup
 
 @pytest.mark.timeout(1200) 
-def test_bringup_cephfs(remote_sessions, reserved_nodes):
+def test_bringup_cephfs(remote_sessions, reserved_nodes, ceph_setup_data):
     try:
         logger.info("[TEST START]: Cthon with CephFS")
 
@@ -190,22 +211,27 @@ def test_bringup_cephfs(remote_sessions, reserved_nodes):
 
         assert code == 0, f"Cthon Make CephFS tests failed"
 
-        logger.info(f"Installing dependencies on server node {server_ip}")
-        for sess in remote_sessions["servers"]:
-            setup_server_node_pynfs_cthon(sess)
-
         logger.info("Ceph setup")
-        if len(remote_sessions["servers"]) > 1:
-            ceph_setup = CephGaneshaSetup(session=server, extra_sessions=remote_sessions["servers"][1:])
-        else:
-            ceph_setup = CephGaneshaSetup(session=remote_sessions["servers"][0])
-        subvol_path = ceph_setup.full_setup()
+
+        ceph_setup = ceph_setup_data
+
+        if not ceph_setup._is_setup_done:
+            ceph_setup._subvol_path = ceph_setup.full_setup()
+            ceph_setup._is_setup_done = True
+
+        subvol_path = ceph_setup._subvol_path
+        cephfs_name = ceph_setup.cephfs_name
 
         logger.info("NFS Ganesha setup")
         ganesha_setup = GaneshaManager(
             session=server,
             subvol_path=subvol_path,
-            cephfs_name=ceph_setup.cephfs_name
+            cephfs_name=cephfs_name,   # <-- CHANGED
+            ganesha_opts={
+            "delegations_v4": "true",
+            "delegations_export": "readwrite",
+            "ceph_async": "false",
+            }
         )
         ganesha_setup.setup()
         assert f"CephFS setup completed"
@@ -224,9 +250,41 @@ def test_cthon(remote_sessions, reserved_nodes):
     logger.info("Running Cthon tests on node: %s", client_ip)
     cthon = CthonManager(session=client, server_ip=server_ip)
     cthon.clone_and_build()
-    _, rc = cthon.run_all_cthon_test(skip_v3=True)
+    _, _, rc = cthon.run_all_cthon_test(skip_v3=True)
     
     assert rc == 0, f"Cthon CephFS tests failed"
+
+@pytest.mark.timeout(1200)
+def test_delegation(remote_sessions, ceph_setup_data):
+    logger.info("[TEST START]: Update ganesha conf with delegation parameters")
+
+    server = remote_sessions["servers"][0]
+
+    ceph_setup = ceph_setup_data
+
+    # --- CACHED SETUP ---
+    if not ceph_setup._is_setup_done:
+        ceph_setup._subvol_path = ceph_setup.full_setup()
+        ceph_setup._is_setup_done = True
+
+    subvol_path = ceph_setup._subvol_path
+    cephfs_name = ceph_setup.cephfs_name
+
+    ganesha_setup = GaneshaManager(
+        session=server,
+        subvol_path=subvol_path,
+        cephfs_name=cephfs_name,
+        ganesha_opts={
+            "delegations_v4": "true",
+            "delegations_export": "readwrite",
+            "ceph_async": "false",
+        }
+    )
+
+    ganesha_setup.write_conf()
+    ganesha_setup.restart()
+
+    logger.info("Delegation updation completed")
 
 def test_pynfs(remote_sessions, reserved_nodes):
     logger.info("[TEST START]: PyNFS with CephFS")
@@ -240,5 +298,5 @@ def test_pynfs(remote_sessions, reserved_nodes):
     pynfs = PyNFSManager(session=client, server_ip=server_ip, backend_type="ceph")
     _, failure_summary, code = pynfs.run_all_tests(export="/nfs/cephfs")
     logger.info("PyNFS test failure summary: %s", failure_summary)
-    
+
     assert code == 0, f"PyNFS CephFS tests failed"
