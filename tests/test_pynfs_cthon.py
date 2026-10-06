@@ -496,6 +496,7 @@ def test_pynfs_acl_vfs(create_session, cmake_flags):
 @pytest.mark.parametrize("create_session", [0], indirect=True)
 @pytest.mark.parametrize("cmake_flags", ["test_fsal_gpfs"], indirect=True)
 def test_pynfs_gpfs(create_session, cmake_flags):
+    ganesha_setup = None
     try:
         logger.info("[TEST START]: PyNFS with GPFS")
         server_session, server_workspace, server_node = create_session
@@ -715,8 +716,6 @@ local-hostname: {vm_name}
         t1.join()
         t2.join()
 
-        vm_session.close()
-
         if result_holder[0] is None:
             result_holder[0] = (True, "Test thread failed without result", 1, False)
         fail_found, failure_summary, code, ganesha_stopped = result_holder[0]
@@ -727,7 +726,6 @@ local-hostname: {vm_name}
         logger.info("Value %s: Type of code: %s", code, type(code))
 
         if fail_found or ganesha_stopped:
-            # Ganesha runs in VM; use vm_session for backtrace (server_session may be closed if ganesha died)
             # gdb_cmd wrapped in single quotes so it survives unpacking when run via jump host session
             gdb_cmd = (
                 "'gdb -q -batch "
@@ -760,6 +758,8 @@ local-hostname: {vm_name}
                 f.write(failure_msg)
             with open(SUMMARY_STATUS, "a", encoding="utf-8") as f:
                 f.write("\nPassed")
+
+        vm_session.close()
 
         assert fail_found == False and code == 0 and not ganesha_stopped, (
             "PyNFS GPFS tests failed" + (" (ganesha died during test)" if ganesha_stopped else "")

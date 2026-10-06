@@ -2,6 +2,8 @@ default:
   - "-DCMAKE_BUILD_TYPE=Maintainer"
   - "-DUSE_ADMIN_TOOLS=ON"
   - "-DUSE_DBUS=ON"
+  - "-DUSE_NFS_RDMA=ON"
+  - "-DUSE_RPC_RDMA=ON"
 
 tests:
   test_fsal_cephfs:
