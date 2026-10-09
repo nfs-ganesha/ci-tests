@@ -73,7 +73,7 @@ class GPFSGaneshaManager:
     def _build_from_source(self, test_workspace: str):
         logger.info("[STEP]: Building Ganesha from source...")
 
-        BASE_PACKAGES="git bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel rpm-build redhat-rpm-config gdb openssl-devel"
+        BASE_PACKAGES="git bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel rpm-build redhat-rpm-config gdb openssl-devel rdma-core-devel"
         BUILDREQUIRES_EXTRA="libnsl2-devel libnfsidmap-devel libwbclient-devel userspace-rcu-devel libcephfs-devel python3-devel"
         ADDITIONAL_PACKAGES=""
     
@@ -299,5 +299,5 @@ class GPFSGaneshaManager:
 
         logger.info("Listing NFS exports configured in Ganesha")
         run_cmd(self.session, "cat /var/mmfs/ces/nfs-config/gpfs.ganesha.exports.conf")
-        
+
         logger.info("NFS volume exported successfully.")

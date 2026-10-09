@@ -8,7 +8,8 @@ logger = get_logger(__name__)
 
 class PyNFSManager:
     # def __init__(self, session, server_ip, repo_url="git://git.linux-nfs.org/projects/cdmackay/pynfs.git", backend_type=None):
-    def __init__(self, session, server_ip, repo_url="-b useme https://github.com/ffilz/pynfs.git", backend_type=None):
+    # def __init__(self, session, server_ip, repo_url="-b useme https://github.com/ffilz/pynfs.git", backend_type=None):
+    def __init__(self, session, server_ip, repo_url="-b useme https://github.com/nfs-ganesha/pynfs.git", backend_type=None):
         """
         Manage PyNFS test runs on a remote session.
 
@@ -121,7 +122,7 @@ class PyNFSManager:
         else:
             raise ValueError(f"Unsupported NFS version: {version}")
 
-        max_retries = 10
+        max_retries = 20
         wait_secs = 15
         out = ""
         code = 1

@@ -98,7 +98,7 @@ def test_install_dependencies_for_checkpatch_fsal(all_nodes):
 
     basic_packages = "yum-utils centos-release-ceph-tentacle epel-release"
 
-    build_requires_common = "git bison cmake dbus-devel flex gcc-c++ krb5-devel libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build xfsprogs-devel openssl-devel"
+    build_requires_common = "git bison cmake dbus-devel flex gcc-c++ krb5-devel libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build xfsprogs-devel openssl-devel rdma-core-devel"
     build_requires_gpfs_vfs = ""
 
     build_requires_extra_common = "libnsl2-devel libnfsidmap-devel libwbclient-devel userspace-rcu-devel"
@@ -143,7 +143,7 @@ def setup_node_pynfs_cthon(server_node):
     duffy_session = DuffySession()
     version = duffy_session.centos_version
 
-    build_requires_cthon = "git bison cmake dbus-devel flex gcc-c++ krb5-devel libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build xfsprogs-devel openssl-devel lvm2"
+    build_requires_cthon = "git bison cmake dbus-devel flex gcc-c++ krb5-devel libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build xfsprogs-devel openssl-devel lvm2 rdma-core-devel"
     build_requires_extra_cthon = "libnsl2-devel libnfsidmap-devel libwbclient-devel userspace-rcu-devel libcephfs-devel lua-devel"
     build_requires_extra_centos10 = "python3-build python3-wheel"
 
@@ -177,7 +177,7 @@ def setup_node_vfs(server_node):
     duffy_session = DuffySession() 
     version = duffy_session.centos_version
 
-    build_requires_vfs = "git bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel rpm-build redhat-rpm-config gdb libblkid-devel libcap-devel xfsprogs-devel openssl-devel"
+    build_requires_vfs = "git bison flex cmake gcc-c++ libacl-devel krb5-devel dbus-devel rpm-build redhat-rpm-config gdb libblkid-devel libcap-devel xfsprogs-devel openssl-devel rdma-core-devel"
     build_requires_extra_vfs= "libnsl2-devel libnfsidmap-devel libwbclient-devel userspace-rcu-devel libcephfs-devel python3-devel"
     build_requires_add_on_vfs = "selinux-policy-devel sqlite"
     build_requires_extra_centos10 = "python3-build python3-wheel"
