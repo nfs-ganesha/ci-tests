@@ -30,7 +30,8 @@ def install_checkpatch_fsal_dependencies(session) -> None:
     version = duffy_session.centos_version
 
     basic_packages = "centos-release-gluster yum-utils centos-release-ceph-tentacle epel-release"
-    build_requires_common = "git bison cmake dbus-devel flex gcc-c++ krb5-devel libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build xfsprogs-devel openssl-devel"
+    # rdma-core-devel required when cmake enables USE_NFS_RDMA / USE_RPC_RDMA (same as gatecheck)
+    build_requires_common = "git bison cmake dbus-devel flex gcc-c++ krb5-devel libacl-devel libblkid-devel libcap-devel redhat-rpm-config rpm-build xfsprogs-devel openssl-devel rdma-core-devel"
     build_requires_extra_common = "libnsl2-devel libnfsidmap-devel libwbclient-devel userspace-rcu-devel"
     build_requires_extra_cephfs_vfs_rgw = "libcephfs-devel"
 
