@@ -252,6 +252,7 @@ def test_cthon_cephfs(create_session, cmake_flags):
             f"Cthon CephFS tests failed" + (" (ganesha died during test)" if ganesha_stopped else "")
         )
     except Exception as e:
+        logger.exception("Cthon-CephFS test failed: %s", e)
         failure_msg = f"\n**🔴 Cthon-CephFS:** `Failed`"
         with open(SUMMARY_FILE, "a", encoding="utf-8") as f:
             f.write(failure_msg)
@@ -376,6 +377,7 @@ def test_pynfs_cephfs(create_session, cmake_flags):
         )
 
     except Exception as e:
+        logger.exception("PyNFS-CephFS test failed: %s", e)
         failure_msg = f"\n**🔴 PyNFS-CephFS:** `Failed`"
         with open(SUMMARY_FILE, "a", encoding="utf-8") as f:
             f.write(failure_msg)
@@ -482,6 +484,7 @@ def test_pynfs_acl_vfs(create_session, cmake_flags):
             "PyNFS CephFS tests failed" + (" (ganesha died during test)" if ganesha_stopped else "")
         )
     except Exception as e:
+        logger.exception("PyNFS-ACL-VFS test failed: %s", e)
         failure_msg = f"\n**🔴 PyNFS-ACL-VFS:** `Failed`"
         with open(SUMMARY_FILE, "a", encoding="utf-8") as f:
             f.write(failure_msg)
@@ -766,6 +769,7 @@ local-hostname: {vm_name}
         )
     
     except Exception as e:
+        logger.exception("PyNFS-GPFS test failed: %s", e)
         failure_msg = f"\n**🔴 PyNFS-GPFS:** `Failed`"
         with open(SUMMARY_FILE, "a", encoding="utf-8") as f:
             f.write(failure_msg)

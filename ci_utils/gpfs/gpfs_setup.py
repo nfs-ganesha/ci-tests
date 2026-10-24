@@ -214,8 +214,10 @@ class SpectrumScaleInstaller:
         logger.info(f"Network interface: {iface.strip()}, CIDR: {ip_cidr}")
 
         _, cidr = ip_cidr.split("/")
-        start = int(base_ip.split(".")[3]) + 1
-        candidate_ips = [f"{subnet_prefix}.{i}" for i in range(start, 255)]
+        # Search the whole /24, not just above the VM's own address:
+        # a VM leased .254 would otherwise have no candidates at all.
+        base_host = int(base_ip.split(".")[3])
+        candidate_ips = [f"{subnet_prefix}.{i}" for i in range(2, 255) if i != base_host]
 
         self.ces_ips = []
 
