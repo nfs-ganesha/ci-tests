@@ -10,7 +10,7 @@ class GaneshaManager:
     """
     NFS-Ganesha Setup and Management for CephFS
     """
-    def __init__(self, session, subvol_path, cephfs_name="cephfs", export_id=101, test_type=None):
+    def __init__(self, session, subvol_path, ganesha_opts=None, cephfs_name="cephfs", export_id=101, test_type=None):
         """
         Manage NFS-Ganesha setup on a remote session.
 
@@ -24,17 +24,31 @@ class GaneshaManager:
         self.cephfs_name = cephfs_name
         self.export_id = export_id
         self.test_type = test_type
+        self.ganesha_opts = ganesha_opts or {}
+
+        self.conf = self._generate_conf()
 
     # ------------------------
     # Internal helpers
     # ------------------------
     def _generate_conf(self):
-        delegations_v4 = ""
-        delegations_export = ""
 
-        if self.test_type == "pynfs":
-            delegations_v4 = "    Delegations = true;"
-            delegations_export = "    delegations = readwrite;"
+        # ---- defaults ----
+        deleg_v4 = "true"
+        deleg_export = "none"
+        ceph_async = "true"
+
+        # ---- override only if ganesha_opts are passed ----
+        if self.ganesha_opts:
+            if "delegations_v4" in self.ganesha_opts:
+                deleg_v4 = self.ganesha_opts["delegations_v4"]
+
+            if "delegations_export" in self.ganesha_opts:
+                deleg_export = self.ganesha_opts["delegations_export"]
+
+            if "ceph_async" in self.ganesha_opts:
+                ceph_async = self.ganesha_opts["ceph_async"]
+
         return f"""NFS_CORE_PARAM {{
     Enable_NLM = true;
     Enable_RQUOTA = true;
@@ -44,11 +58,15 @@ class GaneshaManager:
 
 NFSv4 {{
     Enforce_UTF8_Validation = true;
-    {delegations_v4}
+    Delegations = {deleg_v4};
 }}
 
 EXPORT_DEFAULTS {{
     Access_Type = RW;
+}}
+
+CEPH {{
+    async = {ceph_async};
 }}
 
 EXPORT {{
@@ -59,19 +77,19 @@ EXPORT {{
     Transports = TCP;
     Access_Type = RW;
     Squash = None;
-    {delegations_export}
+    delegations = {deleg_export};
     FSAL {{
         Name = "CEPH";
     }}
 }}"""
+
 
     # ------------------------
     # Public methods
     # ------------------------
     def write_conf(self):
         """Write ganesha.conf to remote system."""
-        conf_content = self._generate_conf()
-        run_cmd(self.session, f"echo '{conf_content}' > /etc/ganesha/ganesha.conf")
+        run_cmd(self.session, f"echo '{self.conf}' > /etc/ganesha/ganesha.conf")
         run_cmd(self.session, "cat /etc/ganesha/ganesha.conf")
         logger.info("[OK] ganesha.conf written")
 

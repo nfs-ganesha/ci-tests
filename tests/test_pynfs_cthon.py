@@ -300,7 +300,12 @@ def test_pynfs_cephfs(create_session, cmake_flags):
             session=server_session,
             subvol_path=subvol_path,
             cephfs_name=ceph_setup.cephfs_name,
-            test_type="pynfs"
+            test_type="pynfs",
+            ganesha_opts={
+                "delegations_v4": "true",
+                "delegations_export": "readwrite",
+                "ceph_async": "false",
+            }
         )
         ganesha_setup.setup()
 
