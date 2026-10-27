@@ -204,7 +204,7 @@ def test_clang_format(create_session, server_node):
         f"cd {test_workspace}/nfs-ganesha && "
         "git clang-format -v "
         "--diff "
-        "--style file:src/.clang-format "
+        "--style file:.clang-format "
         "--extensions c,cc,cpp,h,hpp "
         "HEAD~1 "
         f"| python3 {test_workspace}/clangformat_to_gerrit_json.py", check=False
@@ -225,7 +225,7 @@ def test_clang_format(create_session, server_node):
             f"cd {test_workspace}/nfs-ganesha && "
             "git clang-format -v "
             "--diff "
-            "--style file:src/.clang-format "
+            "--style file:.clang-format "
             "--extensions c,cc,cpp,h,hpp "
             "HEAD~1", check=False
         )
